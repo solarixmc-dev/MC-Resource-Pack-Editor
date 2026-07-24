@@ -674,12 +674,14 @@ function FolderSidebar({
   onSelect,
   folderSources,
   onFolderSource,
+  layoutMode,
 }: {
   packs: Pack[];
   selectedFolder: string;
   onSelect: (f: string) => void;
   folderSources: FolderSources;
   onFolderSource: (folder: string, packId: string | null) => void;
+  layoutMode: LayoutMode;
 }) {
   const availableFolders = useMemo(() => getAllFoldersInPacks(packs), [packs]);
 
@@ -692,13 +694,17 @@ function FolderSidebar({
     const sourcePackId = folderSources[key];
     const sourcePack = packs.find((p) => p.id === sourcePackId);
     const active = selectedFolder === key;
+    const modern = layoutMode === "modern";
 
     return (
-      <div key={key} className={`group rounded transition-colors ${active ? "bg-primary/15" : "hover:bg-accent/50"}`}>
+      <div key={key} className={`group rounded-2xl border transition-all ${active ? (modern ? "border-primary/40 bg-primary/12" : "bg-primary/15") : (modern ? "border-transparent hover:border-border/70 hover:bg-white/70 dark:hover:bg-white/10" : "hover:bg-accent/50")}`}>
         <button
-          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left"
+          className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-left ${modern ? "rounded-2xl" : ""}`}
           onClick={() => onSelect(key)}
         >
+          <span className={`flex h-8 w-8 items-center justify-center rounded-xl text-base ${active ? "bg-primary/15 text-primary" : modern ? "bg-secondary/70 text-muted-foreground" : "bg-secondary text-foreground"}`}>
+            {icon}
+          </span>
           <span className={`flex-1 font-medium leading-snug ${active ? "text-primary" : "text-foreground"}`}>
             {label}
           </span>
@@ -730,7 +736,7 @@ function FolderSidebar({
   };
 
   return (
-    <nav className="flex flex-col gap-0.5 py-2">
+    <nav className={`flex flex-col gap-1.5 py-2 ${layoutMode === "modern" ? "px-2" : "px-0"}`}>
       {defined.map((f) => renderFolder(f.key, f.label, f.icon))}
       {extra.map((k) => renderFolder(k, k, "📁"))}
     </nav>
@@ -750,6 +756,7 @@ function TextureCard({
   onOpenLightbox,
   isRemoved,
   onToggleRemove,
+  layoutMode,
 }: {
   texturePath: string;
   displayName: string;
@@ -761,6 +768,7 @@ function TextureCard({
   onOpenLightbox?: () => void;
   isRemoved: boolean;
   onToggleRemove: (path: string) => void;
+  layoutMode: LayoutMode;
 }) {
   const overridePackId = textureOverrides[texturePath];
   const folderPackId = folderSources[folder];
@@ -772,12 +780,14 @@ function TextureCard({
   const isImg = isImagePath(texturePath);
   const isAtlas = !!getAtlasDefinition(texturePath);
 
+  const modern = layoutMode === "modern";
+
   return (
-    <div className={`overflow-hidden flex flex-col rounded-xl border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : "border-border bg-card hover:border-primary/40"}`}>
+    <div className={`overflow-hidden flex flex-col rounded-[22px] border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : modern ? "border-white/10 bg-gradient-to-br from-card/95 via-card/80 to-background/90 shadow-[0_18px_44px_-24px_rgba(15,23,42,0.45)] backdrop-blur-xl hover:border-primary/40" : "border-border bg-card hover:border-primary/40"}`}>
       {/* Texture previews row */}
       {isImg && (
         <div
-          className={`flex border-b border-border ${packsWithFile.length === 1 ? "" : "divide-x divide-border"}`}
+          className={`flex ${modern ? "border-b border-white/10 bg-gradient-to-br from-background/60 to-secondary/20" : "border-b border-border"} ${packsWithFile.length === 1 ? "" : "divide-x divide-border"}`}
         >
           {packsWithFile.map((pack) => {
             const buf = pack.files.get(texturePath)!;
@@ -820,7 +830,7 @@ function TextureCard({
 
       {/* File label & controls — click label to open lightbox */}
       <button
-        className="px-2 py-1.5 flex items-center gap-1 min-w-0 w-full text-left hover:bg-accent/40 transition-colors"
+        className={`px-2 py-1.5 flex items-center gap-1 min-w-0 w-full text-left transition-colors ${modern ? "hover:bg-white/60 dark:hover:bg-white/10" : "hover:bg-accent/40"}`}
         onClick={() => onOpenLightbox?.()}
         title="Click to view larger"
       >
@@ -842,13 +852,14 @@ function TextureCard({
         <span className="text-[10px] text-muted-foreground/50 flex-shrink-0">⊞</span>
       </button>
 
-      <div className="flex items-center justify-between gap-2 px-2 pb-2">
+      <div className={`flex items-center justify-between gap-2 px-2 pb-2 ${modern ? "pt-1" : ""}`}>
         <button
-          className={`text-[11px] font-medium rounded-full px-2 py-1 transition-colors ${isRemoved ? "bg-destructive/20 text-destructive" : "bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+          className={`flex h-5 w-5 items-center justify-center rounded-full border transition-colors ${isRemoved ? "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20" : "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"}`}
           onClick={(e) => { e.stopPropagation(); onToggleRemove(texturePath); }}
           title={isRemoved ? "Re-include this file in export" : "Remove this file from export"}
+          aria-label={isRemoved ? "Re-include this file in export" : "Remove this file from export"}
         >
-          {isRemoved ? "excluded" : "include"}
+          <span className="text-[10px] leading-none">{isRemoved ? "✕" : "✓"}</span>
         </button>
         {packsWithFile.length > 1 && (
           <div className="flex gap-1 flex-wrap">
@@ -888,6 +899,7 @@ function TextureGrid({
   cols,
   removedFiles,
   onToggleRemove,
+  layoutMode,
 }: {
   packs: Pack[];
   folder: string;
@@ -898,6 +910,7 @@ function TextureGrid({
   cols: number;
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
+  layoutMode: LayoutMode;
 }) {
   const [search, setSearch] = useState("");
 
@@ -952,6 +965,7 @@ function TextureGrid({
               onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
               isRemoved={!!removedFiles[path]}
               onToggleRemove={onToggleRemove}
+              layoutMode={layoutMode}
             />
           );
         })}
@@ -972,6 +986,7 @@ function SearchAllResults({
   cols,
   removedFiles,
   onToggleRemove,
+  layoutMode,
 }: {
   query: string;
   packs: Pack[];
@@ -982,6 +997,7 @@ function SearchAllResults({
   cols: number;
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
+  layoutMode: LayoutMode;
 }) {
   const allPaths = useMemo(() => {
     const set = new Set<string>();
@@ -1030,6 +1046,7 @@ function SearchAllResults({
                 onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
                 isRemoved={!!removedFiles[path]}
                 onToggleRemove={onToggleRemove}
+                layoutMode={layoutMode}
               />
               <span className="text-[10px] text-muted-foreground text-center truncate px-1">{folder}</span>
             </div>
@@ -1846,26 +1863,26 @@ export default function App() {
   const folderSourceCount = Object.values(folderSources).filter(Boolean).length;
 
   return (
-    <div className={`flex flex-col h-screen bg-background text-foreground overflow-hidden${darkMode ? " dark" : ""}`}>
+    <div className={`flex flex-col h-screen overflow-hidden${darkMode ? " dark" : ""} ${layoutMode === "modern" ? "bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.16),_transparent_28%)] text-foreground" : "bg-background text-foreground"}`}>
       {/* ── Header ── */}
-      <header className={`flex-shrink-0 border-b border-border px-4 py-3 ${layoutMode === "modern" ? "bg-gradient-to-r from-card via-card to-background/90 shadow-sm" : "bg-card"}`}>
+      <header className={`flex-shrink-0 border-b border-border px-4 py-3 ${layoutMode === "modern" ? "bg-gradient-to-br from-slate-950/90 via-slate-900/85 to-emerald-950/70 text-slate-100 shadow-[0_18px_40px_-24px_rgba(2,6,23,0.85)]" : "bg-card"}`}>
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2 flex-shrink-0">
             {/* Settings gear */}
             <button
               onClick={() => setSettingsOpen((v) => !v)}
-              className={`w-9 h-9 rounded-full flex items-center justify-center text-base transition-colors border ${settingsOpen ? "bg-primary/20 text-primary border-primary/40" : "text-muted-foreground hover:text-foreground hover:bg-accent border-transparent"}`}
+              className={`w-9 h-9 rounded-full flex items-center justify-center text-base transition-colors border ${settingsOpen ? (layoutMode === "modern" ? "bg-white/15 text-white border-white/20" : "bg-primary/20 text-primary border-primary/40") : (layoutMode === "modern" ? "text-slate-300 hover:text-white hover:bg-white/10 border-transparent" : "text-muted-foreground hover:text-foreground hover:bg-accent border-transparent")}`}
               title="Settings"
             >
               ⚙
             </button>
-            <h1 className="text-base font-bold text-foreground">MC Resource Pack Editor</h1>
-            <span className="text-xs text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">1.8</span>
+            <h1 className={`text-base font-bold ${layoutMode === "modern" ? "text-white" : "text-foreground"}`}>MC Resource Pack Editor</h1>
+            <span className={`text-xs px-1.5 py-0.5 rounded ${layoutMode === "modern" ? "bg-white/10 text-slate-300" : "text-muted-foreground bg-secondary"}`}>1.8</span>
           </div>
 
           <div className="flex-1 min-w-0 flex items-center gap-3">
             {packs.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Upload resource pack ZIPs to get started</p>
+              <p className={`text-xs ${layoutMode === "modern" ? "text-slate-300" : "text-muted-foreground"}`}>Upload resource pack ZIPs to get started</p>
             ) : (
               <>
                 <PackOrderPanel
@@ -1900,7 +1917,7 @@ export default function App() {
       </header>
 
       {/* ── Sub-header: pack settings + upload ── */}
-      <div className={`flex-shrink-0 border-b border-border px-4 py-2 ${layoutMode === "modern" ? "bg-background/70" : "bg-card/50"}`}>
+      <div className={`flex-shrink-0 border-b border-border px-4 py-2 ${layoutMode === "modern" ? "bg-slate-900/50 backdrop-blur-sm" : "bg-card/50"}`}>
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex-1 min-w-[280px]">
             <PackSettings
@@ -1934,9 +1951,9 @@ export default function App() {
       {/* ── Body ── */}
       {packs.length === 0 ? (
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className={`text-center max-w-xl px-8 py-10 rounded-2xl border ${layoutMode === "modern" ? "border-border/80 bg-card/70 shadow-sm" : "border-border bg-card"}`}>
+          <div className={`text-center max-w-xl px-8 py-10 rounded-[28px] border ${layoutMode === "modern" ? "border-white/10 bg-gradient-to-br from-slate-900/85 via-slate-900/70 to-emerald-950/70 shadow-[0_25px_60px_-30px_rgba(2,6,23,0.95)]" : "border-border bg-card"}`}>
             <h2 className="text-xl font-bold mb-2">Minecraft 1.8 Resource Pack Editor</h2>
-            <p className="text-muted-foreground text-sm">
+            <p className={`text-sm ${layoutMode === "modern" ? "text-slate-300" : "text-muted-foreground"}`}>
               Upload one or more resource pack ZIP files above to compare textures, set default sources per folder, override individual textures, and export a merged pack.
             </p>
           </div>
@@ -1945,10 +1962,10 @@ export default function App() {
         <div className="flex flex-1 min-h-0">
           {/* Sidebar */}
           <aside
-            className={`flex-shrink-0 border-r border-border overflow-y-auto transition-all duration-200 ${layoutMode === "modern" ? "bg-sidebar/80" : "bg-sidebar"} ${sidebarOpen ? "w-56" : "w-0 overflow-hidden border-r-0"}`}
+            className={`flex-shrink-0 border-r border-border overflow-y-auto transition-all duration-200 ${layoutMode === "modern" ? "bg-slate-900/70 backdrop-blur-xl" : "bg-sidebar"} ${sidebarOpen ? "w-60" : "w-0 overflow-hidden border-r-0"}`}
           >
-            <div className="px-3 py-2 border-b border-sidebar-border">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Folders</span>
+            <div className={`px-3 py-3 border-b ${layoutMode === "modern" ? "border-white/10" : "border-sidebar-border"}`}>
+              <span className={`text-xs font-semibold uppercase tracking-wider ${layoutMode === "modern" ? "text-slate-300" : "text-muted-foreground"}`}>Folders</span>
             </div>
             <FolderSidebar
               packs={packs}
@@ -1956,6 +1973,7 @@ export default function App() {
               onSelect={setSelectedFolder}
               folderSources={folderSources}
               onFolderSource={handleFolderSource}
+              layoutMode={layoutMode}
             />
           </aside>
 
@@ -1971,7 +1989,7 @@ export default function App() {
           {/* Main content */}
           <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
             {/* Folder header + global search */}
-            <div className={`flex-shrink-0 px-4 py-2 border-b border-border flex items-center gap-3 ${layoutMode === "modern" ? "bg-background/60" : "bg-card"}`}>
+            <div className={`flex-shrink-0 px-4 py-3 border-b border-border flex items-center gap-3 ${layoutMode === "modern" ? "bg-slate-900/40 backdrop-blur-sm" : "bg-card"}`}>
               {globalSearch ? (
                 <span className="font-semibold">Search results</span>
               ) : (
@@ -1985,7 +2003,7 @@ export default function App() {
                   placeholder="Search all textures…"
                   value={globalSearch}
                   onChange={(e) => setGlobalSearch(e.target.value)}
-                  className="bg-secondary border border-border rounded px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-48"
+                  className={`border rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-48 ${layoutMode === "modern" ? "border-white/10 bg-slate-950/50 text-slate-100 placeholder:text-slate-400" : "bg-secondary border-border text-foreground"}`}
                 />
                 {!globalSearch && packs.length > 1 && (
                   <span className="text-xs text-muted-foreground hidden xl:block">
@@ -2008,6 +2026,7 @@ export default function App() {
                   cols={texturesPerRow}
                   removedFiles={removedFiles}
                   onToggleRemove={toggleRemovedFile}
+                  layoutMode={layoutMode}
                 />
               ) : (
                 <TextureGrid
@@ -2020,6 +2039,7 @@ export default function App() {
                   cols={texturesPerRow}
                   removedFiles={removedFiles}
                   onToggleRemove={toggleRemovedFile}
+                  layoutMode={layoutMode}
                 />
               )}
             </div>
