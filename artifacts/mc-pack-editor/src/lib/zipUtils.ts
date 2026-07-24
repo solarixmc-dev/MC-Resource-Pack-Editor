@@ -393,7 +393,6 @@ export async function exportMergedPack(
       const atlasDef = getAtlasDefinition(path);
       const regionOverrides = atlasRegionOverrides[path];
       if (atlasDef && regionOverrides && Object.keys(regionOverrides).length > 0) {
-        const linkedRegionOverrides = getLinkedAtlasRegionOverrides(regionOverrides);
         const patches: { region: AtlasRegion; buffer: ArrayBuffer }[] = [];
         const orderedRegions = [...atlasDef.regions].sort((a, b) => {
           const areaA = a.w * a.h;
@@ -402,7 +401,7 @@ export async function exportMergedPack(
         });
 
         for (const region of orderedRegions) {
-          const overridePackId = linkedRegionOverrides[region.id];
+          const overridePackId = regionOverrides[region.id];
           if (!overridePackId) continue;
 
           const overridePack = packs.find((p) => p.id === overridePackId && p.files.has(path));

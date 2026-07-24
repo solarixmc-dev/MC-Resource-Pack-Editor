@@ -11,7 +11,6 @@ import {
   exportMergedPack,
   composeAtlas,
   cropAtlasRegion,
-  getLinkedAtlasRegionOverrides,
 } from "./lib/zipUtils";
 import { getAtlasDefinition, AtlasDefinition } from "./lib/atlasRegions";
 
@@ -1048,10 +1047,6 @@ function TextureLightbox({
   const effectivePackId = overridePackId ?? folderPackId;
   const atlasDef = getAtlasDefinition(texturePath);
   const regionOverrides = atlasRegionOverrides[texturePath] ?? {};
-  const linkedRegionOverrides = useMemo(
-    () => getLinkedAtlasRegionOverrides(regionOverrides),
-    [regionOverrides]
-  );
   const [regionPreviewUrls, setRegionPreviewUrls] = useState<Record<string, string>>({});
   const [composedPreviewUrl, setComposedPreviewUrl] = useState<string | null>(null);
   const [previewRegionId, setPreviewRegionId] = useState<string | null>(null);
@@ -1082,7 +1077,7 @@ function TextureLightbox({
       const patches: { region: AtlasDefinition["regions"][number]; buffer: ArrayBuffer }[] = [];
 
       for (const region of atlasDef.regions) {
-        const regionPackId = linkedRegionOverrides[region.id] ?? effectivePackId;
+        const regionPackId = regionOverrides[region.id] ?? effectivePackId;
         const sourcePack = packsWithFile.find((p) => p.id === regionPackId) ?? packsWithFile[0];
         const sourceBuffer = sourcePack?.files.get(texturePath);
 
@@ -1091,7 +1086,7 @@ function TextureLightbox({
         const cropped = await cropAtlasRegion(sourceBuffer, region, texturePath);
         previews[region.id] = arrayBufferToDataURL(cropped, texturePath);
 
-        if (linkedRegionOverrides[region.id]) {
+        if (regionOverrides[region.id]) {
           patches.push({ region, buffer: sourceBuffer });
         }
       }
@@ -1117,7 +1112,7 @@ function TextureLightbox({
     return () => {
       cancelled = true;
     };
-  }, [atlasDef, effectivePackId, linkedRegionOverrides, packFileKey, regionOverrideKey, texturePath]);
+  }, [atlasDef, effectivePackId, packFileKey, regionOverrideKey, texturePath]);
 
   const previewRegion = useMemo(() => {
     if (!atlasDef) return undefined;
