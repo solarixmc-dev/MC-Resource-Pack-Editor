@@ -179,7 +179,7 @@ function createAlphaAwareCanvas(width: number, height: number) {
     alpha: true,
     premultipliedAlpha: false,
     willReadFrequently: true,
-  });
+  }) as CanvasRenderingContext2D | null;
 
   if (!ctx) throw new Error("Canvas 2D context is unavailable");
 
@@ -331,7 +331,8 @@ export async function exportMergedPack(
   atlasRegionOverrides: Record<string, Record<string, string>>,
   packName: string,
   packDescription: string,
-  packIcon: string | null
+  packIcon: string | null,
+  removedFiles: Record<string, boolean> = {}
 ): Promise<Blob> {
   const zip = new JSZip();
 
@@ -363,6 +364,7 @@ export async function exportMergedPack(
   // For each file path, determine which pack to use
   for (const path of allPaths) {
     if (path === "pack.mcmeta" || path === "pack.png") continue;
+    if (removedFiles[path]) continue;
 
     const folder = getTextureFolder(path);
 

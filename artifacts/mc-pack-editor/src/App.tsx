@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useMemo, useEffect, DragEvent } from "react";
-import { Pack, MC_FOLDERS, TextureOverrides, FolderSources } from "./types";
+import { Pack, MC_FOLDERS, TextureOverrides, FolderSources, LayoutMode } from "./types";
 import {
   loadPackFromFile,
   getTexturesForFolder,
@@ -748,6 +748,8 @@ function TextureCard({
   folder,
   onOverride,
   onOpenLightbox,
+  isRemoved,
+  onToggleRemove,
 }: {
   texturePath: string;
   displayName: string;
@@ -757,6 +759,8 @@ function TextureCard({
   folder: string;
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox?: () => void;
+  isRemoved: boolean;
+  onToggleRemove: (path: string) => void;
 }) {
   const overridePackId = textureOverrides[texturePath];
   const folderPackId = folderSources[folder];
@@ -769,7 +773,7 @@ function TextureCard({
   const isAtlas = !!getAtlasDefinition(texturePath);
 
   return (
-    <div className="bg-card border border-card-border rounded-lg overflow-hidden flex flex-col group hover:border-primary/40 transition-colors">
+    <div className={`overflow-hidden flex flex-col rounded-xl border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : "border-border bg-card hover:border-primary/40"}`}>
       {/* Texture previews row */}
       {isImg && (
         <div
@@ -838,28 +842,36 @@ function TextureCard({
         <span className="text-[10px] text-muted-foreground/50 flex-shrink-0">⊞</span>
       </button>
 
-      {/* Pack selector (when multiple packs) */}
-      {packsWithFile.length > 1 && (
-        <div className="px-2 pb-2 flex gap-1 flex-wrap">
+      <div className="flex items-center justify-between gap-2 px-2 pb-2">
+        <button
+          className={`text-[11px] font-medium rounded-full px-2 py-1 transition-colors ${isRemoved ? "bg-destructive/20 text-destructive" : "bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+          onClick={(e) => { e.stopPropagation(); onToggleRemove(texturePath); }}
+          title={isRemoved ? "Re-include this file in export" : "Remove this file from export"}
+        >
+          {isRemoved ? "excluded" : "include"}
+        </button>
+        {packsWithFile.length > 1 && (
+          <div className="flex gap-1 flex-wrap">
           <button
             className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-primary/20 text-primary font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
             onClick={() => onOverride(texturePath, null)}
           >
             auto
           </button>
-          {packsWithFile.map((p) => (
-            <button
-              key={p.id}
-              className={`text-xs px-1.5 py-0.5 rounded transition-colors truncate max-w-[60px] ${overridePackId === p.id ? "font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
-              style={overridePackId === p.id ? { background: p.color + "33", color: p.color } : {}}
-              onClick={() => onOverride(texturePath, overridePackId === p.id ? null : p.id)}
-              title={p.name}
-            >
-              {p.name}
-            </button>
-          ))}
-        </div>
-      )}
+            {packsWithFile.map((p) => (
+              <button
+                key={p.id}
+                className={`text-xs px-1.5 py-0.5 rounded transition-colors truncate max-w-[60px] ${overridePackId === p.id ? "font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
+                style={overridePackId === p.id ? { background: p.color + "33", color: p.color } : {}}
+                onClick={() => onOverride(texturePath, overridePackId === p.id ? null : p.id)}
+                title={p.name}
+              >
+                {p.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -874,6 +886,8 @@ function TextureGrid({
   onOverride,
   onOpenLightbox,
   cols,
+  removedFiles,
+  onToggleRemove,
 }: {
   packs: Pack[];
   folder: string;
@@ -882,6 +896,8 @@ function TextureGrid({
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox: (path: string, displayName: string, folder: string) => void;
   cols: number;
+  removedFiles: Record<string, boolean>;
+  onToggleRemove: (path: string) => void;
 }) {
   const [search, setSearch] = useState("");
 
@@ -934,6 +950,8 @@ function TextureGrid({
               folder={folder}
               onOverride={onOverride}
               onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
+              isRemoved={!!removedFiles[path]}
+              onToggleRemove={onToggleRemove}
             />
           );
         })}
@@ -952,6 +970,8 @@ function SearchAllResults({
   onOverride,
   onOpenLightbox,
   cols,
+  removedFiles,
+  onToggleRemove,
 }: {
   query: string;
   packs: Pack[];
@@ -960,6 +980,8 @@ function SearchAllResults({
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox: (path: string, displayName: string, folder: string) => void;
   cols: number;
+  removedFiles: Record<string, boolean>;
+  onToggleRemove: (path: string) => void;
 }) {
   const allPaths = useMemo(() => {
     const set = new Set<string>();
@@ -1006,6 +1028,8 @@ function SearchAllResults({
                 folder={folder}
                 onOverride={onOverride}
                 onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
+                isRemoved={!!removedFiles[path]}
+                onToggleRemove={onToggleRemove}
               />
               <span className="text-[10px] text-muted-foreground text-center truncate px-1">{folder}</span>
             </div>
@@ -1468,6 +1492,8 @@ function SettingsModal({
   onTexturesPerRowChange,
   darkMode,
   onDarkModeChange,
+  layoutMode,
+  onLayoutModeChange,
   defaultPackName,
   defaultPackDescription,
   defaultPackIcon,
@@ -1481,6 +1507,8 @@ function SettingsModal({
   onTexturesPerRowChange: (n: number) => void;
   darkMode: boolean;
   onDarkModeChange: (v: boolean) => void;
+  layoutMode: LayoutMode;
+  onLayoutModeChange: (v: LayoutMode) => void;
   defaultPackName: string;
   defaultPackDescription: string;
   defaultPackIcon: string | null;
@@ -1555,6 +1583,21 @@ function SettingsModal({
                 className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${darkMode ? "right-0.5" : "left-0.5"}`}
               />
             </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm flex-1">Layout</span>
+            <div className="flex rounded-full border border-border bg-secondary p-0.5">
+              {(["normal", "modern"] as LayoutMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => onLayoutModeChange(mode)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize transition-colors ${layoutMode === mode ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {mode}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -1643,9 +1686,15 @@ export default function App() {
     const saved = window.localStorage.getItem("mc-pack-editor-theme");
     return saved ? saved === "dark" : true;
   });
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>(() => {
+    if (typeof window === "undefined") return "normal";
+    const saved = window.localStorage.getItem("mc-pack-editor-layout-mode");
+    return saved === "modern" ? "modern" : "normal";
+  });
   const [settingsOpen, setSettingsOpen] = useState(false);
   // Pack visibility: missing key = visible
   const [packVisibility, setPackVisibility] = useState<Record<string, boolean>>({});
+  const [removedFiles, setRemovedFiles] = useState<Record<string, boolean>>({});
   // Icon cropping
   const [cropSource, setCropSource] = useState<string | null>(null);
 
@@ -1671,6 +1720,10 @@ export default function App() {
   useEffect(() => {
     window.localStorage.setItem("mc-pack-editor-upload-defaults", JSON.stringify(uploadDefaults));
   }, [uploadDefaults]);
+
+  useEffect(() => {
+    window.localStorage.setItem("mc-pack-editor-layout-mode", layoutMode);
+  }, [layoutMode]);
 
   useEffect(() => {
     setPackName(uploadDefaults.name);
@@ -1742,7 +1795,8 @@ export default function App() {
         atlasRegionOverrides,
         packName,
         packDescription,
-        packIcon
+        packIcon,
+        removedFiles
       );
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1760,7 +1814,7 @@ export default function App() {
     } finally {
       setExporting(false);
     }
-  }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon]);
+  }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles]);
 
   const reorderPacks = useCallback((newOrder: Pack[]) => {
     setPacks(newOrder);
@@ -1772,6 +1826,10 @@ export default function App() {
 
   const handleVisibilityToggle = useCallback((id: string) => {
     setPackVisibility((prev) => ({ ...prev, [id]: prev[id] === false ? true : false }));
+  }, []);
+
+  const toggleRemovedFile = useCallback((path: string) => {
+    setRemovedFiles((prev) => ({ ...prev, [path]: !prev[path] }));
   }, []);
 
   const visiblePacks = useMemo(
@@ -1790,13 +1848,13 @@ export default function App() {
   return (
     <div className={`flex flex-col h-screen bg-background text-foreground overflow-hidden${darkMode ? " dark" : ""}`}>
       {/* ── Header ── */}
-      <header className="flex-shrink-0 border-b border-border bg-card px-4 py-3">
+      <header className={`flex-shrink-0 border-b border-border px-4 py-3 ${layoutMode === "modern" ? "bg-gradient-to-r from-card via-card to-background/90 shadow-sm" : "bg-card"}`}>
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2 flex-shrink-0">
             {/* Settings gear */}
             <button
               onClick={() => setSettingsOpen((v) => !v)}
-              className={`w-7 h-7 rounded flex items-center justify-center text-base transition-colors ${settingsOpen ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
+              className={`w-9 h-9 rounded-full flex items-center justify-center text-base transition-colors border ${settingsOpen ? "bg-primary/20 text-primary border-primary/40" : "text-muted-foreground hover:text-foreground hover:bg-accent border-transparent"}`}
               title="Settings"
             >
               ⚙
@@ -1832,9 +1890,9 @@ export default function App() {
                 variant="primary"
                 onClick={handleExport}
                 disabled={exporting}
-                className="font-semibold"
+                className="font-semibold rounded-full"
               >
-                {exporting ? "Exporting…" : "⬇️ Export ZIP"}
+                {exporting ? "Exporting…" : "↓ Export ZIP"}
               </Btn>
             )}
           </div>
@@ -1842,7 +1900,7 @@ export default function App() {
       </header>
 
       {/* ── Sub-header: pack settings + upload ── */}
-      <div className="flex-shrink-0 border-b border-border bg-card/50 px-4 py-2">
+      <div className={`flex-shrink-0 border-b border-border px-4 py-2 ${layoutMode === "modern" ? "bg-background/70" : "bg-card/50"}`}>
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex-1 min-w-[280px]">
             <PackSettings
@@ -1875,8 +1933,8 @@ export default function App() {
 
       {/* ── Body ── */}
       {packs.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center max-w-md px-8">
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className={`text-center max-w-xl px-8 py-10 rounded-2xl border ${layoutMode === "modern" ? "border-border/80 bg-card/70 shadow-sm" : "border-border bg-card"}`}>
             <h2 className="text-xl font-bold mb-2">Minecraft 1.8 Resource Pack Editor</h2>
             <p className="text-muted-foreground text-sm">
               Upload one or more resource pack ZIP files above to compare textures, set default sources per folder, override individual textures, and export a merged pack.
@@ -1887,7 +1945,7 @@ export default function App() {
         <div className="flex flex-1 min-h-0">
           {/* Sidebar */}
           <aside
-            className={`flex-shrink-0 border-r border-border bg-sidebar overflow-y-auto transition-all duration-200 ${sidebarOpen ? "w-56" : "w-0 overflow-hidden border-r-0"}`}
+            className={`flex-shrink-0 border-r border-border overflow-y-auto transition-all duration-200 ${layoutMode === "modern" ? "bg-sidebar/80" : "bg-sidebar"} ${sidebarOpen ? "w-56" : "w-0 overflow-hidden border-r-0"}`}
           >
             <div className="px-3 py-2 border-b border-sidebar-border">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Folders</span>
@@ -1913,7 +1971,7 @@ export default function App() {
           {/* Main content */}
           <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
             {/* Folder header + global search */}
-            <div className="flex-shrink-0 px-4 py-2 border-b border-border flex items-center gap-3">
+            <div className={`flex-shrink-0 px-4 py-2 border-b border-border flex items-center gap-3 ${layoutMode === "modern" ? "bg-background/60" : "bg-card"}`}>
               {globalSearch ? (
                 <span className="font-semibold">Search results</span>
               ) : (
@@ -1948,6 +2006,8 @@ export default function App() {
                   onOverride={handleOverride}
                   onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
                   cols={texturesPerRow}
+                  removedFiles={removedFiles}
+                  onToggleRemove={toggleRemovedFile}
                 />
               ) : (
                 <TextureGrid
@@ -1958,6 +2018,8 @@ export default function App() {
                   onOverride={handleOverride}
                   onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
                   cols={texturesPerRow}
+                  removedFiles={removedFiles}
+                  onToggleRemove={toggleRemovedFile}
                 />
               )}
             </div>
@@ -1995,6 +2057,8 @@ export default function App() {
           onDefaultDescriptionChange={(value) => setUploadDefaults((prev) => ({ ...prev, description: value }))}
           onDefaultIconChange={(dataUrl) => setUploadDefaults((prev) => ({ ...prev, icon: dataUrl }))}
           onDefaultIconRemove={() => setUploadDefaults((prev) => ({ ...prev, icon: null }))}
+          layoutMode={layoutMode}
+          onLayoutModeChange={setLayoutMode}
           onClose={() => setSettingsOpen(false)}
         />
       )}

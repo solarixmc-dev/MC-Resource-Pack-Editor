@@ -1,3 +1,5 @@
+export type LayoutMode = "normal" | "modern";
+
 export interface Pack {
   id: string;
   name: string;
