@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useMemo, useEffect, DragEvent } from "react";
 import { Pack, MC_FOLDERS, TextureOverrides, FolderSources, LayoutMode } from "./types";
+import { analyzePackBundle, PackAnalysis } from "./lib/packAnalyzer";
 import {
   loadPackFromFile,
   getTexturesForFolder,
@@ -690,21 +691,18 @@ function FolderSidebar({
     .filter((k) => !MC_FOLDERS.find((f) => f.key === k))
     .sort();
 
-  const renderFolder = (key: string, label: string, icon: string) => {
+  const renderFolder = (key: string, label: string) => {
     const sourcePackId = folderSources[key];
     const sourcePack = packs.find((p) => p.id === sourcePackId);
     const active = selectedFolder === key;
     const modern = layoutMode === "modern";
 
     return (
-      <div key={key} className={`group rounded-2xl border transition-all ${active ? (modern ? "border-primary/40 bg-primary/12" : "bg-primary/15") : (modern ? "border-transparent hover:border-border/70 hover:bg-white/70 dark:hover:bg-white/10" : "hover:bg-accent/50")}`}>
+      <div key={key} className={`group rounded-2xl border transition-all ${active ? (modern ? "border-primary/40 bg-primary/12" : "bg-primary/15") : (modern ? "border-transparent hover:border-border/70 hover:bg-card/70" : "hover:bg-accent/50")}`}>
         <button
-          className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm text-left ${modern ? "rounded-2xl" : ""}`}
+          className={`w-full flex items-center px-3 py-2.5 text-sm text-left ${modern ? "rounded-2xl" : ""}`}
           onClick={() => onSelect(key)}
         >
-          <span className={`flex h-8 w-8 items-center justify-center rounded-xl text-base ${active ? "bg-primary/15 text-primary" : modern ? "bg-secondary/70 text-muted-foreground" : "bg-secondary text-foreground"}`}>
-            {icon}
-          </span>
           <span className={`flex-1 font-medium leading-snug ${active ? "text-primary" : "text-foreground"}`}>
             {label}
           </span>
@@ -737,8 +735,8 @@ function FolderSidebar({
 
   return (
     <nav className={`flex flex-col gap-1.5 py-2 ${layoutMode === "modern" ? "px-2" : "px-0"}`}>
-      {defined.map((f) => renderFolder(f.key, f.label, f.icon))}
-      {extra.map((k) => renderFolder(k, k, "📁"))}
+      {defined.map((f) => renderFolder(f.key, f.label))}
+      {extra.map((k) => renderFolder(k, k))}
     </nav>
   );
 }
@@ -783,11 +781,11 @@ function TextureCard({
   const modern = layoutMode === "modern";
 
   return (
-    <div className={`overflow-hidden flex flex-col rounded-[22px] border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : modern ? "border-white/10 bg-gradient-to-br from-card/95 via-card/80 to-background/90 shadow-[0_18px_44px_-24px_rgba(15,23,42,0.45)] backdrop-blur-xl hover:border-primary/40" : "border-border bg-card hover:border-primary/40"}`}>
+    <div className={`overflow-hidden flex flex-col rounded-[22px] border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : modern ? "border-border/70 bg-card/95 shadow-[0_16px_34px_-24px_rgba(15,23,42,0.22)] backdrop-blur-md hover:border-primary/40" : "border-border bg-card hover:border-primary/40"}`}>
       {/* Texture previews row */}
       {isImg && (
         <div
-          className={`flex ${modern ? "border-b border-white/10 bg-gradient-to-br from-background/60 to-secondary/20" : "border-b border-border"} ${packsWithFile.length === 1 ? "" : "divide-x divide-border"}`}
+          className={`flex ${modern ? "border-b border-border/70 bg-muted/40" : "border-b border-border"} ${packsWithFile.length === 1 ? "" : "divide-x divide-border"}`}
         >
           {packsWithFile.map((pack) => {
             const buf = pack.files.get(texturePath)!;
@@ -830,7 +828,7 @@ function TextureCard({
 
       {/* File label & controls — click label to open lightbox */}
       <button
-        className={`px-2 py-1.5 flex items-center gap-1 min-w-0 w-full text-left transition-colors ${modern ? "hover:bg-white/60 dark:hover:bg-white/10" : "hover:bg-accent/40"}`}
+        className={`px-2 py-1.5 flex items-center gap-1 min-w-0 w-full text-left transition-colors ${modern ? "hover:bg-accent/50" : "hover:bg-accent/40"}`}
         onClick={() => onOpenLightbox?.()}
         title="Click to view larger"
       >
@@ -1509,8 +1507,6 @@ function SettingsModal({
   onTexturesPerRowChange,
   darkMode,
   onDarkModeChange,
-  layoutMode,
-  onLayoutModeChange,
   defaultPackName,
   defaultPackDescription,
   defaultPackIcon,
@@ -1524,8 +1520,6 @@ function SettingsModal({
   onTexturesPerRowChange: (n: number) => void;
   darkMode: boolean;
   onDarkModeChange: (v: boolean) => void;
-  layoutMode: LayoutMode;
-  onLayoutModeChange: (v: LayoutMode) => void;
   defaultPackName: string;
   defaultPackDescription: string;
   defaultPackIcon: string | null;
@@ -1602,20 +1596,6 @@ function SettingsModal({
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm flex-1">Layout</span>
-            <div className="flex rounded-full border border-border bg-secondary p-0.5">
-              {(["normal", "modern"] as LayoutMode[]).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => onLayoutModeChange(mode)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize transition-colors ${layoutMode === mode ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  {mode}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
 {/* Upload defaults */}
@@ -1680,6 +1660,173 @@ function SettingsModal({
   );
 }
 
+// ─── Analyze Pack Modal ─────────────────────────────────────────────────────
+
+function AnalyzePackModal({
+  analysis,
+  isAnalyzing,
+  onClose,
+}: {
+  analysis: PackAnalysis | null;
+  isAnalyzing: boolean;
+  onClose: () => void;
+}) {
+  const cardBase = "rounded-2xl border border-border/70 bg-card/90 p-3 shadow-sm";
+  const toneClasses: Record<string, string> = {
+    info: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+    warning: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    error: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-[28px] border border-border bg-background/95 p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Pack analysis</p>
+            <h3 className="text-xl font-semibold text-foreground">Resource pack health overview</h3>
+          </div>
+          <button onClick={onClose} className="rounded-full border border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
+        </div>
+
+        {isAnalyzing || !analysis ? (
+          <div className="mt-6 flex min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-border bg-card/60">
+            <div className="text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-2xl text-emerald-600">✨</div>
+              <p className="text-sm font-medium text-foreground">Scanning the current pack locally…</p>
+              <p className="mt-1 text-sm text-muted-foreground">Using the current uploaded ZIP data and atlas definitions.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-6 space-y-4">
+            <div className={`rounded-[24px] border p-4 ${analysis.compatibility.minecraft189 ? "border-emerald-500/30 bg-emerald-500/10" : "border-amber-500/30 bg-amber-500/10"}`}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{analysis.packNames.join(", ") || "Loaded pack"}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{analysis.overallSummary}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${analysis.compatibility.minecraft189 ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/20 text-amber-700 dark:text-amber-300"}`}>
+                    {analysis.compatibility.minecraft189 ? "1.8.9 compatible" : "Needs review"}
+                  </span>
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${analysis.compatibility.eaglercraftCompatible ? "bg-sky-500/20 text-sky-700 dark:text-sky-300" : "bg-rose-500/20 text-rose-700 dark:text-rose-300"}`}>
+                    {analysis.compatibility.eaglercraftCompatible ? "Eaglercraft friendly" : "Eaglercraft warnings"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className={cardBase}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">File size</p>
+                <p className="mt-2 text-xl font-semibold text-foreground">{analysis.totalSizeLabel}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{analysis.totalFiles} files inspected</p>
+              </div>
+              <div className={cardBase}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Base texture resolution</p>
+                <p className="mt-2 text-xl font-semibold text-foreground">{analysis.baseTextureResolution}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{analysis.mixedResolutions ? "Mixed resolutions detected" : "Consistent texture size"}</p>
+              </div>
+              <div className={cardBase}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Modified textures</p>
+                <p className="mt-2 text-xl font-semibold text-foreground">{analysis.modifiedTextureCount}</p>
+                <p className="mt-1 text-sm text-muted-foreground">Unique textures reviewed</p>
+              </div>
+              <div className={cardBase}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Performance</p>
+                <p className="mt-2 text-xl font-semibold text-foreground">{analysis.performanceEstimate.label}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{analysis.performanceEstimate.detail}</p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-2">
+              <div className={cardBase}>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-foreground">Highlights</p>
+                  <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">{analysis.issues.length} note{analysis.issues.length === 1 ? "" : "s"}</span>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {analysis.issues.length ? analysis.issues.map((issue) => (
+                    <span key={issue.label} className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${toneClasses[issue.severity]}`}>
+                      {issue.label}
+                    </span>
+                  )) : <span className="text-sm text-muted-foreground">No major issues detected.</span>}
+                </div>
+              </div>
+              <div className={cardBase}>
+                <p className="text-sm font-semibold text-foreground">Compatibility warnings</p>
+                <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                  {analysis.compatibility.warnings.length ? analysis.compatibility.warnings.map((warning) => (
+                    <li key={warning} className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-amber-500" />{warning}</li>
+                  )) : <li>No compatibility warnings detected.</li>}
+                </ul>
+              </div>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-2">
+              <div className={cardBase}>
+                <p className="text-sm font-semibold text-foreground">Missing textures</p>
+                {analysis.missingTextures.length ? (
+                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    {analysis.missingTextures.map((entry) => <li key={entry} className="truncate">• {entry}</li>)}
+                  </ul>
+                ) : <p className="mt-3 text-sm text-muted-foreground">No missing core textures detected.</p>}
+              </div>
+              <div className={cardBase}>
+                <p className="text-sm font-semibold text-foreground">Duplicate textures</p>
+                {analysis.duplicateTextures.length ? (
+                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    {analysis.duplicateTextures.map((entry) => <li key={entry} className="truncate">• {entry}</li>)}
+                  </ul>
+                ) : <p className="mt-3 text-sm text-muted-foreground">No duplicate texture entries detected.</p>}
+              </div>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-2">
+              <div className={cardBase}>
+                <p className="text-sm font-semibold text-foreground">Animated textures</p>
+                {analysis.animatedTextures.length ? (
+                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    {analysis.animatedTextures.map((entry) => <li key={entry} className="truncate">• {entry}</li>)}
+                  </ul>
+                ) : <p className="mt-3 text-sm text-muted-foreground">No animated texture metadata detected.</p>}
+              </div>
+              <div className={cardBase}>
+                <p className="text-sm font-semibold text-foreground">Invalid animations</p>
+                {analysis.invalidAnimations.length ? (
+                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    {analysis.invalidAnimations.map((entry) => <li key={entry} className="truncate">• {entry}</li>)}
+                  </ul>
+                ) : <p className="mt-3 text-sm text-muted-foreground">Animation metadata looks structurally fine.</p>}
+              </div>
+            </div>
+
+            <div className={cardBase}>
+              <p className="text-sm font-semibold text-foreground">Atlas analysis</p>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                {analysis.atlasAnalysis.map((entry) => (
+                  <div key={entry.label} className="rounded-xl border border-border/70 bg-background/70 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-foreground">{entry.label}</p>
+                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${entry.present ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/15 text-amber-700 dark:text-amber-300"}`}>
+                        {entry.present ? "present" : "needs check"}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">Required regions: {entry.requiredRegions.join(", ")}</p>
+                    {!entry.present && entry.missingRegions.length > 0 && (
+                      <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">Missing: {entry.missingRegions.join(", ")}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main App ──────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -1703,12 +1850,11 @@ export default function App() {
     const saved = window.localStorage.getItem("mc-pack-editor-theme");
     return saved ? saved === "dark" : true;
   });
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>(() => {
-    if (typeof window === "undefined") return "normal";
-    const saved = window.localStorage.getItem("mc-pack-editor-layout-mode");
-    return saved === "modern" ? "modern" : "normal";
-  });
+  const layoutMode: LayoutMode = "modern";
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [analysisOpen, setAnalysisOpen] = useState(false);
+  const [analysis, setAnalysis] = useState<PackAnalysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
   // Pack visibility: missing key = visible
   const [packVisibility, setPackVisibility] = useState<Record<string, boolean>>({});
   const [removedFiles, setRemovedFiles] = useState<Record<string, boolean>>({});
@@ -1737,10 +1883,6 @@ export default function App() {
   useEffect(() => {
     window.localStorage.setItem("mc-pack-editor-upload-defaults", JSON.stringify(uploadDefaults));
   }, [uploadDefaults]);
-
-  useEffect(() => {
-    window.localStorage.setItem("mc-pack-editor-layout-mode", layoutMode);
-  }, [layoutMode]);
 
   useEffect(() => {
     setPackName(uploadDefaults.name);
@@ -1833,6 +1975,40 @@ export default function App() {
     }
   }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles]);
 
+  const handleAnalyze = useCallback(async () => {
+    if (!packs.length) return;
+    setAnalysisOpen(true);
+    setAnalyzing(true);
+    try {
+      const result = await analyzePackBundle(packs);
+      setAnalysis(result);
+    } catch (e) {
+      console.error("Pack analysis failed:", e);
+      setAnalysis({
+        packNames: packs.map((pack) => pack.name),
+        packCount: packs.length,
+        totalFiles: 0,
+        totalSizeBytes: 0,
+        totalSizeLabel: "0 B",
+        baseTextureResolution: "N/A",
+        mixedResolutions: false,
+        resolutions: [],
+        modifiedTextureCount: 0,
+        missingTextures: [],
+        duplicateTextures: [],
+        animatedTextures: [],
+        invalidAnimations: [],
+        atlasAnalysis: [],
+        performanceEstimate: { label: "Unknown", detail: "Analysis could not be completed.", score: 0 },
+        compatibility: { minecraft189: false, eaglercraftCompatible: false, warnings: ["Analysis failed unexpectedly."] },
+        overallSummary: "The pack could not be analyzed successfully.",
+        issues: [{ severity: "error", label: "Analysis failed", detail: "The analyzer could not complete because of an unexpected error." }],
+      });
+    } finally {
+      setAnalyzing(false);
+    }
+  }, [packs]);
+
   const reorderPacks = useCallback((newOrder: Pack[]) => {
     setPacks(newOrder);
   }, []);
@@ -1863,26 +2039,26 @@ export default function App() {
   const folderSourceCount = Object.values(folderSources).filter(Boolean).length;
 
   return (
-    <div className={`flex flex-col h-screen overflow-hidden${darkMode ? " dark" : ""} ${layoutMode === "modern" ? "bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.16),_transparent_28%)] text-foreground" : "bg-background text-foreground"}`}>
+    <div className={`flex flex-col h-screen overflow-hidden${darkMode ? " dark" : ""} ${layoutMode === "modern" ? (darkMode ? "bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.16),_transparent_28%)] text-foreground" : "bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.12),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.12),_transparent_24%)] text-foreground") : "bg-background text-foreground"}`}>
       {/* ── Header ── */}
-      <header className={`flex-shrink-0 border-b border-border px-4 py-3 ${layoutMode === "modern" ? "bg-gradient-to-br from-slate-950/90 via-slate-900/85 to-emerald-950/70 text-slate-100 shadow-[0_18px_40px_-24px_rgba(2,6,23,0.85)]" : "bg-card"}`}>
+      <header className={`flex-shrink-0 border-b px-4 py-3 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-gradient-to-br from-slate-950/90 via-slate-900/85 to-emerald-950/70 text-slate-100 shadow-[0_18px_40px_-24px_rgba(2,6,23,0.85)]" : "border-slate-200/80 bg-gradient-to-br from-white via-slate-50 to-emerald-50/70 text-slate-900 shadow-[0_16px_36px_-24px_rgba(15,23,42,0.18)]") : "border-border bg-card"}`}>
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2 flex-shrink-0">
             {/* Settings gear */}
             <button
               onClick={() => setSettingsOpen((v) => !v)}
-              className={`w-9 h-9 rounded-full flex items-center justify-center text-base transition-colors border ${settingsOpen ? (layoutMode === "modern" ? "bg-white/15 text-white border-white/20" : "bg-primary/20 text-primary border-primary/40") : (layoutMode === "modern" ? "text-slate-300 hover:text-white hover:bg-white/10 border-transparent" : "text-muted-foreground hover:text-foreground hover:bg-accent border-transparent")}`}
+              className={`w-9 h-9 rounded-full flex items-center justify-center text-base transition-colors border ${settingsOpen ? (layoutMode === "modern" ? (darkMode ? "bg-white/15 text-white border-white/20" : "bg-primary/20 text-primary border-primary/40") : "bg-primary/20 text-primary border-primary/40") : (layoutMode === "modern" ? (darkMode ? "text-slate-300 hover:text-white hover:bg-white/10 border-transparent" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 border-transparent") : "text-muted-foreground hover:text-foreground hover:bg-accent border-transparent")}`}
               title="Settings"
             >
               ⚙
             </button>
-            <h1 className={`text-base font-bold ${layoutMode === "modern" ? "text-white" : "text-foreground"}`}>MC Resource Pack Editor</h1>
-            <span className={`text-xs px-1.5 py-0.5 rounded ${layoutMode === "modern" ? "bg-white/10 text-slate-300" : "text-muted-foreground bg-secondary"}`}>1.8</span>
+            <h1 className={`text-base font-bold ${layoutMode === "modern" ? (darkMode ? "text-white" : "text-slate-900") : "text-foreground"}`}>MC Resource Pack Editor</h1>
+            <span className={`text-xs px-1.5 py-0.5 rounded ${layoutMode === "modern" ? (darkMode ? "bg-white/10 text-slate-300" : "bg-white/70 text-slate-600") : "text-muted-foreground bg-secondary"}`}>1.8</span>
           </div>
 
           <div className="flex-1 min-w-0 flex items-center gap-3">
             {packs.length === 0 ? (
-              <p className={`text-xs ${layoutMode === "modern" ? "text-slate-300" : "text-muted-foreground"}`}>Upload resource pack ZIPs to get started</p>
+              <p className={`text-xs ${layoutMode === "modern" ? (darkMode ? "text-slate-300" : "text-slate-600") : "text-muted-foreground"}`}>Upload resource pack ZIPs to get started</p>
             ) : (
               <>
                 <PackOrderPanel
@@ -1903,21 +2079,33 @@ export default function App() {
 
           <div className="flex items-center gap-2 flex-shrink-0">
             {packs.length > 0 && (
-              <Btn
-                variant="primary"
-                onClick={handleExport}
-                disabled={exporting}
-                className="font-semibold rounded-full"
-              >
-                {exporting ? "Exporting…" : "↓ Export ZIP"}
-              </Btn>
+              <>
+                <Btn
+                  variant="default"
+                  onClick={handleAnalyze}
+                  disabled={analyzing}
+                  className="font-semibold rounded-full border-emerald-500/30 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 hover:shadow-[0_0_16px_rgba(16,185,129,0.2)] dark:text-emerald-300"
+                  title="Analyze the currently loaded packs"
+                >
+                  <span className={`text-sm ${analyzing ? "animate-pulse" : ""}`}>✨</span>
+                  {analyzing ? "Analyzing…" : "Analyze Pack"}
+                </Btn>
+                <Btn
+                  variant="primary"
+                  onClick={handleExport}
+                  disabled={exporting}
+                  className="font-semibold rounded-full hover:shadow-[0_0_18px_rgba(59,130,246,0.22)]"
+                >
+                  {exporting ? "Exporting…" : "↓ Export ZIP"}
+                </Btn>
+              </>
             )}
           </div>
         </div>
       </header>
 
       {/* ── Sub-header: pack settings + upload ── */}
-      <div className={`flex-shrink-0 border-b border-border px-4 py-2 ${layoutMode === "modern" ? "bg-slate-900/50 backdrop-blur-sm" : "bg-card/50"}`}>
+      <div className={`flex-shrink-0 border-b px-4 py-2 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-900/50 backdrop-blur-sm" : "border-slate-200/70 bg-white/70 backdrop-blur-sm") : "border-border bg-card/50"}`}>
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex-1 min-w-[280px]">
             <PackSettings
@@ -1951,9 +2139,9 @@ export default function App() {
       {/* ── Body ── */}
       {packs.length === 0 ? (
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className={`text-center max-w-xl px-8 py-10 rounded-[28px] border ${layoutMode === "modern" ? "border-white/10 bg-gradient-to-br from-slate-900/85 via-slate-900/70 to-emerald-950/70 shadow-[0_25px_60px_-30px_rgba(2,6,23,0.95)]" : "border-border bg-card"}`}>
+          <div className={`text-center max-w-xl px-8 py-10 rounded-[28px] border ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-gradient-to-br from-slate-900/85 via-slate-900/70 to-emerald-950/70 shadow-[0_25px_60px_-30px_rgba(2,6,23,0.95)]" : "border-slate-200/80 bg-gradient-to-br from-white via-slate-50 to-emerald-50/70 shadow-[0_24px_52px_-28px_rgba(15,23,42,0.2)]") : "border-border bg-card"}`}>
             <h2 className="text-xl font-bold mb-2">Minecraft 1.8 Resource Pack Editor</h2>
-            <p className={`text-sm ${layoutMode === "modern" ? "text-slate-300" : "text-muted-foreground"}`}>
+            <p className={`text-sm ${layoutMode === "modern" ? (darkMode ? "text-slate-300" : "text-slate-600") : "text-muted-foreground"}`}>
               Upload one or more resource pack ZIP files above to compare textures, set default sources per folder, override individual textures, and export a merged pack.
             </p>
           </div>
@@ -1962,10 +2150,10 @@ export default function App() {
         <div className="flex flex-1 min-h-0">
           {/* Sidebar */}
           <aside
-            className={`flex-shrink-0 border-r border-border overflow-y-auto transition-all duration-200 ${layoutMode === "modern" ? "bg-slate-900/70 backdrop-blur-xl" : "bg-sidebar"} ${sidebarOpen ? "w-60" : "w-0 overflow-hidden border-r-0"}`}
+            className={`flex-shrink-0 border-r overflow-y-auto transition-all duration-200 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-900/70 backdrop-blur-xl" : "border-slate-200/70 bg-white/70 backdrop-blur-xl") : "border-border bg-sidebar"} ${sidebarOpen ? "w-60" : "w-0 overflow-hidden border-r-0"}`}
           >
-            <div className={`px-3 py-3 border-b ${layoutMode === "modern" ? "border-white/10" : "border-sidebar-border"}`}>
-              <span className={`text-xs font-semibold uppercase tracking-wider ${layoutMode === "modern" ? "text-slate-300" : "text-muted-foreground"}`}>Folders</span>
+            <div className={`px-3 py-3 border-b ${layoutMode === "modern" ? (darkMode ? "border-white/10" : "border-slate-200/70") : "border-sidebar-border"}`}>
+              <span className={`text-xs font-semibold uppercase tracking-wider ${layoutMode === "modern" ? (darkMode ? "text-slate-300" : "text-slate-600") : "text-muted-foreground"}`}>Folders</span>
             </div>
             <FolderSidebar
               packs={packs}
@@ -1989,7 +2177,7 @@ export default function App() {
           {/* Main content */}
           <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
             {/* Folder header + global search */}
-            <div className={`flex-shrink-0 px-4 py-3 border-b border-border flex items-center gap-3 ${layoutMode === "modern" ? "bg-slate-900/40 backdrop-blur-sm" : "bg-card"}`}>
+            <div className={`flex-shrink-0 px-4 py-3 border-b flex items-center gap-3 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-900/40 backdrop-blur-sm" : "border-slate-200/70 bg-white/70 backdrop-blur-sm") : "border-border bg-card"}`}>
               {globalSearch ? (
                 <span className="font-semibold">Search results</span>
               ) : (
@@ -2003,7 +2191,7 @@ export default function App() {
                   placeholder="Search all textures…"
                   value={globalSearch}
                   onChange={(e) => setGlobalSearch(e.target.value)}
-                  className={`border rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-48 ${layoutMode === "modern" ? "border-white/10 bg-slate-950/50 text-slate-100 placeholder:text-slate-400" : "bg-secondary border-border text-foreground"}`}
+                  className={`border rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-48 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-950/50 text-slate-100 placeholder:text-slate-400" : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400") : "bg-secondary border-border text-foreground"}`}
                 />
                 {!globalSearch && packs.length > 1 && (
                   <span className="text-xs text-muted-foreground hidden xl:block">
@@ -2063,6 +2251,14 @@ export default function App() {
         />
       )}
 
+      {analysisOpen && (
+        <AnalyzePackModal
+          analysis={analysis}
+          isAnalyzing={analyzing}
+          onClose={() => setAnalysisOpen(false)}
+        />
+      )}
+
       {/* ── Settings modal ── */}
       {settingsOpen && (
         <SettingsModal
@@ -2077,8 +2273,6 @@ export default function App() {
           onDefaultDescriptionChange={(value) => setUploadDefaults((prev) => ({ ...prev, description: value }))}
           onDefaultIconChange={(dataUrl) => setUploadDefaults((prev) => ({ ...prev, icon: dataUrl }))}
           onDefaultIconRemove={() => setUploadDefaults((prev) => ({ ...prev, icon: null }))}
-          layoutMode={layoutMode}
-          onLayoutModeChange={setLayoutMode}
           onClose={() => setSettingsOpen(false)}
         />
       )}
