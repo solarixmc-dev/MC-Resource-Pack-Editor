@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useMemo, useEffect, DragEvent } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect, DragEvent, type PointerEvent } from "react";
 import { Pack, MC_FOLDERS, TextureOverrides, FolderSources, LayoutMode } from "./types";
 import { analyzePackBundle, PackAnalysis } from "./lib/packAnalyzer";
 import {
@@ -14,6 +14,17 @@ import {
   cropAtlasRegion,
 } from "./lib/zipUtils";
 import { getAtlasDefinition, AtlasDefinition } from "./lib/atlasRegions";
+import {
+  applyBrush,
+  applyFill,
+  applyRecolor,
+  imageDataToBuffer,
+  loadImageDataFromBuffer,
+  pickColorAt,
+  type EditorTool,
+  type RectRegion,
+  type RecolorMode,
+} from "./lib/textureEditor";
 
 // ─── Small UI atoms ────────────────────────────────────────────────────────────
 
@@ -752,6 +763,7 @@ function TextureCard({
   folder,
   onOverride,
   onOpenLightbox,
+  onEditTexture,
   isRemoved,
   onToggleRemove,
   layoutMode,
@@ -764,6 +776,7 @@ function TextureCard({
   folder: string;
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox?: () => void;
+  onEditTexture?: (path: string, displayName: string, folder: string) => void;
   isRemoved: boolean;
   onToggleRemove: (path: string) => void;
   layoutMode: LayoutMode;
@@ -827,28 +840,40 @@ function TextureCard({
       )}
 
       {/* File label & controls — click label to open lightbox */}
-      <button
-        className={`px-2 py-1.5 flex items-center gap-1 min-w-0 w-full text-left transition-colors ${modern ? "hover:bg-accent/50" : "hover:bg-accent/40"}`}
-        onClick={() => onOpenLightbox?.()}
-        title="Click to view larger"
-      >
-        {isAtlas && (
-          <span className="text-[10px] text-primary font-bold flex-shrink-0" title="Atlas texture — region editor available">ATL</span>
-        )}
-        <span className="text-xs text-muted-foreground truncate flex-1" title={displayName}>
-          {displayName}
-        </span>
-        {overridePackId && (
-          <span
-            className="text-xs text-primary flex-shrink-0"
-            onClick={(e) => { e.stopPropagation(); onOverride(texturePath, null); }}
-            title="Clear override"
-          >
-            ✕
-          </span>
-        )}
-        <span className="text-[10px] text-muted-foreground/50 flex-shrink-0">⊞</span>
-      </button>
+      <div className={`flex items-center gap-1 px-2 py-1.5 ${modern ? "bg-background/40" : "bg-background/30"}`}>
+        <button
+          className={`flex-1 min-w-0 text-left transition-colors ${modern ? "hover:bg-accent/50" : "hover:bg-accent/40"}`}
+          onClick={() => onOpenLightbox?.()}
+          title="Click to view larger"
+        >
+          <div className="flex items-center gap-1 min-w-0">
+            {isAtlas && (
+              <span className="text-[10px] text-primary font-bold flex-shrink-0" title="Atlas texture — region editor available">ATL</span>
+            )}
+            <span className="text-xs text-muted-foreground truncate flex-1" title={displayName}>
+              {displayName}
+            </span>
+            {overridePackId && (
+              <span
+                className="text-xs text-primary flex-shrink-0"
+                onClick={(e) => { e.stopPropagation(); onOverride(texturePath, null); }}
+                title="Clear override"
+              >
+                ✕
+              </span>
+            )}
+            <span className="text-[10px] text-muted-foreground/50 flex-shrink-0">⊞</span>
+          </div>
+        </button>
+        <button
+          className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          onClick={(e) => { e.stopPropagation(); onEditTexture?.(texturePath, displayName, folder); }}
+          title="Edit texture"
+          aria-label={`Edit ${displayName}`}
+        >
+          ✎
+        </button>
+      </div>
 
       <div className={`flex items-center justify-between gap-2 px-2 pb-2 ${modern ? "pt-1" : ""}`}>
         <button
@@ -894,6 +919,7 @@ function TextureGrid({
   textureOverrides,
   onOverride,
   onOpenLightbox,
+  onEditTexture,
   cols,
   removedFiles,
   onToggleRemove,
@@ -905,6 +931,7 @@ function TextureGrid({
   textureOverrides: TextureOverrides;
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox: (path: string, displayName: string, folder: string) => void;
+  onEditTexture: (path: string, displayName: string, folder: string) => void;
   cols: number;
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
@@ -961,6 +988,7 @@ function TextureGrid({
               folder={folder}
               onOverride={onOverride}
               onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
+              onEditTexture={() => onEditTexture(path, displayName, folder)}
               isRemoved={!!removedFiles[path]}
               onToggleRemove={onToggleRemove}
               layoutMode={layoutMode}
@@ -981,6 +1009,7 @@ function SearchAllResults({
   textureOverrides,
   onOverride,
   onOpenLightbox,
+  onEditTexture,
   cols,
   removedFiles,
   onToggleRemove,
@@ -992,6 +1021,7 @@ function SearchAllResults({
   textureOverrides: TextureOverrides;
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox: (path: string, displayName: string, folder: string) => void;
+  onEditTexture: (path: string, displayName: string, folder: string) => void;
   cols: number;
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
@@ -1042,6 +1072,7 @@ function SearchAllResults({
                 folder={folder}
                 onOverride={onOverride}
                 onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
+                onEditTexture={() => onEditTexture(path, displayName, folder)}
                 isRemoved={!!removedFiles[path]}
                 onToggleRemove={onToggleRemove}
                 layoutMode={layoutMode}
@@ -1827,6 +1858,246 @@ function AnalyzePackModal({
   );
 }
 
+// ─── Texture Editor Modal ───────────────────────────────────────────────────
+
+function TextureEditorModal({
+  texturePath,
+  displayName,
+  folder,
+  packs,
+  activePackId,
+  onSave,
+  onClose,
+}: {
+  texturePath: string;
+  displayName: string;
+  folder: string;
+  packs: Pack[];
+  activePackId: string | null;
+  onSave: (path: string, packId: string | null, buffer: ArrayBuffer) => void;
+  onClose: () => void;
+}) {
+  const [tool, setTool] = useState<EditorTool>("pencil");
+  const [color, setColor] = useState("#22c55e");
+  const [brushSize, setBrushSize] = useState(3);
+  const [recolorMode, setRecolorMode] = useState<RecolorMode>("tint");
+  const [recolorIntensity, setRecolorIntensity] = useState(0.6);
+  const [imageData, setImageData] = useState<ImageData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeRegionId, setActiveRegionId] = useState<string>("whole");
+  const [hasChanges, setHasChanges] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const atlasDef = useMemo(() => getAtlasDefinition(texturePath), [texturePath]);
+  const regionOptions = useMemo(() => {
+    if (!atlasDef) return [];
+    return [{ id: "whole", label: "Whole texture" }, ...atlasDef.regions.map((region) => ({ id: region.id, label: region.label }))];
+  }, [atlasDef]);
+
+  const drawImage = useCallback(() => {
+    const canvas = canvasRef.current;
+    const imgData = imageData;
+    if (!canvas || !imgData) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    canvas.width = imgData.width;
+    canvas.height = imgData.height;
+    ctx.putImageData(imgData, 0, 0);
+  }, [imageData]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const pack = packs.find((entry) => entry.id === activePackId) ?? packs.find((entry) => entry.files.has(texturePath)) ?? null;
+    const buffer = pack?.files.get(texturePath);
+    if (!buffer) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    loadImageDataFromBuffer(buffer, texturePath)
+      .then((next) => {
+        if (!cancelled) {
+          setImageData(next);
+          setHasChanges(false);
+          setActiveRegionId("whole");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setIsLoading(false);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [activePackId, packs, texturePath]);
+
+  useEffect(() => { drawImage(); }, [drawImage]);
+
+  const selectedRegion = useMemo(() => {
+    if (!atlasDef || activeRegionId === "whole") return undefined;
+    return atlasDef.regions.find((region) => region.id === activeRegionId);
+  }, [activeRegionId, atlasDef]);
+
+  const rectRegion = useMemo<RectRegion | undefined>(() => {
+    if (!selectedRegion) return undefined;
+    return { x: selectedRegion.x, y: selectedRegion.y, width: selectedRegion.w, height: selectedRegion.h };
+  }, [selectedRegion]);
+
+  const handleCanvasPointer = (e: PointerEvent<HTMLCanvasElement>) => {
+    if (!imageData) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const scaleX = imageData.width / rect.width;
+    const scaleY = imageData.height / rect.height;
+    const px = Math.floor((e.clientX - rect.left) * scaleX);
+    const py = Math.floor((e.clientY - rect.top) * scaleY);
+    if (px < 0 || py < 0 || px >= imageData.width || py >= imageData.height) return;
+
+    if (tool === "eyedropper") {
+      const colorValue = pickColorAt(imageData, px, py);
+      setColor(colorValue);
+      setTool("pencil");
+      return;
+    }
+
+    if (e.type === "pointerdown") {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
+
+    if (e.type === "pointerdown" || (e.type === "pointermove" && e.buttons === 1)) {
+      let next = imageData;
+      if (tool === "pencil" || tool === "eraser") {
+        next = applyBrush(imageData, px, py, color, brushSize, tool === "eraser" ? "eraser" : "pencil", rectRegion);
+      } else if (tool === "fill") {
+        next = applyFill(imageData, px, py, color, rectRegion);
+      }
+      if (next !== imageData) {
+        setImageData(next);
+        setHasChanges(true);
+      }
+    }
+  };
+
+  const handleApplyRecolor = () => {
+    if (!imageData) return;
+    setImageData(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }, rectRegion));
+    setHasChanges(true);
+  };
+
+  const handleSave = async () => {
+    if (!imageData) return;
+    const buffer = await imageDataToBuffer(imageData);
+    onSave(texturePath, activePackId, buffer);
+  };
+
+  const canEdit = !isLoading && imageData;
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-border bg-background/95 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Texture editor</p>
+            <h3 className="text-lg font-semibold text-foreground">{displayName}</h3>
+            <p className="text-sm text-muted-foreground">{texturePath}</p>
+          </div>
+          <button onClick={onClose} className="rounded-full border border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
+        </div>
+
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 lg:flex-row">
+          <div className="flex-1 min-w-0 rounded-[24px] border border-border bg-card/70 p-3">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Canvas</p>
+                <p className="text-xs text-muted-foreground">Paint directly into the texture. The edit is saved back to the selected pack on export.</p>
+              </div>
+              {atlasDef && (
+                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm text-foreground">
+                  {regionOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+                </select>
+              )}
+            </div>
+            <div className="overflow-auto rounded-2xl border border-border bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)] p-3">
+              {isLoading ? (
+                <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading texture…</div>
+              ) : canEdit ? (
+                <canvas
+                  ref={canvasRef}
+                  className="mx-auto block rounded-lg border border-border bg-white shadow-inner"
+                  style={{ imageRendering: "pixelated", maxWidth: "100%", cursor: tool === "eyedropper" ? "crosshair" : "cell" }}
+                  onPointerDown={handleCanvasPointer}
+                  onPointerMove={(e) => {
+                    if (!imageData || e.buttons !== 1) return;
+                    handleCanvasPointer(e);
+                  }}
+                  onPointerUp={(e) => e.currentTarget.releasePointerCapture(e.pointerId)}
+                />
+              ) : (
+                <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">This texture could not be loaded for editing.</div>
+              )}
+            </div>
+          </div>
+
+          <div className="w-full max-w-sm rounded-[24px] border border-border bg-card/70 p-3 lg:w-[320px]">
+            <p className="text-sm font-semibold text-foreground">Tools</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {[
+                { id: "pencil", label: "Brush" },
+                { id: "eraser", label: "Eraser" },
+                { id: "fill", label: "Fill" },
+                { id: "eyedropper", label: "Eyedropper" },
+              ].map((item) => (
+                <button key={item.id} className={`rounded-xl border px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/15 text-primary" : "border-border bg-background/70 text-foreground hover:bg-accent"}`} onClick={() => setTool(item.id as EditorTool)}>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-4">
+              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Color</label>
+              <div className="mt-2 flex items-center gap-2">
+                <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-9 w-12 cursor-pointer rounded border border-border bg-transparent" />
+                <input type="text" value={color} onChange={(e) => setColor(e.target.value)} className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm text-foreground" />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Brush size</label>
+              <input type="range" min="1" max="24" value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="mt-2 w-full" />
+              <p className="mt-1 text-xs text-muted-foreground">Current size: {brushSize}px</p>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-border bg-background/70 p-3">
+              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Recolor</label>
+              <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-border bg-background px-2 py-1 text-sm text-foreground">
+                <option value="tint">Tint</option>
+                <option value="hue-shift">Hue shift</option>
+                <option value="colorize">Colorize</option>
+                <option value="multiply">Multiply</option>
+                <option value="overlay">Overlay</option>
+              </select>
+              <input type="range" min="0" max="1" step="0.01" value={recolorIntensity} onChange={(e) => setRecolorIntensity(Number(e.target.value))} className="mt-3 w-full" />
+              <p className="mt-1 text-xs text-muted-foreground">Intensity: {recolorIntensity.toFixed(2)}</p>
+              <button className="mt-3 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent" onClick={handleApplyRecolor}>
+                Apply recolor to selection
+              </button>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-muted-foreground">
+              <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
+              <span>{selectedRegion ? `Target: ${selectedRegion.label}` : "Target: whole texture"}</span>
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <button className="flex-1 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-accent" onClick={onClose}>Cancel</button>
+              <button className="flex-1 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90" onClick={handleSave}>Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main App ──────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -1853,6 +2124,7 @@ export default function App() {
   const layoutMode: LayoutMode = "modern";
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
+  const [editingTexture, setEditingTexture] = useState<{ path: string; displayName: string; folder: string; packId: string | null } | null>(null);
   const [analysis, setAnalysis] = useState<PackAnalysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   // Pack visibility: missing key = visible
@@ -1942,6 +2214,31 @@ export default function App() {
       return next;
     });
   }, []);
+
+  const handleSaveTextureEdit = useCallback((path: string, packId: string | null, buffer: ArrayBuffer) => {
+    setPacks((prev) => {
+      const targetId = packId ?? prev.find((p) => p.files.has(path))?.id ?? null;
+      if (!targetId) return prev;
+      return prev.map((pack) => {
+        if (pack.id !== targetId) return pack;
+        const nextFiles = new Map(pack.files);
+        nextFiles.set(path, buffer);
+        return { ...pack, files: nextFiles };
+      });
+    });
+  }, []);
+
+  const handleOpenTextureEditor = useCallback((path: string, displayName: string, folder: string) => {
+    const selectedPack = packs.find((pack) => {
+      const overridePackId = textureOverrides[path];
+      if (overridePackId) return pack.id === overridePackId;
+      const folderPackId = folderSources[folder];
+      if (folderPackId) return pack.id === folderPackId;
+      return pack.files.has(path);
+    }) ?? packs.find((pack) => pack.files.has(path)) ?? null;
+
+    setEditingTexture({ path, displayName, folder, packId: selectedPack?.id ?? null });
+  }, [packs, textureOverrides, folderSources]);
 
   const handleExport = useCallback(async () => {
     if (!packs.length) return;
@@ -2211,6 +2508,7 @@ export default function App() {
                   textureOverrides={textureOverrides}
                   onOverride={handleOverride}
                   onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
+                  onEditTexture={handleOpenTextureEditor}
                   cols={texturesPerRow}
                   removedFiles={removedFiles}
                   onToggleRemove={toggleRemovedFile}
@@ -2224,6 +2522,7 @@ export default function App() {
                   textureOverrides={textureOverrides}
                   onOverride={handleOverride}
                   onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
+                  onEditTexture={handleOpenTextureEditor}
                   cols={texturesPerRow}
                   removedFiles={removedFiles}
                   onToggleRemove={toggleRemovedFile}
@@ -2233,6 +2532,22 @@ export default function App() {
             </div>
           </main>
         </div>
+      )}
+
+      {/* ── Texture editor modal ── */}
+      {editingTexture && (
+        <TextureEditorModal
+          texturePath={editingTexture.path}
+          displayName={editingTexture.displayName}
+          folder={editingTexture.folder}
+          packs={packs}
+          activePackId={editingTexture.packId}
+          onSave={(path, packId, buffer) => {
+            handleSaveTextureEdit(path, packId, buffer);
+            setEditingTexture(null);
+          }}
+          onClose={() => setEditingTexture(null)}
+        />
       )}
 
       {/* ── Lightbox modal ── */}
