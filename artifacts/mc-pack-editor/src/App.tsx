@@ -1887,6 +1887,8 @@ function TextureEditorModal({
   const [activeRegionId, setActiveRegionId] = useState<string>("whole");
   const [hasChanges, setHasChanges] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasFrameRef = useRef<HTMLDivElement>(null);
+  const [canvasScale, setCanvasScale] = useState(1);
 
   const atlasDef = useMemo(() => getAtlasDefinition(texturePath), [texturePath]);
   const regionOptions = useMemo(() => {
@@ -1932,6 +1934,30 @@ function TextureEditorModal({
   }, [activePackId, packs, texturePath]);
 
   useEffect(() => { drawImage(); }, [drawImage]);
+
+  // Keep the backing canvas at the texture's native resolution.  Only its CSS
+  // size changes, and only in whole-pixel increments, so every displayed cell
+  // still maps to exactly one source texture pixel.
+  useEffect(() => {
+    const frame = canvasFrameRef.current;
+    if (!frame || !imageData) return;
+
+    const updateScale = () => {
+      // The frame has 12px padding on each side; exclude it from the fit size.
+      const availableWidth = Math.max(1, frame.clientWidth - 24);
+      const availableHeight = Math.max(1, frame.clientHeight - 24);
+      const fitScale = Math.floor(Math.min(
+        availableWidth / imageData.width,
+        availableHeight / imageData.height,
+      ));
+      setCanvasScale(Math.max(1, fitScale));
+    };
+
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, [imageData?.width, imageData?.height]);
 
   const selectedRegion = useMemo(() => {
     if (!atlasDef || activeRegionId === "whole") return undefined;
@@ -2016,14 +2042,23 @@ function TextureEditorModal({
                 </select>
               )}
             </div>
-            <div className="overflow-auto rounded-2xl border border-border bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)] p-3">
+            <div
+              ref={canvasFrameRef}
+              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border border-border bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)] p-3"
+            >
               {isLoading ? (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading texture…</div>
               ) : canEdit ? (
                 <canvas
                   ref={canvasRef}
                   className="mx-auto block rounded-lg border border-border bg-white shadow-inner"
-                  style={{ imageRendering: "pixelated", maxWidth: "100%", cursor: tool === "eyedropper" ? "crosshair" : "cell" }}
+                  style={{
+                    // CSS scaling leaves canvas.width/height (and therefore saved PNG pixels) untouched.
+                    width: `${imageData.width * canvasScale}px`,
+                    height: `${imageData.height * canvasScale}px`,
+                    imageRendering: "pixelated",
+                    cursor: tool === "eyedropper" ? "crosshair" : "cell",
+                  }}
                   onPointerDown={handleCanvasPointer}
                   onPointerMove={(e) => {
                     if (!imageData || e.buttons !== 1) return;
