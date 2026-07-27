@@ -1860,6 +1860,24 @@ function AnalyzePackModal({
 
 // ─── Texture Editor Modal ───────────────────────────────────────────────────
 
+function isValidHexColor(value: string): boolean {
+  return /^#[0-9a-fA-F]{6}$/.test(value);
+}
+
+function hexToRgbColor(value: string): [number, number, number] {
+  const normalized = isValidHexColor(value) ? value.slice(1) : "000000";
+  return [
+    parseInt(normalized.slice(0, 2), 16),
+    parseInt(normalized.slice(2, 4), 16),
+    parseInt(normalized.slice(4, 6), 16),
+  ];
+}
+
+function rgbToHexColor(red: number, green: number, blue: number): string {
+  const channel = (value: number) => Math.max(0, Math.min(255, value)).toString(16).padStart(2, "0");
+  return `#${channel(red)}${channel(green)}${channel(blue)}`;
+}
+
 function TextureEditorModal({
   texturePath,
   displayName,
@@ -1879,6 +1897,7 @@ function TextureEditorModal({
 }) {
   const [tool, setTool] = useState<EditorTool>("pencil");
   const [color, setColor] = useState("#22c55e");
+  const [hexInput, setHexInput] = useState("#22c55e");
   const [brushSize, setBrushSize] = useState(3);
   const [recolorMode, setRecolorMode] = useState<RecolorMode>("tint");
   const [recolorIntensity, setRecolorIntensity] = useState(0.6);
@@ -1936,6 +1955,7 @@ function TextureEditorModal({
   }, [activePackId, packs, texturePath]);
 
   useEffect(() => { drawImage(); }, [drawImage]);
+  useEffect(() => { setHexInput(color.toUpperCase()); }, [color]);
 
   // Keep the backing canvas at the texture's native resolution.  Only its CSS
   // size changes, and only in whole-pixel increments, so every displayed cell
@@ -1996,6 +2016,33 @@ function TextureEditorModal({
     setHasChanges(true);
   }, [editHistory]);
 
+  useEffect(() => {
+    const handleKeyboardShortcut = (event: KeyboardEvent) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) return;
+
+      const key = event.key.toLowerCase();
+      if (key === "z") {
+        event.preventDefault();
+        if (event.shiftKey) redoEdit();
+        else undoEdit();
+      } else if (key === "y") {
+        event.preventDefault();
+        redoEdit();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyboardShortcut);
+    return () => window.removeEventListener("keydown", handleKeyboardShortcut);
+  }, [redoEdit, undoEdit]);
+
+  const rgbColor = useMemo(() => hexToRgbColor(color), [color]);
+  const updateRgbColor = (channel: number, value: number) => {
+    const next = [...rgbColor];
+    next[channel] = value;
+    setColor(rgbToHexColor(next[0], next[1], next[2]));
+  };
+
   const handleCanvasPointer = (e: PointerEvent<HTMLCanvasElement>) => {
     if (!imageData) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -2051,11 +2098,15 @@ function TextureEditorModal({
             <h3 className="text-lg font-semibold text-foreground">{displayName}</h3>
             <p className="text-sm text-muted-foreground">{texturePath}</p>
           </div>
-          <button onClick={onClose} className="rounded-full border border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
+          <div className="flex items-center gap-2">
+            <button type="button" className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={undoEdit} disabled={editHistory.index <= 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
+            <button type="button" className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={redoEdit} disabled={editHistory.index >= editHistory.entries.length - 1} title="Redo (Ctrl/Cmd+Y)" aria-label="Redo">↷</button>
+            <button onClick={onClose} className="rounded-full border border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
+          </div>
         </div>
 
-        <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 lg:flex-row">
-          <div className="flex-1 min-w-0 rounded-[24px] border border-border bg-card/70 p-3">
+        <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="min-w-0 rounded-[24px] border border-border bg-card/70 p-3">
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">Canvas</p>
@@ -2097,7 +2148,7 @@ function TextureEditorModal({
             </div>
           </div>
 
-          <div className="w-full max-w-sm rounded-[24px] border border-border bg-card/70 p-3 lg:w-[320px]">
+          <div className="w-full rounded-[24px] border border-border bg-card/70 p-4">
             <p className="text-sm font-semibold text-foreground">Tools</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
               {[
@@ -2112,13 +2163,24 @@ function TextureEditorModal({
               ))}
             </div>
 
-            <div className="mt-4">
+            <section className="mt-4 rounded-2xl border border-border bg-background/70 p-3">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Color</label>
-              <div className="mt-2 flex items-center gap-2">
-                <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-9 w-12 cursor-pointer rounded border border-border bg-transparent" />
-                <input type="text" value={color} onChange={(e) => setColor(e.target.value)} className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm text-foreground" />
+              <div className="mt-2 flex items-center gap-3">
+                <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-12 w-14 cursor-pointer rounded border border-border bg-transparent p-1" aria-label="Color picker" />
+                <label className="flex-1 text-xs font-medium text-muted-foreground">Hex code
+                  <input type="text" value={hexInput} onChange={(e) => { const value = e.target.value; setHexInput(value); if (isValidHexColor(value)) setColor(value); }} onBlur={() => setHexInput(color.toUpperCase())} maxLength={7} spellCheck={false} className="mt-1 w-full rounded border border-border bg-background px-2 py-1.5 font-mono text-sm text-foreground" aria-label="Hex color code" />
+                </label>
               </div>
-            </div>
+              <div className="mt-3 space-y-2">
+                {(["Red", "Green", "Blue"] as const).map((label, index) => (
+                  <label key={label} className="grid grid-cols-[2.75rem_1fr_2.5rem] items-center gap-2 text-xs text-muted-foreground">
+                    <span>{label}</span>
+                    <input type="range" min="0" max="255" value={rgbColor[index]} onChange={(e) => updateRgbColor(index, Number(e.target.value))} aria-label={`${label} value`} />
+                    <span className="rounded bg-background px-1.5 py-1 text-right font-mono text-foreground">{rgbColor[index]}</span>
+                  </label>
+                ))}
+              </div>
+            </section>
 
             <div className="mt-4">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Brush size</label>
@@ -2144,29 +2206,7 @@ function TextureEditorModal({
 
             <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-muted-foreground">
               <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
-              <div className="flex items-center gap-2">
-                <span>{selectedRegion ? `Target: ${selectedRegion.label}` : "Target: whole texture"}</span>
-                <button
-                  type="button"
-                  className="rounded border border-border px-2 py-0.5 text-base leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
-                  onClick={undoEdit}
-                  disabled={editHistory.index <= 0}
-                  title="Undo"
-                  aria-label="Undo"
-                >
-                  ↶
-                </button>
-                <button
-                  type="button"
-                  className="rounded border border-border px-2 py-0.5 text-base leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
-                  onClick={redoEdit}
-                  disabled={editHistory.index >= editHistory.entries.length - 1}
-                  title="Redo"
-                  aria-label="Redo"
-                >
-                  ↷
-                </button>
-              </div>
+              <span>{selectedRegion ? `Target: ${selectedRegion.label}` : "Target: whole texture"}</span>
             </div>
 
             <div className="mt-4 flex gap-2">
