@@ -211,7 +211,9 @@ export function applyBrush(imageData: ImageData, x: number, y: number, color: st
   const bounds = getBounds(next, rect);
   const [r, g, b, a] = mode === "eraser" ? [0, 0, 0, 0] : hexToRgba(color);
   const target = [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), Math.round((a ?? 1) * 255)];
-  const radius = Math.max(1, brushSize);
+  // A one-pixel brush must only touch its target pixel. The former minimum
+  // radius of 1 also painted the four directly adjacent pixels as a cross.
+  const radius = brushSize === 1 ? 0 : Math.max(1, brushSize);
 
   for (let py = Math.max(bounds.y, y - radius); py <= Math.min(bounds.y + bounds.height - 1, y + radius); py++) {
     for (let px = Math.max(bounds.x, x - radius); px <= Math.min(bounds.x + bounds.width - 1, x + radius); px++) {

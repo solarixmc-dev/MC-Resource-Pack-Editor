@@ -1886,6 +1886,7 @@ function TextureEditorModal({
   const [isLoading, setIsLoading] = useState(true);
   const [activeRegionId, setActiveRegionId] = useState<string>("whole");
   const [hasChanges, setHasChanges] = useState(false);
+  const [editHistory, setEditHistory] = useState<{ entries: ImageData[]; index: number }>({ entries: [], index: -1 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasFrameRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
@@ -1921,6 +1922,7 @@ function TextureEditorModal({
         if (!cancelled) {
           setImageData(next);
           setHasChanges(false);
+          setEditHistory({ entries: [next], index: 0 });
           setActiveRegionId("whole");
         }
       })
@@ -1969,6 +1971,31 @@ function TextureEditorModal({
     return { x: selectedRegion.x, y: selectedRegion.y, width: selectedRegion.w, height: selectedRegion.h };
   }, [selectedRegion]);
 
+  const applyImageChange = useCallback((next: ImageData) => {
+    setImageData(next);
+    setHasChanges(true);
+    setEditHistory((previous) => {
+      const entries = [...previous.entries.slice(0, previous.index + 1), next];
+      return { entries, index: entries.length - 1 };
+    });
+  }, []);
+
+  const undoEdit = useCallback(() => {
+    if (editHistory.index <= 0) return;
+    const index = editHistory.index - 1;
+    setImageData(editHistory.entries[index]);
+    setEditHistory((previous) => ({ ...previous, index }));
+    setHasChanges(index > 0);
+  }, [editHistory]);
+
+  const redoEdit = useCallback(() => {
+    if (editHistory.index >= editHistory.entries.length - 1) return;
+    const index = editHistory.index + 1;
+    setImageData(editHistory.entries[index]);
+    setEditHistory((previous) => ({ ...previous, index }));
+    setHasChanges(true);
+  }, [editHistory]);
+
   const handleCanvasPointer = (e: PointerEvent<HTMLCanvasElement>) => {
     if (!imageData) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -1997,16 +2024,14 @@ function TextureEditorModal({
         next = applyFill(imageData, px, py, color, rectRegion);
       }
       if (next !== imageData) {
-        setImageData(next);
-        setHasChanges(true);
+        applyImageChange(next);
       }
     }
   };
 
   const handleApplyRecolor = () => {
     if (!imageData) return;
-    setImageData(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }, rectRegion));
-    setHasChanges(true);
+    applyImageChange(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }, rectRegion));
   };
 
   const handleSave = async () => {
@@ -2119,7 +2144,29 @@ function TextureEditorModal({
 
             <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-muted-foreground">
               <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
-              <span>{selectedRegion ? `Target: ${selectedRegion.label}` : "Target: whole texture"}</span>
+              <div className="flex items-center gap-2">
+                <span>{selectedRegion ? `Target: ${selectedRegion.label}` : "Target: whole texture"}</span>
+                <button
+                  type="button"
+                  className="rounded border border-border px-2 py-0.5 text-base leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={undoEdit}
+                  disabled={editHistory.index <= 0}
+                  title="Undo"
+                  aria-label="Undo"
+                >
+                  ↶
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-border px-2 py-0.5 text-base leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={redoEdit}
+                  disabled={editHistory.index >= editHistory.entries.length - 1}
+                  title="Redo"
+                  aria-label="Redo"
+                >
+                  ↷
+                </button>
+              </div>
             </div>
 
             <div className="mt-4 flex gap-2">
