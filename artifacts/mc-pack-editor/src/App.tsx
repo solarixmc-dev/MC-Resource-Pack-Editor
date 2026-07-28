@@ -16,7 +16,6 @@ import {
 import { getAtlasDefinition, AtlasDefinition } from "./lib/atlasRegions";
 import {
   applyBrush,
-  applyFill,
   applyRecolor,
   imageDataToBuffer,
   loadImageDataFromBuffer,
@@ -1220,10 +1219,9 @@ function TextureLightbox({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 min-h-0">
           {/* Image previews */}
           <div className="flex flex-wrap gap-3 items-start">
-            <div className={`flex gap-3 flex-wrap ${packsWithFile.length === 1 ? "justify-center" : ""}`}>
             {packsWithFile.map((pack) => {
               const buf = pack.files.get(texturePath)!;
               const url = arrayBufferToDataURL(buf, texturePath);
@@ -1253,26 +1251,25 @@ function TextureLightbox({
                 </div>
               );
             })}
-            </div>
-
-            {atlasDef && composedPreviewUrl && (
-              <div className="flex flex-col gap-2 rounded-xl border border-border bg-secondary/30 p-3 min-w-[220px]">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">New atlas preview</div>
-                <img
-                  src={composedPreviewUrl}
-                  alt="Preview of the atlas after region overrides"
-                  className="w-40 h-40 rounded-md border border-border bg-black/50 object-contain"
-                  style={{ imageRendering: "pixelated" }}
-                />
-                <p className="text-xs text-muted-foreground">This updates live as you switch atlas regions.</p>
-              </div>
-            )}
           </div>
+
+          {atlasDef && composedPreviewUrl && (
+            <div className="flex flex-col gap-2 rounded-xl border border-border bg-secondary/30 p-3">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">New atlas preview</div>
+              <img
+                src={composedPreviewUrl}
+                alt="Preview of the atlas after region overrides"
+                className="w-40 h-40 rounded-md border border-border bg-black/50 object-contain"
+                style={{ imageRendering: "pixelated" }}
+              />
+              <p className="text-xs text-muted-foreground">This updates live as you switch atlas regions.</p>
+            </div>
+          )}
 
           {/* Atlas region editor */}
           {atlasDef && packsWithFile.length > 0 && (
-            <div className="border border-border rounded-lg overflow-hidden max-h-[60vh] flex flex-col">
-              <div className="px-3 py-2 bg-secondary/50 border-b border-border flex-shrink-0">
+            <div className="border border-border rounded-lg overflow-hidden">
+              <div className="px-3 py-2 bg-secondary/50 border-b border-border">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {atlasDef.label} — Region Overrides
                 </span>
@@ -1304,7 +1301,7 @@ function TextureLightbox({
                   </div>
                 </div>
               </div>
-              <div className="divide-y divide-border overflow-y-auto flex-1 min-h-0">
+              <div className="divide-y divide-border">
                 {atlasDef.regions.map((region) => {
                   const regionPackId = regionOverrides[region.id];
                   const regionOverridePack = packsWithFile.find(p => p.id === regionPackId);
@@ -1878,6 +1875,13 @@ function rgbToHexColor(red: number, green: number, blue: number): string {
   return `#${channel(red)}${channel(green)}${channel(blue)}`;
 }
 
+function rgbChannelGradient(channel: number, rgb: [number, number, number]): string {
+  const [r, g, b] = rgb;
+  if (channel === 0) return `linear-gradient(to right, rgb(0, ${g}, ${b}), rgb(255, ${g}, ${b}))`;
+  if (channel === 1) return `linear-gradient(to right, rgb(${r}, 0, ${b}), rgb(${r}, 255, ${b}))`;
+  return `linear-gradient(to right, rgb(${r}, ${g}, 0), rgb(${r}, ${g}, 255))`;
+}
+
 function TextureEditorModal({
   texturePath,
   displayName,
@@ -1898,7 +1902,8 @@ function TextureEditorModal({
   const [tool, setTool] = useState<EditorTool>("pencil");
   const [color, setColor] = useState("#22c55e");
   const [hexInput, setHexInput] = useState("#22c55e");
-  const [brushSize, setBrushSize] = useState(3);
+  const [brushSize, setBrushSize] = useState(1);
+  const [colorInputMode, setColorInputMode] = useState<"hex" | "rgb">("hex");
   const [recolorMode, setRecolorMode] = useState<RecolorMode>("tint");
   const [recolorIntensity, setRecolorIntensity] = useState(0.6);
   const [imageData, setImageData] = useState<ImageData | null>(null);
@@ -2067,8 +2072,6 @@ function TextureEditorModal({
       let next = imageData;
       if (tool === "pencil" || tool === "eraser") {
         next = applyBrush(imageData, px, py, color, brushSize, tool === "eraser" ? "eraser" : "pencil", rectRegion);
-      } else if (tool === "fill") {
-        next = applyFill(imageData, px, py, color, rectRegion);
       }
       if (next !== imageData) {
         applyImageChange(next);
@@ -2125,23 +2128,25 @@ function TextureEditorModal({
               {isLoading ? (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading texture…</div>
               ) : canEdit ? (
-                <canvas
-                  ref={canvasRef}
-                  className="mx-auto block rounded-lg border border-border bg-white shadow-inner"
-                  style={{
-                    // CSS scaling leaves canvas.width/height (and therefore saved PNG pixels) untouched.
-                    width: `${imageData.width * canvasScale}px`,
-                    height: `${imageData.height * canvasScale}px`,
-                    imageRendering: "pixelated",
-                    cursor: tool === "eyedropper" ? "crosshair" : "cell",
-                  }}
-                  onPointerDown={handleCanvasPointer}
-                  onPointerMove={(e) => {
-                    if (!imageData || e.buttons !== 1) return;
-                    handleCanvasPointer(e);
-                  }}
-                  onPointerUp={(e) => e.currentTarget.releasePointerCapture(e.pointerId)}
-                />
+                <div className="checkered inline-block rounded-lg border border-border p-1 shadow-inner">
+                  <canvas
+                    ref={canvasRef}
+                    className="mx-auto block"
+                    style={{
+                      // CSS scaling leaves canvas.width/height (and therefore saved PNG pixels) untouched.
+                      width: `${imageData.width * canvasScale}px`,
+                      height: `${imageData.height * canvasScale}px`,
+                      imageRendering: "pixelated",
+                      cursor: tool === "eyedropper" ? "crosshair" : "cell",
+                    }}
+                    onPointerDown={handleCanvasPointer}
+                    onPointerMove={(e) => {
+                      if (!imageData || e.buttons !== 1) return;
+                      handleCanvasPointer(e);
+                    }}
+                    onPointerUp={(e) => e.currentTarget.releasePointerCapture(e.pointerId)}
+                  />
+                </div>
               ) : (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">This texture could not be loaded for editing.</div>
               )}
@@ -2150,11 +2155,10 @@ function TextureEditorModal({
 
           <div className="w-full rounded-[24px] border border-border bg-card/70 p-4">
             <p className="text-sm font-semibold text-foreground">Tools</p>
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="mt-3 grid grid-cols-3 gap-2">
               {[
                 { id: "pencil", label: "Brush" },
                 { id: "eraser", label: "Eraser" },
-                { id: "fill", label: "Fill" },
                 { id: "eyedropper", label: "Eyedropper" },
               ].map((item) => (
                 <button key={item.id} className={`rounded-xl border px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/15 text-primary" : "border-border bg-background/70 text-foreground hover:bg-accent"}`} onClick={() => setTool(item.id as EditorTool)}>
@@ -2164,21 +2168,61 @@ function TextureEditorModal({
             </div>
 
             <section className="mt-4 rounded-2xl border border-border bg-background/70 p-3">
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Color</label>
+              <div className="flex items-center justify-between gap-2">
+                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Color</label>
+                <div className="flex overflow-hidden rounded-lg border border-border text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  <button
+                    type="button"
+                    className={`px-2.5 py-1 transition-colors ${colorInputMode === "hex" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                    onClick={() => setColorInputMode("hex")}
+                  >
+                    Hex
+                  </button>
+                  <button
+                    type="button"
+                    className={`border-l border-border px-2.5 py-1 transition-colors ${colorInputMode === "rgb" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                    onClick={() => setColorInputMode("rgb")}
+                  >
+                    RGB
+                  </button>
+                </div>
+              </div>
               <div className="mt-2 flex items-center gap-3">
                 <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-12 w-14 cursor-pointer rounded border border-border bg-transparent p-1" aria-label="Color picker" />
-                <label className="flex-1 text-xs font-medium text-muted-foreground">Hex code
-                  <input type="text" value={hexInput} onChange={(e) => { const value = e.target.value; setHexInput(value); if (isValidHexColor(value)) setColor(value); }} onBlur={() => setHexInput(color.toUpperCase())} maxLength={7} spellCheck={false} className="mt-1 w-full rounded border border-border bg-background px-2 py-1.5 font-mono text-sm text-foreground" aria-label="Hex color code" />
-                </label>
-              </div>
-              <div className="mt-3 space-y-2">
-                {(["Red", "Green", "Blue"] as const).map((label, index) => (
-                  <label key={label} className="grid grid-cols-[2.75rem_1fr_2.5rem] items-center gap-2 text-xs text-muted-foreground">
-                    <span>{label}</span>
-                    <input type="range" min="0" max="255" value={rgbColor[index]} onChange={(e) => updateRgbColor(index, Number(e.target.value))} aria-label={`${label} value`} />
-                    <span className="rounded bg-background px-1.5 py-1 text-right font-mono text-foreground">{rgbColor[index]}</span>
+                {colorInputMode === "hex" ? (
+                  <label className="flex-1 text-xs font-medium text-muted-foreground">
+                    Hex code
+                    <input
+                      type="text"
+                      value={hexInput}
+                      onChange={(e) => { const value = e.target.value; setHexInput(value); if (isValidHexColor(value)) setColor(value); }}
+                      onBlur={() => setHexInput(color.toUpperCase())}
+                      maxLength={7}
+                      spellCheck={false}
+                      className="mt-1 w-full rounded border border-border bg-background px-2 py-1.5 font-mono text-sm text-foreground"
+                      aria-label="Hex color code"
+                    />
                   </label>
-                ))}
+                ) : (
+                  <div className="flex-1 space-y-2">
+                    {(["Red", "Green", "Blue"] as const).map((label, index) => (
+                      <label key={label} className="grid grid-cols-[2.75rem_1fr_2.5rem] items-center gap-2 text-xs text-muted-foreground">
+                        <span>{label}</span>
+                        <input
+                          type="range"
+                          min="0"
+                          max="255"
+                          value={rgbColor[index]}
+                          onChange={(e) => updateRgbColor(index, Number(e.target.value))}
+                          aria-label={`${label} value`}
+                          className="rgb-channel-slider w-full"
+                          style={{ background: rgbChannelGradient(index, rgbColor) }}
+                        />
+                        <span className="rounded bg-background px-1.5 py-1 text-right font-mono text-foreground">{rgbColor[index]}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
 

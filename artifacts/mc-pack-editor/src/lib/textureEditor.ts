@@ -1,4 +1,4 @@
-export type EditorTool = "pencil" | "eraser" | "eyedropper" | "fill";
+export type EditorTool = "pencil" | "eraser" | "eyedropper";
 export type RecolorMode = "tint" | "hue-shift" | "colorize" | "multiply" | "overlay";
 
 export interface RectRegion {
@@ -211,42 +211,14 @@ export function applyBrush(imageData: ImageData, x: number, y: number, color: st
   const bounds = getBounds(next, rect);
   const [r, g, b, a] = mode === "eraser" ? [0, 0, 0, 0] : hexToRgba(color);
   const target = [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), Math.round((a ?? 1) * 255)];
-  // A one-pixel brush must only touch its target pixel. The former minimum
-  // radius of 1 also painted the four directly adjacent pixels as a cross.
-  const radius = brushSize === 1 ? 0 : Math.max(1, brushSize);
+  const size = Math.max(1, Math.round(brushSize));
+  const offset = Math.floor(size / 2);
 
-  for (let py = Math.max(bounds.y, y - radius); py <= Math.min(bounds.y + bounds.height - 1, y + radius); py++) {
-    for (let px = Math.max(bounds.x, x - radius); px <= Math.min(bounds.x + bounds.width - 1, x + radius); px++) {
-      const dx = px - x;
-      const dy = py - y;
-      if (dx * dx + dy * dy > radius * radius) continue;
+  for (let py = y - offset; py < y - offset + size; py++) {
+    if (py < bounds.y || py >= bounds.y + bounds.height) continue;
+    for (let px = x - offset; px < x - offset + size; px++) {
+      if (px < bounds.x || px >= bounds.x + bounds.width) continue;
       setPixel(next, px, py, target as [number, number, number, number]);
-    }
-  }
-
-  return next;
-}
-
-export function applyFill(imageData: ImageData, x: number, y: number, color: string, rect?: RectRegion): ImageData {
-  const next = cloneImageData(imageData);
-  const bounds = getBounds(next, rect);
-  const targetColor = hexToRgba(color);
-  const start = getPixel(next, x, y);
-  const stack: Array<[number, number]> = [[x, y]];
-  const fill = [Math.round(targetColor[0] * 255), Math.round(targetColor[1] * 255), Math.round(targetColor[2] * 255), Math.round(targetColor[3] * 255)];
-
-  while (stack.length) {
-    const [cx, cy] = stack.pop()!;
-    if (cx < bounds.x || cx >= bounds.x + bounds.width || cy < bounds.y || cy >= bounds.y + bounds.height) continue;
-    const current = getPixel(next, cx, cy);
-    if (current[3] === 0 && start[3] === 0) {
-      setPixel(next, cx, cy, fill as [number, number, number, number]);
-      stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
-      continue;
-    }
-    if (Math.abs(current[0] - start[0]) < 2 && Math.abs(current[1] - start[1]) < 2 && Math.abs(current[2] - start[2]) < 2 && Math.abs(current[3] - start[3]) < 2) {
-      setPixel(next, cx, cy, fill as [number, number, number, number]);
-      stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
     }
   }
 
