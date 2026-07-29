@@ -145,6 +145,12 @@ export function getLinkedAtlasRegionOverrides(
   return linked;
 }
 
+/** Minecraft's hardcore heart row is the normal heart row shifted down by 9px. */
+export function getHardcoreHeartMirrorRegion(region: AtlasRegion): AtlasRegion | null {
+  if (!region.id.startsWith("heart_")) return null;
+  return { ...region, id: `${region.id}_hardcore`, label: `${region.label} (Hardcore)`, y: region.y + 9 };
+}
+
 async function loadImage(buffer: ArrayBuffer, path: string): Promise<HTMLImageElement> {
   const dataUrl = arrayBufferToDataURL(buffer, path);
   return new Promise((resolve, reject) => {
@@ -287,7 +293,7 @@ export async function replaceAtlasRegion(
 /** Compose an atlas PNG by replacing region pixels from other packs on top of a base atlas. */
 export async function composeAtlas(
   baseBuffer: ArrayBuffer,
-  patches: { region: AtlasRegion; buffer: ArrayBuffer }[]
+  patches: { region: AtlasRegion; buffer: ArrayBuffer; sourceRegion?: AtlasRegion }[]
 ): Promise<ArrayBuffer> {
   const baseImg = await loadImage(baseBuffer, "atlas.png");
   const patchImages = await Promise.all(
@@ -302,8 +308,8 @@ export async function composeAtlas(
   const { canvas, ctx } = createAlphaAwareCanvas(outputWidth, outputHeight);
   ctx.drawImage(baseImg, 0, 0, outputWidth, outputHeight);
 
-  for (const { region, img: patchImg } of patchImages) {
-    const sourceRegion = normalizeRegionForCanvas(region, patchImg.naturalWidth, patchImg.naturalHeight);
+  for (const { region, sourceRegion: originalSourceRegion, img: patchImg } of patchImages) {
+    const sourceRegion = normalizeRegionForCanvas(originalSourceRegion ?? region, patchImg.naturalWidth, patchImg.naturalHeight);
     const destRegion = normalizeRegionForCanvas(region, canvas.width, canvas.height);
     ctx.clearRect(destRegion.x, destRegion.y, destRegion.w, destRegion.h);
     ctx.drawImage(
@@ -395,7 +401,7 @@ export async function exportMergedPack(
       const atlasDef = getAtlasDefinition(path);
       const regionOverrides = atlasRegionOverrides[path];
       if (atlasDef && regionOverrides && Object.keys(regionOverrides).length > 0) {
-        const patches: { region: AtlasRegion; buffer: ArrayBuffer }[] = [];
+        const patches: { region: AtlasRegion; buffer: ArrayBuffer; sourceRegion?: AtlasRegion }[] = [];
         const orderedRegions = [...atlasDef.regions].sort((a, b) => {
           const areaA = a.w * a.h;
           const areaB = b.w * b.h;
@@ -409,7 +415,13 @@ export async function exportMergedPack(
           const overridePack = packs.find((p) => p.id === overridePackId && p.files.has(path));
           if (!overridePack) continue;
 
-          patches.push({ region, buffer: overridePack.files.get(path)! });
+          const buffer = overridePack.files.get(path)!;
+          patches.push({ region, buffer });
+
+          // Keep hardcore hearts in sync unless a future explicit hardcore
+          // region override is supplied. The source remains the normal heart.
+          const hardcoreRegion = getHardcoreHeartMirrorRegion(region);
+          if (hardcoreRegion) patches.push({ region: hardcoreRegion, sourceRegion: region, buffer });
         }
 
         if (patches.length > 0) {

@@ -12,6 +12,7 @@ import {
   exportMergedPack,
   composeAtlas,
   cropAtlasRegion,
+  getHardcoreHeartMirrorRegion,
 } from "./lib/zipUtils";
 import { getAtlasDefinition, AtlasDefinition } from "./lib/atlasRegions";
 import {
@@ -753,6 +754,44 @@ function FolderSidebar({
 
 // ─── Texture Card ──────────────────────────────────────────────────────────────
 
+function CroppedTexturePreview({ buffer, path, alt, className }: { buffer: ArrayBuffer; path: string; alt: string; className: string }) {
+  const sourceUrl = useMemo(() => arrayBufferToDataURL(buffer, path), [buffer, path]);
+  const [previewUrl, setPreviewUrl] = useState(sourceUrl);
+
+  useEffect(() => {
+    let cancelled = false;
+    const image = new Image();
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      if (!context) return;
+      context.drawImage(image, 0, 0);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      let left = canvas.width;
+      let top = canvas.height;
+      let right = -1;
+      let bottom = -1;
+      for (let y = 0; y < canvas.height; y++) for (let x = 0; x < canvas.width; x++) {
+        if (pixels[(y * canvas.width + x) * 4 + 3] === 0) continue;
+        left = Math.min(left, x); top = Math.min(top, y); right = Math.max(right, x); bottom = Math.max(bottom, y);
+      }
+      if (right < left || bottom < top) { if (!cancelled) setPreviewUrl(sourceUrl); return; }
+      const cropped = document.createElement("canvas");
+      cropped.width = right - left + 1;
+      cropped.height = bottom - top + 1;
+      cropped.getContext("2d")?.drawImage(canvas, left, top, cropped.width, cropped.height, 0, 0, cropped.width, cropped.height);
+      if (!cancelled) setPreviewUrl(cropped.toDataURL());
+    };
+    image.onerror = () => { if (!cancelled) setPreviewUrl(sourceUrl); };
+    image.src = sourceUrl;
+    return () => { cancelled = true; };
+  }, [sourceUrl]);
+
+  return <img src={previewUrl} alt={alt} className={className} />;
+}
+
 function TextureCard({
   texturePath,
   displayName,
@@ -793,7 +832,7 @@ function TextureCard({
   const modern = layoutMode === "modern";
 
   return (
-    <div className={`overflow-hidden flex flex-col rounded-[22px] border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : modern ? "border-border/70 bg-card/95 shadow-[0_16px_34px_-24px_rgba(15,23,42,0.22)] backdrop-blur-md hover:border-primary/40" : "border-border bg-card hover:border-primary/40"}`}>
+    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-[22px] border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : modern ? "border-border/70 bg-card/95 shadow-[0_16px_34px_-24px_rgba(15,23,42,0.22)] backdrop-blur-md hover:border-primary/40" : "border-border bg-card hover:border-primary/40"}`}>
       {/* Texture previews row */}
       {isImg && (
         <div
@@ -801,7 +840,6 @@ function TextureCard({
         >
           {packsWithFile.map((pack) => {
             const buf = pack.files.get(texturePath)!;
-            const url = arrayBufferToDataURL(buf, texturePath);
             const isSelected =
               effectivePackId === pack.id ||
               (!effectivePackId && pack === packsWithFile[0]);
@@ -821,11 +859,7 @@ function TextureCard({
                 }}
                 title={packsWithFile.length > 1 ? `Use from: ${pack.name}` : pack.name}
               >
-                <img
-                  src={url}
-                  alt={displayName}
-                  className="texture-preview max-w-[72px] max-h-[72px] object-contain"
-                />
+                <CroppedTexturePreview buffer={buf} path={texturePath} alt={displayName} className="texture-preview max-w-[72px] max-h-[72px] object-contain" />
                 {packsWithFile.length > 1 && (
                   <span
                     className="absolute bottom-1 right-1 w-2 h-2 rounded-full"
@@ -1143,7 +1177,7 @@ function TextureLightbox({
 
     (async () => {
       const previews: Record<string, string> = {};
-      const patches: { region: AtlasDefinition["regions"][number]; buffer: ArrayBuffer }[] = [];
+      const patches: { region: AtlasDefinition["regions"][number]; buffer: ArrayBuffer; sourceRegion?: AtlasDefinition["regions"][number] }[] = [];
 
       for (const region of atlasDef.regions) {
         const regionPackId = regionOverrides[region.id] ?? effectivePackId;
@@ -1157,6 +1191,8 @@ function TextureLightbox({
 
         if (regionOverrides[region.id]) {
           patches.push({ region, buffer: sourceBuffer });
+          const hardcoreRegion = getHardcoreHeartMirrorRegion(region);
+          if (hardcoreRegion) patches.push({ region: hardcoreRegion, sourceRegion: region, buffer: sourceBuffer });
         }
       }
 
@@ -1301,9 +1337,7 @@ function TextureLightbox({
                   </div>
                 </div>
               </div>
-              <div 
-                  className="divide-y divide-border overflow-y-auto"
-                  style={{ maxHeight: "420px" }}>
+              <div className="divide-y divide-border">
                 {atlasDef.regions.map((region) => {
                   const regionPackId = regionOverrides[region.id];
                   const regionOverridePack = packsWithFile.find(p => p.id === regionPackId);
@@ -1908,6 +1942,7 @@ function TextureEditorModal({
   const [colorInputMode, setColorInputMode] = useState<"hex" | "rgb">("hex");
   const [recolorMode, setRecolorMode] = useState<RecolorMode>("tint");
   const [recolorIntensity, setRecolorIntensity] = useState(0.6);
+  const [recolorScope, setRecolorScope] = useState<"selection" | "whole">("selection");
   const [imageData, setImageData] = useState<ImageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeRegionId, setActiveRegionId] = useState<string>("whole");
@@ -2083,7 +2118,8 @@ function TextureEditorModal({
 
   const handleApplyRecolor = () => {
     if (!imageData) return;
-    applyImageChange(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }, rectRegion));
+    if (recolorScope === "selection" && !rectRegion) return;
+    applyImageChange(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }, recolorScope === "selection" ? rectRegion : undefined));
   };
 
   const handleSave = async () => {
@@ -2130,7 +2166,7 @@ function TextureEditorModal({
               {isLoading ? (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading texture…</div>
               ) : canEdit ? (
-                <div className="checkered inline-block rounded-lg border border-border p-1 shadow-inner">
+                <div className="checkered relative inline-block rounded-lg border border-border p-1 shadow-inner">
                   <canvas
                     ref={canvasRef}
                     className="mx-auto block"
@@ -2148,6 +2184,18 @@ function TextureEditorModal({
                     }}
                     onPointerUp={(e) => e.currentTarget.releasePointerCapture(e.pointerId)}
                   />
+                  {selectedRegion && recolorScope === "selection" && (
+                    <div
+                      className="pointer-events-none absolute border-2 border-amber-400 bg-amber-300/20 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
+                      style={{
+                        left: `${4 + selectedRegion.x * canvasScale}px`,
+                        top: `${4 + selectedRegion.y * canvasScale}px`,
+                        width: `${selectedRegion.w * canvasScale}px`,
+                        height: `${selectedRegion.h * canvasScale}px`,
+                      }}
+                      title="Recolor target"
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">This texture could not be loaded for editing.</div>
@@ -2236,6 +2284,11 @@ function TextureEditorModal({
 
             <div className="mt-4 rounded-2xl border border-border bg-background/70 p-3">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Recolor</label>
+              <div className="mt-2 grid grid-cols-2 overflow-hidden rounded-lg border border-border text-xs font-medium">
+                <button type="button" onClick={() => setRecolorScope("selection")} disabled={!selectedRegion} className={`px-2 py-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${recolorScope === "selection" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}>Highlighted selection</button>
+                <button type="button" onClick={() => setRecolorScope("whole")} className={`border-l border-border px-2 py-1.5 transition-colors ${recolorScope === "whole" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}>Entire texture</button>
+              </div>
+              {recolorScope === "selection" && !selectedRegion && <p className="mt-2 text-xs text-amber-500">Choose an atlas region above, or select Entire texture.</p>}
               <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-border bg-background px-2 py-1 text-sm text-foreground">
                 <option value="tint">Tint</option>
                 <option value="hue-shift">Hue shift</option>
@@ -2245,8 +2298,8 @@ function TextureEditorModal({
               </select>
               <input type="range" min="0" max="1" step="0.01" value={recolorIntensity} onChange={(e) => setRecolorIntensity(Number(e.target.value))} className="mt-3 w-full" />
               <p className="mt-1 text-xs text-muted-foreground">Intensity: {recolorIntensity.toFixed(2)}</p>
-              <button className="mt-3 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent" onClick={handleApplyRecolor}>
-                Apply recolor to selection
+              <button disabled={recolorScope === "selection" && !selectedRegion} className="mt-3 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={handleApplyRecolor}>
+                Apply recolor to {recolorScope === "selection" && selectedRegion ? selectedRegion.label : "entire texture"}
               </button>
             </div>
 
@@ -2281,6 +2334,7 @@ export default function App() {
   const [exporting, setExporting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [globalSearch, setGlobalSearch] = useState("");
+  const [jumpTarget, setJumpTarget] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ path: string; displayName: string; folder: string } | null>(null);
   // Settings
   const [texturesPerRow, setTexturesPerRow] = useState(6);
@@ -2503,6 +2557,20 @@ export default function App() {
   const totalOverrideCount = textureOverrideCount + atlasRegionOverrideCount;
   const folderSourceCount = Object.values(folderSources).filter(Boolean).length;
 
+  useEffect(() => {
+    if (!jumpTarget) return;
+    const target = document.getElementById(`texture-card-${jumpTarget}`);
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    setJumpTarget(null);
+  }, [jumpTarget, globalSearch, selectedFolder]);
+
+  const jumpToOverriddenTexture = (path: string) => {
+    setSelectedFolder(getTextureFolder(path));
+    setGlobalSearch("");
+    setJumpTarget(path);
+  };
+
   return (
     <div className={`flex flex-col h-screen overflow-hidden${darkMode ? " dark" : ""} ${layoutMode === "modern" ? (darkMode ? "bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.16),_transparent_28%)] text-foreground" : "bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.12),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.12),_transparent_24%)] text-foreground") : "bg-background text-foreground"}`}>
       {/* ── Header ── */}
@@ -2597,6 +2665,27 @@ export default function App() {
                 </span>
               )}
             </div>
+          )}
+          {totalOverrideCount > 0 && (
+            <details className="group relative flex-shrink-0 text-xs">
+              <summary className="cursor-pointer list-none rounded-lg border border-border bg-background/70 px-2 py-1 text-muted-foreground hover:text-foreground">
+                <span className="mr-1 inline-block transition-transform group-open:rotate-180">⌄</span> Changed textures
+              </summary>
+              <div className="absolute right-0 z-30 mt-1 max-h-56 w-72 overflow-y-auto rounded-lg border border-border bg-card p-1 shadow-xl">
+                {Object.entries(textureOverrides).map(([path, packId]) => (
+                  <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-2 py-1.5 text-left hover:bg-accent">
+                    <span className="block truncate text-foreground">{path.split("/").pop()}</span>
+                    <span className="block truncate text-[10px] text-muted-foreground">Texture override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
+                  </button>
+                ))}
+                {Object.entries(atlasRegionOverrides).flatMap(([path, regions]) => Object.entries(regions).map(([regionId, packId]) => ({ path, regionId, packId }))).map(({ path, regionId, packId }) => (
+                  <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-2 py-1.5 text-left hover:bg-accent">
+                    <span className="block truncate text-foreground">{path.split("/").pop()} · {regionId}</span>
+                    <span className="block truncate text-[10px] text-muted-foreground">Atlas override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
+                  </button>
+                ))}
+              </div>
+            </details>
           )}
         </div>
       </div>
