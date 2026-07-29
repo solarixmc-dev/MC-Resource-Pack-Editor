@@ -756,10 +756,11 @@ function FolderSidebar({
 
 function CroppedTexturePreview({ buffer, path, alt, className }: { buffer: ArrayBuffer; path: string; alt: string; className: string }) {
   const sourceUrl = useMemo(() => arrayBufferToDataURL(buffer, path), [buffer, path]);
-  const [previewUrl, setPreviewUrl] = useState(sourceUrl);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    setPreviewUrl(null);
     const image = new Image();
     image.onload = () => {
       const canvas = document.createElement("canvas");
@@ -773,9 +774,15 @@ function CroppedTexturePreview({ buffer, path, alt, className }: { buffer: Array
       let top = canvas.height;
       let right = -1;
       let bottom = -1;
-      for (let y = 0; y < canvas.height; y++) for (let x = 0; x < canvas.width; x++) {
-        if (pixels[(y * canvas.width + x) * 4 + 3] === 0) continue;
-        left = Math.min(left, x); top = Math.min(top, y); right = Math.max(right, x); bottom = Math.max(bottom, y);
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          const alpha = pixels[(y * canvas.width + x) * 4 + 3];
+          if (alpha === 0) continue;
+          left = Math.min(left, x);
+          top = Math.min(top, y);
+          right = Math.max(right, x);
+          bottom = Math.max(bottom, y);
+        }
       }
       if (right < left || bottom < top) { if (!cancelled) setPreviewUrl(sourceUrl); return; }
       const cropped = document.createElement("canvas");
@@ -789,7 +796,13 @@ function CroppedTexturePreview({ buffer, path, alt, className }: { buffer: Array
     return () => { cancelled = true; };
   }, [sourceUrl]);
 
-  return <img src={previewUrl} alt={alt} className={className} />;
+  return (
+    <img
+      src={previewUrl ?? sourceUrl}
+      alt={alt}
+      className={`${className} ${previewUrl ? "opacity-100" : "opacity-0"}`}
+    />
+  );
 }
 
 function TextureCard({
@@ -859,7 +872,7 @@ function TextureCard({
                 }}
                 title={packsWithFile.length > 1 ? `Use from: ${pack.name}` : pack.name}
               >
-                <CroppedTexturePreview buffer={buf} path={texturePath} alt={displayName} className="texture-preview max-w-[72px] max-h-[72px] object-contain" />
+                <CroppedTexturePreview buffer={buf} path={texturePath} alt={displayName} className="texture-preview w-[72px] h-[72px] object-contain" />
                 {packsWithFile.length > 1 && (
                   <span
                     className="absolute bottom-1 right-1 w-2 h-2 rounded-full"
@@ -1236,10 +1249,13 @@ function TextureLightbox({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/80 p-4 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${displayName} texture options`}
     >
-      <div className="bg-card border border-border rounded-xl shadow-2xl max-w-3xl w-full mx-4 max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-card border border-border rounded-xl shadow-2xl max-w-3xl w-full h-[calc(100dvh-2rem)] sm:h-[90dvh] max-h-[900px] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border flex-shrink-0">
           <span className="font-semibold text-sm">{displayName}</span>
@@ -1255,7 +1271,7 @@ function TextureLightbox({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 min-h-0">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 flex flex-col gap-4 min-h-0">
           {/* Image previews */}
           <div className="flex flex-wrap gap-3 items-start">
             {packsWithFile.map((pack) => {
@@ -1337,7 +1353,7 @@ function TextureLightbox({
                   </div>
                 </div>
               </div>
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-border max-h-[min(52dvh,34rem)] overflow-y-auto overscroll-contain">
                 {atlasDef.regions.map((region) => {
                   const regionPackId = regionOverrides[region.id];
                   const regionOverridePack = packsWithFile.find(p => p.id === regionPackId);
