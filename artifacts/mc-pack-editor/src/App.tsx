@@ -1254,7 +1254,7 @@ function TextureLightbox({
           </div>
 
           {atlasDef && composedPreviewUrl && (
-            <div className="flex flex-col gap-2 rounded-xl border border-border bg-secondary/30 p-3">
+            <div className="flex flex-col gap-3 rounded-xl border border-border bg-secondary/30 p-3">
               <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">New atlas preview</div>
               <img
                 src={composedPreviewUrl}
@@ -1301,7 +1301,9 @@ function TextureLightbox({
                   </div>
                 </div>
               </div>
-              <div className="divide-y divide-border">
+              <div 
+                  className="divide-y divide-border overflow-y-auto"
+                  style={{ maxHeight: "420px" }}>
                 {atlasDef.regions.map((region) => {
                   const regionPackId = regionOverrides[region.id];
                   const regionOverridePack = packsWithFile.find(p => p.id === regionPackId);
