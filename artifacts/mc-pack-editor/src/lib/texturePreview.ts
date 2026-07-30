@@ -21,7 +21,8 @@ function getVisiblePixelBounds(imageData: ImageData): { left: number; top: numbe
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      if (data[(y * width + x) * 4 + 3] === 0) continue;
+      const alpha = data[(y * width + x) * 4 + 3];
+      if (alpha === 0) continue;
       left = Math.min(left, x);
       top = Math.min(top, y);
       right = Math.max(right, x);

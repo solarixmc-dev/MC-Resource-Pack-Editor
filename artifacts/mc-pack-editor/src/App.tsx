@@ -755,13 +755,13 @@ function FolderSidebar({
 
 // ─── Texture Card ──────────────────────────────────────────────────────────────
 
-function CroppedTexturePreview({ buffer, path, alt }: { buffer: ArrayBuffer; path: string; alt: string }) {
+function CroppedTexturePreview({ buffer, path, alt, size = TEXTURE_THUMBNAIL_SIZE }: { buffer: ArrayBuffer; path: string; alt: string; size?: number }) {
   const sourceUrl = useMemo(() => arrayBufferToDataURL(buffer, path), [buffer, path]);
   const [previewUrl, setPreviewUrl] = useState(sourceUrl);
 
   useEffect(() => {
     let cancelled = false;
-    createCroppedTexturePreviewDataUrl(buffer, path)
+    createCroppedTexturePreviewDataUrl(buffer, path, size)
       .then((url) => {
         if (!cancelled) setPreviewUrl(url);
       })
@@ -769,14 +769,14 @@ function CroppedTexturePreview({ buffer, path, alt }: { buffer: ArrayBuffer; pat
         if (!cancelled) setPreviewUrl(sourceUrl);
       });
     return () => { cancelled = true; };
-  }, [buffer, path, sourceUrl]);
+  }, [buffer, path, sourceUrl, size]);
 
   return (
     <img
       src={previewUrl}
       alt={alt}
       className="texture-preview"
-      style={{ width: TEXTURE_THUMBNAIL_SIZE, height: TEXTURE_THUMBNAIL_SIZE, imageRendering: "pixelated" }}
+      style={{ width: size, height: size, imageRendering: "pixelated" }}
     />
   );
 }
@@ -1181,7 +1181,6 @@ function AtlasPreviewStrip({
       >
         {packsWithFile.map((pack) => {
           const buf = pack.files.get(texturePath)!;
-          const url = arrayBufferToDataURL(buf, texturePath);
           const isSelected = effectivePackId === pack.id || (!effectivePackId && pack === packsWithFile[0]);
           return (
             <div key={pack.id} className="flex w-[184px] flex-shrink-0 flex-col items-center gap-2">
@@ -1194,12 +1193,7 @@ function AtlasPreviewStrip({
                 }}
                 title={pack.name}
               >
-                <img
-                  src={url}
-                  alt={pack.name}
-                  className="texture-preview"
-                  style={{ width: 160, height: 160, objectFit: "contain", imageRendering: "pixelated" }}
-                />
+                <CroppedTexturePreview buffer={buf} path={texturePath} alt={pack.name} size={160} />
               </button>
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: pack.color }} />
