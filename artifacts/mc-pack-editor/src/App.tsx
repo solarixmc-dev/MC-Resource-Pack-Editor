@@ -1121,6 +1121,124 @@ function SearchAllResults({
 
 // ─── Texture Lightbox ──────────────────────────────────────────────────────────
 
+function AtlasPreviewStrip({
+  packsWithFile,
+  texturePath,
+  effectivePackId,
+  overridePackId,
+  composedPreviewUrl,
+  onOverride,
+}: {
+  packsWithFile: Pack[];
+  texturePath: string;
+  effectivePackId: string | null | undefined;
+  overridePackId: string | null | undefined;
+  composedPreviewUrl: string | null;
+  onOverride: (path: string, packId: string | null) => void;
+}) {
+  const stripRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollButtons = useCallback(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    updateScrollButtons();
+    const el = stripRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", updateScrollButtons, { passive: true });
+    const observer = new ResizeObserver(updateScrollButtons);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener("scroll", updateScrollButtons);
+      observer.disconnect();
+    };
+  }, [composedPreviewUrl, packsWithFile.length, updateScrollButtons]);
+
+  const scrollStrip = (direction: "left" | "right") => {
+    stripRef.current?.scrollBy({ left: direction === "left" ? -220 : 220, behavior: "smooth" });
+  };
+
+  return (
+    <div className="relative flex-shrink-0">
+      {canScrollLeft && (
+        <button
+          type="button"
+          className="absolute left-0 top-[calc(50%-0.75rem)] z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/95 text-lg leading-none text-foreground shadow-md transition-colors hover:bg-accent"
+          onClick={() => scrollStrip("left")}
+          aria-label="Scroll previews left"
+        >
+          ‹
+        </button>
+      )}
+      {canScrollRight && (
+        <button
+          type="button"
+          className="absolute right-0 top-[calc(50%-0.75rem)] z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/95 text-lg leading-none text-foreground shadow-md transition-colors hover:bg-accent"
+          onClick={() => scrollStrip("right")}
+          aria-label="Scroll previews right"
+        >
+          ›
+        </button>
+      )}
+      <div
+        ref={stripRef}
+        className={`flex items-start gap-3 overflow-x-hidden scroll-smooth ${canScrollLeft ? "pl-9" : ""} ${canScrollRight ? "pr-9" : ""}`}
+      >
+        {packsWithFile.map((pack) => {
+          const buf = pack.files.get(texturePath)!;
+          const url = arrayBufferToDataURL(buf, texturePath);
+          const isSelected = effectivePackId === pack.id || (!effectivePackId && pack === packsWithFile[0]);
+          return (
+            <div key={pack.id} className="flex w-[184px] flex-shrink-0 flex-col items-center gap-2">
+              <button
+                type="button"
+                className={`checkered rounded-lg p-3 border-2 transition-all ${isSelected ? "border-primary" : "border-transparent hover:border-border"} ${packsWithFile.length > 1 ? "cursor-pointer" : "cursor-default"}`}
+                onClick={() => {
+                  if (packsWithFile.length <= 1) return;
+                  onOverride(texturePath, overridePackId === pack.id ? null : pack.id);
+                }}
+                title={pack.name}
+              >
+                <img
+                  src={url}
+                  alt={pack.name}
+                  className="texture-preview"
+                  style={{ width: 160, height: 160, objectFit: "contain", imageRendering: "pixelated" }}
+                />
+              </button>
+              <div className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: pack.color }} />
+                <span className="max-w-[160px] truncate text-xs text-muted-foreground">{pack.name}</span>
+                {isSelected && <span className="text-xs font-bold text-primary">✓</span>}
+              </div>
+            </div>
+          );
+        })}
+        {composedPreviewUrl && (
+          <div className="flex w-[184px] flex-shrink-0 flex-col items-center gap-2">
+            <div className="flex flex-col gap-2 rounded-xl border border-border bg-secondary/30 p-3">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">New atlas preview</div>
+              <img
+                src={composedPreviewUrl}
+                alt="Preview of the atlas after region overrides"
+                className="h-40 w-40 rounded-md border border-border bg-black/50 object-contain"
+                style={{ imageRendering: "pixelated" }}
+              />
+            </div>
+            <p className="max-w-[184px] text-center text-xs text-muted-foreground">Live composite preview</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function TextureLightbox({
   texturePath,
   displayName,
@@ -1236,75 +1354,42 @@ function TextureLightbox({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm"
+      onClick={onClose}
     >
-      <div className="bg-card border border-border rounded-xl shadow-2xl max-w-3xl w-full mx-4 max-h-[90vh] flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border flex-shrink-0">
-          <span className="font-semibold text-sm">{displayName}</span>
-          <span className="text-xs text-muted-foreground">{texturePath}</span>
-          {atlasDef && (
-            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-medium">Atlas</span>
-          )}
-          <button
-            className="ml-auto text-muted-foreground hover:text-foreground text-lg leading-none"
-            onClick={onClose}
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 min-h-0">
-          {/* Image previews */}
-          <div className="flex flex-wrap gap-3 items-start">
-            {packsWithFile.map((pack) => {
-              const buf = pack.files.get(texturePath)!;
-              const url = arrayBufferToDataURL(buf, texturePath);
-              const isSelected = effectivePackId === pack.id || (!effectivePackId && pack === packsWithFile[0]);
-              return (
-                <div key={pack.id} className="flex flex-col items-center gap-2">
-                  <button
-                    className={`checkered rounded-lg p-3 border-2 transition-all ${isSelected ? "border-primary" : "border-transparent hover:border-border"} ${packsWithFile.length > 1 ? "cursor-pointer" : "cursor-default"}`}
-                    onClick={() => {
-                      if (packsWithFile.length <= 1) return;
-                      onOverride(texturePath, overridePackId === pack.id ? null : pack.id);
-                    }}
-                    title={pack.name}
-                  >
-                    <img
-                      src={url}
-                      alt={pack.name}
-                      className="texture-preview"
-                      style={{ width: 160, height: 160, objectFit: "contain", imageRendering: "pixelated" }}
-                    />
-                  </button>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: pack.color }} />
-                    <span className="text-xs text-muted-foreground">{pack.name}</span>
-                    {isSelected && <span className="text-xs text-primary font-bold">✓</span>}
-                  </div>
-                </div>
-              );
-            })}
+      <div className="flex min-h-full justify-center p-4 sm:p-6" onClick={onClose}>
+        <div
+          className="my-4 w-full max-w-3xl flex-shrink-0 rounded-xl border border-border bg-card shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+            <span className="text-sm font-semibold">{displayName}</span>
+            <span className="text-xs text-muted-foreground">{texturePath}</span>
+            {atlasDef && (
+              <span className="rounded bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">Atlas</span>
+            )}
+            <button
+              className="ml-auto text-lg leading-none text-muted-foreground hover:text-foreground"
+              onClick={onClose}
+            >
+              ✕
+            </button>
           </div>
 
-          {atlasDef && composedPreviewUrl && (
-            <div className="flex flex-col gap-3 rounded-xl border border-border bg-secondary/30 p-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">New atlas preview</div>
-              <img
-                src={composedPreviewUrl}
-                alt="Preview of the atlas after region overrides"
-                className="w-40 h-40 rounded-md border border-border bg-black/50 object-contain"
-                style={{ imageRendering: "pixelated" }}
-              />
-              <p className="text-xs text-muted-foreground">This updates live as you switch atlas regions.</p>
-            </div>
-          )}
+          <div className="flex flex-col gap-4 p-4">
+            <AtlasPreviewStrip
+              packsWithFile={packsWithFile}
+              texturePath={texturePath}
+              effectivePackId={effectivePackId}
+              overridePackId={overridePackId}
+              composedPreviewUrl={atlasDef ? composedPreviewUrl : null}
+              onOverride={onOverride}
+            />
 
           {/* Atlas region editor */}
           {atlasDef && packsWithFile.length > 0 && (
-            <div className="border border-border rounded-lg overflow-hidden">
+            <div className="flex-shrink-0 rounded-lg border border-border">
               <div className="px-3 py-2 bg-secondary/50 border-b border-border">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {atlasDef.label} — Region Overrides
@@ -1406,7 +1491,7 @@ function TextureLightbox({
 
           {/* Whole-file pack selector for non-atlas or as fallback */}
           {packsWithFile.length > 1 && (
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
               <span className="text-xs text-muted-foreground">Whole file:</span>
               <button
                 className={`text-xs px-2 py-0.5 rounded transition-colors ${!overridePackId ? "bg-primary/20 text-primary font-semibold" : "text-muted-foreground hover:bg-accent"}`}
@@ -1427,6 +1512,7 @@ function TextureLightbox({
               ))}
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>
