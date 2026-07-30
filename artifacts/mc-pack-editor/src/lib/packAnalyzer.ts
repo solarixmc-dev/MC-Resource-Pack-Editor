@@ -34,6 +34,7 @@ export interface PackAnalysis {
   mixedResolutions: boolean;
   resolutions: string[];
   modifiedTextureCount: number;
+  texturesByFolder: Map<string, string[]>;
   missingTextures: string[];
   duplicateTextures: string[];
   animatedTextures: string[];
@@ -244,6 +245,7 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
       mixedResolutions: false,
       resolutions: [],
       modifiedTextureCount: 0,
+      texturesByFolder: new Map(),
       missingTextures: [],
       duplicateTextures: [],
       animatedTextures: [],
@@ -263,6 +265,16 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
   const texturePaths = validPacks.flatMap((pack) =>
     Array.from(pack.files.keys()).filter((path) => isImagePath(path))
   );
+
+  // Group textures by folder for display
+  const texturesByFolder = new Map<string, string[]>();
+  texturePaths.forEach((path) => {
+    const folder = getTextureFolder(path);
+    if (!texturesByFolder.has(folder)) {
+      texturesByFolder.set(folder, []);
+    }
+    texturesByFolder.get(folder)!.push(path);
+  });
 
   const textureFolders = new Set(texturePaths.map((path) => getTextureFolder(path)));
   const resolutions = await collectTextureResolutions(validPacks);
@@ -303,6 +315,7 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
     mixedResolutions,
     resolutions: Array.from(new Set(resolutions.map((entry) => `${entry.width}×${entry.height}`))).sort(),
     modifiedTextureCount: texturePaths.length,
+    texturesByFolder,
     missingTextures,
     duplicateTextures,
     animatedTextures,

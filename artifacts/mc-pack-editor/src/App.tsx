@@ -504,12 +504,14 @@ type UploadDefaults = {
   name: string;
   description: string;
   icon: string | null;
+  copyFromTopPack: boolean;
 };
 
 const DEFAULT_UPLOAD_DEFAULTS: UploadDefaults = {
   name: "My Resource Pack",
   description: "A Minecraft 1.8 Resource Pack",
   icon: null,
+  copyFromTopPack: false,
 };
 
 function readUploadDefaults(): UploadDefaults {
@@ -526,6 +528,7 @@ function readUploadDefaults(): UploadDefaults {
         ? parsed.description
         : DEFAULT_UPLOAD_DEFAULTS.description,
       icon: typeof parsed.icon === "string" ? parsed.icon : null,
+      copyFromTopPack: typeof parsed.copyFromTopPack === "boolean" ? parsed.copyFromTopPack : DEFAULT_UPLOAD_DEFAULTS.copyFromTopPack,
     };
   } catch {
     return DEFAULT_UPLOAD_DEFAULTS;
@@ -1647,6 +1650,8 @@ function SettingsModal({
   onDefaultDescriptionChange,
   onDefaultIconChange,
   onDefaultIconRemove,
+  copyFromTopPack,
+  onCopyFromTopPackChange,
   onClose,
 }: {
   texturesPerRow: number;
@@ -1660,6 +1665,8 @@ function SettingsModal({
   onDefaultDescriptionChange: (v: string) => void;
   onDefaultIconChange: (dataUrl: string) => void;
   onDefaultIconRemove: () => void;
+  copyFromTopPack: boolean;
+  onCopyFromTopPackChange: (v: boolean) => void;
   onClose: () => void;
 }) {
   const iconInputRef = useRef<HTMLInputElement>(null);
@@ -1734,6 +1741,22 @@ function SettingsModal({
 {/* Upload defaults */}
         <div className="px-4 py-3 flex flex-col gap-3">
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Upload defaults</span>
+
+          {/* Copy from top pack */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm flex-1">Copy from top imported pack</span>
+            <button
+              onClick={() => onCopyFromTopPackChange(!copyFromTopPack)}
+              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${copyFromTopPack ? "bg-primary" : "bg-secondary border border-border"}`}
+            >
+              <span
+                className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${copyFromTopPack ? "right-0.5" : "left-0.5"}`}
+              />
+            </button>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            When enabled, copies icon, name, and description from the top imported pack. When disabled, uses manual defaults.
+          </div>
 
           {/* Icon */}
           <div className="flex items-center gap-3">
@@ -1864,6 +1887,20 @@ function AnalyzePackModal({
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Modified textures</p>
                 <p className="mt-2 text-xl font-semibold text-foreground">{analysis.modifiedTextureCount}</p>
                 <p className="mt-1 text-sm text-muted-foreground">Unique textures reviewed</p>
+                {analysis.texturesByFolder.size > 0 && (
+                  <div className="mt-3">
+                    <select className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50">
+                      <option value="">All textures ({analysis.modifiedTextureCount})</option>
+                      {Array.from(analysis.texturesByFolder.entries())
+                        .sort(([a], [b]) => a.localeCompare(b))
+                        .map(([folder, textures]) => (
+                          <option key={folder} value={folder}>
+                            {folder} ({textures.length})
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                )}
               </div>
               <div className={cardBase}>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Performance</p>
@@ -2432,9 +2469,53 @@ export default function App() {
       return [...deduped, ...prev];
     });
 
-    setPackName(uploadDefaults.name);
-    setPackDescription(uploadDefaults.description);
-    setPackIcon(uploadDefaults.icon);
+    if (uploadDefaults.copyFromTopPack && newPacks.length > 0) {
+      const topPack = newPacks[0];
+      
+      // Try to get pack icon
+      const iconBuffer = topPack.files.get("pack.png");
+      if (iconBuffer) {
+        const iconUrl = arrayBufferToDataURL(iconBuffer, "pack.png");
+        setPackIcon(iconUrl);
+      } else {
+        setPackIcon(null);
+      }
+
+      // Try to get pack.mcmeta for name and description
+      const mcmetaBuffer = topPack.files.get("pack.mcmeta");
+      if (mcmetaBuffer) {
+        try {
+          const decoder = new TextDecoder();
+          const mcmetaText = decoder.decode(mcmetaBuffer);
+          const mcmeta = JSON.parse(mcmetaText);
+          const packData = mcmeta.pack;
+          
+          if (packData?.description) {
+            // Handle Minecraft formatting codes in description
+            let description = packData.description;
+            if (typeof description === "object") {
+              description = description.text || "";
+            }
+            // Remove formatting codes
+            description = description.replace(/§[0-9a-fk-or]/g, "");
+            setPackDescription(description.trim());
+          } else {
+            setPackDescription(uploadDefaults.description);
+          }
+        } catch {
+          setPackDescription(uploadDefaults.description);
+        }
+      } else {
+        setPackDescription(uploadDefaults.description);
+      }
+
+      // Use pack name from filename
+      setPackName(topPack.name);
+    } else {
+      setPackName(uploadDefaults.name);
+      setPackDescription(uploadDefaults.description);
+      setPackIcon(uploadDefaults.icon);
+    }
   }, [uploadDefaults]);
 
   useEffect(() => {
@@ -2582,6 +2663,7 @@ export default function App() {
         mixedResolutions: false,
         resolutions: [],
         modifiedTextureCount: 0,
+        texturesByFolder: new Map(),
         missingTextures: [],
         duplicateTextures: [],
         animatedTextures: [],
@@ -2914,6 +2996,8 @@ export default function App() {
           onDefaultDescriptionChange={(value) => setUploadDefaults((prev) => ({ ...prev, description: value }))}
           onDefaultIconChange={(dataUrl) => setUploadDefaults((prev) => ({ ...prev, icon: dataUrl }))}
           onDefaultIconRemove={() => setUploadDefaults((prev) => ({ ...prev, icon: null }))}
+          copyFromTopPack={uploadDefaults.copyFromTopPack}
+          onCopyFromTopPackChange={(value) => setUploadDefaults((prev) => ({ ...prev, copyFromTopPack: value }))}
           onClose={() => setSettingsOpen(false)}
         />
       )}
