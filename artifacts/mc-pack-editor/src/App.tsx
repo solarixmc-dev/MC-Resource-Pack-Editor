@@ -15,6 +15,7 @@ import {
   getHardcoreHeartMirrorRegion,
 } from "./lib/zipUtils";
 import { getAtlasDefinition, AtlasDefinition } from "./lib/atlasRegions";
+import { createCroppedTexturePreviewDataUrl, TEXTURE_THUMBNAIL_SIZE } from "./lib/texturePreview";
 import {
   applyBrush,
   applyRecolor,
@@ -754,42 +755,30 @@ function FolderSidebar({
 
 // ─── Texture Card ──────────────────────────────────────────────────────────────
 
-function CroppedTexturePreview({ buffer, path, alt, className }: { buffer: ArrayBuffer; path: string; alt: string; className: string }) {
+function CroppedTexturePreview({ buffer, path, alt }: { buffer: ArrayBuffer; path: string; alt: string }) {
   const sourceUrl = useMemo(() => arrayBufferToDataURL(buffer, path), [buffer, path]);
   const [previewUrl, setPreviewUrl] = useState(sourceUrl);
 
   useEffect(() => {
     let cancelled = false;
-    const image = new Image();
-    image.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = image.naturalWidth;
-      canvas.height = image.naturalHeight;
-      const context = canvas.getContext("2d", { willReadFrequently: true });
-      if (!context) return;
-      context.drawImage(image, 0, 0);
-      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
-      let left = canvas.width;
-      let top = canvas.height;
-      let right = -1;
-      let bottom = -1;
-      for (let y = 0; y < canvas.height; y++) for (let x = 0; x < canvas.width; x++) {
-        if (pixels[(y * canvas.width + x) * 4 + 3] === 0) continue;
-        left = Math.min(left, x); top = Math.min(top, y); right = Math.max(right, x); bottom = Math.max(bottom, y);
-      }
-      if (right < left || bottom < top) { if (!cancelled) setPreviewUrl(sourceUrl); return; }
-      const cropped = document.createElement("canvas");
-      cropped.width = right - left + 1;
-      cropped.height = bottom - top + 1;
-      cropped.getContext("2d")?.drawImage(canvas, left, top, cropped.width, cropped.height, 0, 0, cropped.width, cropped.height);
-      if (!cancelled) setPreviewUrl(cropped.toDataURL());
-    };
-    image.onerror = () => { if (!cancelled) setPreviewUrl(sourceUrl); };
-    image.src = sourceUrl;
+    createCroppedTexturePreviewDataUrl(buffer, path)
+      .then((url) => {
+        if (!cancelled) setPreviewUrl(url);
+      })
+      .catch(() => {
+        if (!cancelled) setPreviewUrl(sourceUrl);
+      });
     return () => { cancelled = true; };
-  }, [sourceUrl]);
+  }, [buffer, path, sourceUrl]);
 
-  return <img src={previewUrl} alt={alt} className={className} />;
+  return (
+    <img
+      src={previewUrl}
+      alt={alt}
+      className="texture-preview"
+      style={{ width: TEXTURE_THUMBNAIL_SIZE, height: TEXTURE_THUMBNAIL_SIZE, imageRendering: "pixelated" }}
+    />
+  );
 }
 
 function TextureCard({
@@ -859,7 +848,7 @@ function TextureCard({
                 }}
                 title={packsWithFile.length > 1 ? `Use from: ${pack.name}` : pack.name}
               >
-                <CroppedTexturePreview buffer={buf} path={texturePath} alt={displayName} className="texture-preview max-w-[72px] max-h-[72px] object-contain" />
+                <CroppedTexturePreview buffer={buf} path={texturePath} alt={displayName} />
                 {packsWithFile.length > 1 && (
                   <span
                     className="absolute bottom-1 right-1 w-2 h-2 rounded-full"
