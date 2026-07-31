@@ -72,10 +72,32 @@ export function getTextureFolder(path: string): string {
         'mob_effect': 'gui',
         'painting': 'entity',
         'banner': 'entity',
+        'world': 'environment',
+        'dimension': 'environment',
       };
       if (folderMap[firstDir]) return folderMap[firstDir];
       return firstDir; // Return the actual directory name if not mapped
     }
+  }
+
+  // Handle files directly in textures directory (like world0.png)
+  const directTextureMatch = p.match(/assets\/\w+\/textures\/([^/]+)\.png$/);
+  if (directTextureMatch) {
+    const filename = directTextureMatch[1];
+    // Map common direct textures to appropriate folders
+    const directFileMap: Record<string, string> = {
+      'world': 'environment',
+      'world0': 'environment',
+      'world1': 'environment',
+      'world2': 'environment',
+      'world3': 'environment',
+      'world4': 'environment',
+      'world5': 'environment',
+      'world_nether': 'environment',
+      'world_end': 'environment',
+    };
+    if (directFileMap[filename]) return directFileMap[filename];
+    return 'environment'; // Default direct textures to environment
   }
 
   return "other";
