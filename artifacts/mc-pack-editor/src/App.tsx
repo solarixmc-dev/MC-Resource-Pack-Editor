@@ -793,7 +793,6 @@ function TextureCard({
   onOverride,
   onOpenLightbox,
   onEditTexture,
-  onAtlasZoom,
   isRemoved,
   onToggleRemove,
   layoutMode,
@@ -807,7 +806,6 @@ function TextureCard({
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox?: () => void;
   onEditTexture?: (path: string, displayName: string, folder: string) => void;
-  onAtlasZoom?: (url: string, displayName: string) => void;
   isRemoved: boolean;
   onToggleRemove: (path: string) => void;
   layoutMode: LayoutMode;
@@ -823,37 +821,6 @@ function TextureCard({
   const isAtlas = !!getAtlasDefinition(texturePath);
 
   const modern = layoutMode === "modern";
-  
-  // Atlas preview state
-  const [atlasPreviewUrl, setAtlasPreviewUrl] = useState<string | null>(null);
-  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
-
-  // Generate atlas preview for atlas textures
-  useEffect(() => {
-    if (!isAtlas || packsWithFile.length === 0) {
-      setAtlasPreviewUrl(null);
-      return;
-    }
-
-    const generatePreview = async () => {
-      setIsGeneratingPreview(true);
-      try {
-        const effectivePack = packsWithFile.find((p) => p.id === effectivePackId) ?? packsWithFile[0];
-        const buffer = effectivePack?.files.get(texturePath);
-        if (buffer) {
-          const previewUrl = arrayBufferToDataURL(buffer, texturePath);
-          setAtlasPreviewUrl(previewUrl);
-        }
-      } catch (error) {
-        console.error("Failed to generate atlas preview:", error);
-        setAtlasPreviewUrl(null);
-      } finally {
-        setIsGeneratingPreview(false);
-      }
-    };
-
-    generatePreview();
-  }, [isAtlas, texturePath, effectivePackId, packsWithFile]);
 
   return (
     <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-[22px] border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : modern ? "border-border/70 bg-card/95 shadow-[0_16px_34px_-24px_rgba(15,23,42,0.22)] backdrop-blur-md hover:border-primary/40" : "border-border bg-card hover:border-primary/40"}`}>
@@ -893,37 +860,6 @@ function TextureCard({
               </button>
             );
           })}
-        </div>
-      )}
-
-      {/* Atlas preview for atlas textures */}
-      {isAtlas && atlasPreviewUrl && (
-        <div
-          className={`flex ${modern ? "border-b border-border/70 bg-muted/40" : "border-b border-border"}`}
-        >
-          <button
-            className="flex-1 flex items-center justify-center p-2 checkered min-h-[80px] relative transition-all cursor-pointer hover:brightness-110"
-            onClick={() => onAtlasZoom && onAtlasZoom(atlasPreviewUrl, displayName)}
-            title="Click to zoom atlas"
-          >
-            <img
-              src={atlasPreviewUrl}
-              alt={displayName}
-              className="max-w-full max-h-full object-contain"
-              style={{ imageRendering: "pixelated" }}
-            />
-            <div className="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
-              ATLAS
-            </div>
-          </button>
-        </div>
-      )}
-
-      {isAtlas && isGeneratingPreview && (
-        <div className={`flex ${modern ? "border-b border-border/70 bg-muted/40" : "border-b border-border"}`}>
-          <div className="flex-1 flex items-center justify-center p-2 min-h-[80px]">
-            <div className="text-xs text-muted-foreground">Loading atlas preview...</div>
-          </div>
         </div>
       )}
 
@@ -1008,7 +944,6 @@ function TextureGrid({
   onOverride,
   onOpenLightbox,
   onEditTexture,
-  onAtlasZoom,
   cols,
   removedFiles,
   onToggleRemove,
@@ -1021,7 +956,6 @@ function TextureGrid({
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox: (path: string, displayName: string, folder: string) => void;
   onEditTexture: (path: string, displayName: string, folder: string) => void;
-  onAtlasZoom: (url: string, displayName: string) => void;
   cols: number;
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
@@ -1079,7 +1013,6 @@ function TextureGrid({
               onOverride={onOverride}
               onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
               onEditTexture={() => onEditTexture(path, displayName, folder)}
-              onAtlasZoom={onAtlasZoom}
               isRemoved={!!removedFiles[path]}
               onToggleRemove={onToggleRemove}
               layoutMode={layoutMode}
@@ -1101,7 +1034,6 @@ function SearchAllResults({
   onOverride,
   onOpenLightbox,
   onEditTexture,
-  onAtlasZoom,
   cols,
   removedFiles,
   onToggleRemove,
@@ -1114,7 +1046,6 @@ function SearchAllResults({
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox: (path: string, displayName: string, folder: string) => void;
   onEditTexture: (path: string, displayName: string, folder: string) => void;
-  onAtlasZoom: (url: string, displayName: string) => void;
   cols: number;
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
@@ -1166,7 +1097,6 @@ function SearchAllResults({
                 onOverride={onOverride}
                 onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
                 onEditTexture={() => onEditTexture(path, displayName, folder)}
-                onAtlasZoom={onAtlasZoom}
                 isRemoved={!!removedFiles[path]}
                 onToggleRemove={onToggleRemove}
                 layoutMode={layoutMode}
@@ -1188,14 +1118,18 @@ function AtlasPreviewStrip({
   effectivePackId,
   overridePackId,
   composedPreviewUrl,
+  displayName,
   onOverride,
+  onAtlasZoom,
 }: {
   packsWithFile: Pack[];
   texturePath: string;
   effectivePackId: string | null | undefined;
   overridePackId: string | null | undefined;
   composedPreviewUrl: string | null;
+  displayName: string;
   onOverride: (path: string, packId: string | null) => void;
+  onAtlasZoom?: (url: string, displayName: string) => void;
 }) {
   const stripRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -1279,12 +1213,25 @@ function AtlasPreviewStrip({
           <div className="flex w-[184px] flex-shrink-0 flex-col items-center gap-2">
             <div className="flex flex-col gap-2 rounded-xl border border-border bg-secondary/30 p-3">
               <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">New atlas preview</div>
-              <img
-                src={composedPreviewUrl}
-                alt="Preview of the atlas after region overrides"
-                className="h-40 w-40 rounded-md border border-border bg-black/50 object-contain"
-                style={{ imageRendering: "pixelated" }}
-              />
+              <button
+                className="cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => onAtlasZoom && onAtlasZoom(composedPreviewUrl, displayName)}
+                title="Click to zoom atlas preview"
+              >
+                <img
+                  src={composedPreviewUrl}
+                  alt="Preview of the atlas after region overrides"
+                  className="h-40 w-40 rounded-md border border-border bg-black/50 object-contain"
+                  style={{ imageRendering: "pixelated" }}
+                />
+              </button>
+              <button
+                className="text-xs px-3 py-1.5 rounded bg-primary/20 text-primary font-semibold hover:bg-primary/30 transition-colors w-full"
+                onClick={() => onAtlasZoom && onAtlasZoom(composedPreviewUrl, displayName)}
+                title="Zoom atlas preview"
+              >
+                🔍 Zoom Atlas
+              </button>
             </div>
             <p className="max-w-[184px] text-center text-xs text-muted-foreground">Live composite preview</p>
           </div>
@@ -1304,6 +1251,7 @@ function TextureLightbox({
   atlasRegionOverrides,
   onOverride,
   onAtlasRegionOverride,
+  onAtlasZoom,
   onClose,
 }: {
   texturePath: string;
@@ -1315,6 +1263,7 @@ function TextureLightbox({
   atlasRegionOverrides: Record<string, Record<string, string>>;
   onOverride: (path: string, packId: string | null) => void;
   onAtlasRegionOverride: (atlasPath: string, regionId: string, packId: string | null) => void;
+  onAtlasZoom?: (url: string, displayName: string) => void;
   onClose: () => void;
 }) {
   const packsWithFile = packs.filter((p) => p.files.has(texturePath));
@@ -1442,7 +1391,9 @@ function TextureLightbox({
               effectivePackId={effectivePackId}
               overridePackId={overridePackId}
               composedPreviewUrl={atlasDef ? composedPreviewUrl : null}
+              displayName={displayName}
               onOverride={onOverride}
+              onAtlasZoom={onAtlasZoom ? (url) => onAtlasZoom(url, displayName) : undefined}
             />
 
           {/* Atlas region editor */}
@@ -2386,8 +2337,8 @@ function TextureEditorModal({
                     className="mx-auto block"
                     style={{
                       // CSS scaling leaves canvas.width/height (and therefore saved PNG pixels) untouched.
-                      width: `${imageData.width * canvasScale}px`,
-                      height: `${imageData.height * canvasScale}px`,
+                      width: `${imageData?.width ? imageData.width * canvasScale : 0}px`,
+                      height: `${imageData?.height ? imageData.height * canvasScale : 0}px`,
                       imageRendering: "pixelated",
                       cursor: tool === "eyedropper" ? "crosshair" : "cell",
                     }}
@@ -3139,7 +3090,6 @@ export default function App() {
                   onOverride={handleOverride}
                   onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
                   onEditTexture={handleOpenTextureEditor}
-                  onAtlasZoom={(url, displayName) => setAtlasZoom({ url, displayName })}
                   cols={texturesPerRow}
                   removedFiles={removedFiles}
                   onToggleRemove={toggleRemovedFile}
@@ -3154,7 +3104,6 @@ export default function App() {
                   onOverride={handleOverride}
                   onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
                   onEditTexture={handleOpenTextureEditor}
-                  onAtlasZoom={(url, displayName) => setAtlasZoom({ url, displayName })}
                   cols={texturesPerRow}
                   removedFiles={removedFiles}
                   onToggleRemove={toggleRemovedFile}
@@ -3194,6 +3143,7 @@ export default function App() {
           atlasRegionOverrides={atlasRegionOverrides}
           onOverride={handleOverride}
           onAtlasRegionOverride={handleAtlasRegionOverride}
+          onAtlasZoom={(url) => setAtlasZoom({ url, displayName: lightbox.displayName })}
           onClose={() => setLightbox(null)}
         />
       )}

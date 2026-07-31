@@ -35,6 +35,10 @@ const ICONS_REGIONS: AtlasRegion[] = [
   { id: "hunger_empty", label: "Hunger (Empty)", x: 16, y: 27, w: 9, h: 9, description: "Empty hunger icon" },
   { id: "hunger_full", label: "Hunger (Full)", x: 52, y: 27, w: 9, h: 9, description: "Full hunger icon" },
   { id: "hunger_half", label: "Hunger (Half)", x: 61, y: 27, w: 9, h: 9, description: "Half hunger icon" },
+  // Duplicate heart row before XP bar (y=36 to y=45 area)
+  { id: "heart_empty_secondary", label: "Heart (Empty - Secondary)", x: 16, y: 36, w: 9, h: 9, description: "Secondary empty heart icon", mapsTo: "heart_empty" },
+  { id: "heart_full_secondary", label: "Heart (Full - Secondary)", x: 52, y: 36, w: 9, h: 9, description: "Secondary full heart icon", mapsTo: "heart_full" },
+  { id: "heart_half_secondary", label: "Heart (Half - Secondary)", x: 61, y: 36, w: 9, h: 9, description: "Secondary half heart icon", mapsTo: "heart_half" },
   { id: "xp_bar_empty", label: "XP Bar (Empty)", x: 0, y: 64, w: 182, h: 5, description: "Experience bar background" },
   { id: "xp_bar_full", label: "XP Bar (Full)", x: 0, y: 69, w: 182, h: 5, description: "Experience bar fill" },
 ];
