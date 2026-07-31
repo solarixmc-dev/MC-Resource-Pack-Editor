@@ -2963,7 +2963,7 @@ export default function App() {
             <DropZone onLoad={handlePacksLoaded} />
           </div>
           {(totalOverrideCount > 0 || folderSourceCount > 0) && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0 mb-8">
               {folderSourceCount > 0 && <span>📁 {folderSourceCount} folder source{folderSourceCount !== 1 ? "s" : ""}</span>}
               {totalOverrideCount > 0 && (
                 <details className="group relative">
@@ -2974,7 +2974,7 @@ export default function App() {
                     )}
                     <span className="inline-block transition-transform group-open:rotate-180">⌄</span>
                   </summary>
-                  <div className="absolute right-0 z-30 mt-1 max-h-56 w-80 overflow-y-auto rounded-lg border border-border bg-card p-1 shadow-xl">
+                  <div className="absolute right-0 z-50 mt-2 max-h-56 w-80 overflow-y-auto rounded-lg border border-border bg-card p-1 shadow-xl">
                     {Object.entries(textureOverrides).map(([path, packId]) => (
                       <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-2 py-1.5 text-left hover:bg-accent">
                         <span className="block truncate text-foreground">{path.split("/").pop()}</span>
