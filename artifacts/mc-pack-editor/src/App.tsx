@@ -2947,7 +2947,7 @@ export default function App() {
       {/* ── Sub-header: pack settings + upload ── */}
       <div className={`flex-shrink-0 border-b px-4 py-2 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-900/50 backdrop-blur-sm" : "border-slate-200/70 bg-white/70 backdrop-blur-sm") : "border-border bg-card/50"}`}>
         <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 min-w-[150px]">
             <PackSettings
               packName={packName}
               packDescription={packDescription}
@@ -2957,7 +2957,7 @@ export default function App() {
               onIconChange={(d) => { if (d === null) setPackIcon(null); else setCropSource(d); }}
             />
           </div>
-          <div className="flex-shrink-0 w-64">
+          <div className="flex-shrink-0 w-56">
             <DropZone onLoad={handlePacksLoaded} />
           </div>
           {(totalOverrideCount > 0 || folderSourceCount > 0) && (
@@ -2972,15 +2972,15 @@ export default function App() {
                     )}
                     <span className="inline-block transition-transform group-open:rotate-180">⌄</span>
                   </summary>
-                  <div className="absolute right-0 top-0 z-50 mt-2 max-h-48 w-96 overflow-y-auto rounded-lg border border-border bg-card p-2 shadow-xl">
+                  <div className="absolute right-0 top-0 z-[100] mt-2 max-h-40 w-[400px] overflow-y-auto rounded-lg border border-border bg-card p-3 shadow-xl">
                     {Object.entries(textureOverrides).map(([path, packId]) => (
-                      <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-3 py-2 text-left hover:bg-accent">
+                      <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-4 py-2 text-left hover:bg-accent">
                         <span className="block truncate text-foreground">{path.split("/").pop()}</span>
                         <span className="block truncate text-[10px] text-muted-foreground">Texture override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
                       </button>
                     ))}
                     {Object.entries(atlasRegionOverrides).flatMap(([path, regions]) => Object.entries(regions).map(([regionId, packId]) => ({ path, regionId, packId }))).map(({ path, regionId, packId }) => (
-                      <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-3 py-2 text-left hover:bg-accent">
+                      <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-4 py-2 text-left hover:bg-accent">
                         <span className="block truncate text-foreground">{path.split("/").pop()} · {regionId}</span>
                         <span className="block truncate text-[10px] text-muted-foreground">Atlas override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
                       </button>
