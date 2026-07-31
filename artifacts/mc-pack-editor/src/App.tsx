@@ -2972,7 +2972,7 @@ export default function App() {
                     )}
                     <span className="inline-block transition-transform group-open:rotate-180">⌄</span>
                   </summary>
-                  <div className="absolute right-0 top-0 z-[100] mt-2 max-h-40 w-[400px] overflow-y-auto rounded-lg border border-border bg-card p-3 shadow-xl">
+                  <div className="absolute right-0 top-0 z-[100] -mt-1 max-h-36 w-[400px] overflow-y-auto rounded-lg border border-border bg-card p-3 shadow-xl">
                     {Object.entries(textureOverrides).map(([path, packId]) => (
                       <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-4 py-2 text-left hover:bg-accent">
                         <span className="block truncate text-foreground">{path.split("/").pop()}</span>
