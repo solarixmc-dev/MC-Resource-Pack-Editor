@@ -2963,7 +2963,7 @@ export default function App() {
             <DropZone onLoad={handlePacksLoaded} />
           </div>
           {(totalOverrideCount > 0 || folderSourceCount > 0) && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0 self-start">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0">
               {folderSourceCount > 0 && <span>📁 {folderSourceCount} folder source{folderSourceCount !== 1 ? "s" : ""}</span>}
               {totalOverrideCount > 0 && (
                 <details className="group relative">
