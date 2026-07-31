@@ -2949,21 +2949,8 @@ export default function App() {
       {/* ── Sub-header: pack settings + upload ── */}
       <div className={`flex-shrink-0 border-b px-4 py-2 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-900/50 backdrop-blur-sm" : "border-slate-200/70 bg-white/70 backdrop-blur-sm") : "border-border bg-card/50"}`}>
         <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex-1 min-w-[280px]">
-            <PackSettings
-              packName={packName}
-              packDescription={packDescription}
-              packIcon={packIcon}
-              onNameChange={setPackName}
-              onDescriptionChange={setPackDescription}
-              onIconChange={(d) => { if (d === null) setPackIcon(null); else setCropSource(d); }}
-            />
-          </div>
-          <div className="flex-shrink-0 w-64">
-            <DropZone onLoad={handlePacksLoaded} />
-          </div>
           {(totalOverrideCount > 0 || folderSourceCount > 0) && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0 self-start">
               {folderSourceCount > 0 && <span>📁 {folderSourceCount} folder source{folderSourceCount !== 1 ? "s" : ""}</span>}
               {totalOverrideCount > 0 && (
                 <details className="group relative">
@@ -2992,6 +2979,19 @@ export default function App() {
               )}
             </div>
           )}
+          <div className="flex-1 min-w-[200px]">
+            <PackSettings
+              packName={packName}
+              packDescription={packDescription}
+              packIcon={packIcon}
+              onNameChange={setPackName}
+              onDescriptionChange={setPackDescription}
+              onIconChange={(d) => { if (d === null) setPackIcon(null); else setCropSource(d); }}
+            />
+          </div>
+          <div className="flex-shrink-0 w-64">
+            <DropZone onLoad={handlePacksLoaded} />
+          </div>
         </div>
       </div>
 
