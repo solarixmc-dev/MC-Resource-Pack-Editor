@@ -18,12 +18,6 @@ export interface AtlasAnalysisEntry {
   filePath?: string;
 }
 
-export interface PerformanceEstimate {
-  label: string;
-  detail: string;
-  score: number;
-}
-
 export interface PackAnalysis {
   packNames: string[];
   packCount: number;
@@ -40,12 +34,6 @@ export interface PackAnalysis {
   animatedTextures: string[];
   invalidAnimations: string[];
   atlasAnalysis: AtlasAnalysisEntry[];
-  performanceEstimate: PerformanceEstimate;
-  compatibility: {
-    minecraft189: boolean;
-    eaglercraftCompatible: boolean;
-    warnings: string[];
-  };
   overallSummary: string;
   issues: AnalyzerIssue[];
 }
@@ -203,33 +191,18 @@ function analyzeAtlas(packs: Pack[]): AtlasAnalysisEntry[] {
   });
 }
 
-function estimatePerformance(totalFiles: number, totalSizeBytes: number, resolutions: Array<{ width: number; height: number }>): PerformanceEstimate {
-  const pixelArea = resolutions.reduce((sum, item) => sum + item.width * item.height, 0);
-  const score = Math.min(100, Math.round((totalFiles / 180) * 35 + (pixelArea / 5000000) * 25 + (totalSizeBytes / 2000000) * 40));
-
-  if (score < 35) return { label: "Light", detail: "Small pack footprint with minimal texture overhead.", score };
-  if (score < 70) return { label: "Medium", detail: "Moderate texture count and size, likely fine for most clients.", score };
-  return { label: "Heavy", detail: "Large texture set and/or high-resolution assets may impact loading time.", score };
-}
-
-function assessCompatibility(texturePaths: string[], atlasAnalysis: AtlasAnalysisEntry[], missingTextures: string[], invalidAnimations: string[]): PackAnalysis["compatibility"] {
+function assessCompatibility(texturePaths: string[], atlasAnalysis: AtlasAnalysisEntry[], missingTextures: string[], invalidAnimations: string[]): string[] {
   const warnings: string[] = [];
   const normalizedPaths = new Set(texturePaths.map(normalizePath));
   const usesModernPaths = Array.from(normalizedPaths).some((path) => path.includes("/entity/") && path.includes("/textures/"));
   const usesModernFormat = Array.from(normalizedPaths).some((path) => path.includes("models/") || path.includes("animations/"));
 
   const minecraft189 = !usesModernFormat && !missingTextures.length && invalidAnimations.length === 0;
-  const eaglercraftCompatible = minecraft189 && atlasAnalysis.every((entry) => entry.present || entry.label === "Widget Atlas");
 
   if (!minecraft189) warnings.push("Some paths or assets look less aligned with classic 1.8.9 packaging conventions.");
-  if (!eaglercraftCompatible) warnings.push("Eaglercraft may need fallback assets or simpler atlas usage for full compatibility.");
   if (invalidAnimations.length > 0) warnings.push("Animation metadata is present but some entries appear invalid.");
 
-  return {
-    minecraft189,
-    eaglercraftCompatible,
-    warnings,
-  };
+  return warnings;
 }
 
 export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
@@ -251,12 +224,6 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
       animatedTextures: [],
       invalidAnimations: [],
       atlasAnalysis: [],
-      performanceEstimate: { label: "Light", detail: "No pack data loaded yet.", score: 0 },
-      compatibility: {
-        minecraft189: true,
-        eaglercraftCompatible: true,
-        warnings: [],
-      },
       overallSummary: "No resource pack data is currently loaded.",
       issues: [],
     };
@@ -287,15 +254,14 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
   const atlasAnalysis = analyzeAtlas(validPacks);
   const missingTextures = getMissingTextures(texturePaths);
   const duplicateTextures = detectDuplicateTextures(validPacks);
-  const performanceEstimate = estimatePerformance(totalFiles, totalSizeBytes, resolutions);
-  const compatibility = assessCompatibility(texturePaths, atlasAnalysis, missingTextures, invalidAnimations);
+  const compatibilityWarnings = assessCompatibility(texturePaths, atlasAnalysis, missingTextures, invalidAnimations);
 
   const issues: AnalyzerIssue[] = [];
   if (mixedResolutions) issues.push({ severity: "warning", label: "Mixed resolutions", detail: "The pack mixes several texture sizes, which can make the UI feel inconsistent." });
   if (missingTextures.length) issues.push({ severity: "warning", label: "Missing core textures", detail: `Some classic 1.8.9 textures are missing, including ${missingTextures.slice(0, 3).join(", ")}.` });
   if (invalidAnimations.length) issues.push({ severity: "warning", label: "Invalid animations", detail: `${invalidAnimations.length} animation metadata file${invalidAnimations.length !== 1 ? "s" : ""} look malformed.` });
   if (duplicateTextures.length) issues.push({ severity: "info", label: "Duplicate textures", detail: `Detected duplicate entries across uploaded packs (${duplicateTextures.length}).` });
-  if (compatibility.warnings.length) issues.push({ severity: "warning", label: "Compatibility notes", detail: compatibility.warnings.join(" ") });
+  if (compatibilityWarnings.length) issues.push({ severity: "warning", label: "Compatibility notes", detail: compatibilityWarnings.join(" ") });
 
   const summaryParts = [
     `${validPacks.length} pack${validPacks.length !== 1 ? "s" : ""} loaded`,
@@ -303,7 +269,7 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
     `base resolution ${baseTextureResolution}`,
   ];
 
-  const overallSummary = `${summaryParts.join(" • ")}. ${compatibility.minecraft189 ? "The set looks broadly compatible with Minecraft 1.8.9." : "A few assets may need tuning for classic 1.8.9 compatibility."}`;
+  const overallSummary = `${summaryParts.join(" • ")}. ${compatibilityWarnings.length === 0 ? "The set looks broadly compatible with Minecraft 1.8.9." : "A few assets may need tuning for classic 1.8.9 compatibility."}`;
 
   return {
     packNames: validPacks.map((pack) => pack.name),
@@ -321,8 +287,6 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
     animatedTextures,
     invalidAnimations,
     atlasAnalysis,
-    performanceEstimate,
-    compatibility,
     overallSummary,
     issues,
   };

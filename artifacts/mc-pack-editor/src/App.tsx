@@ -1880,18 +1880,15 @@ function AnalyzePackModal({
           </div>
         ) : (
           <div className="mt-6 space-y-4">
-            <div className={`rounded-[24px] border p-4 ${analysis.compatibility.minecraft189 ? "border-emerald-500/30 bg-emerald-500/10" : "border-amber-500/30 bg-amber-500/10"}`}>
+            <div className={`rounded-[24px] border p-4 ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "border-emerald-500/30 bg-emerald-500/10" : "border-amber-500/30 bg-amber-500/10"}`}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-foreground">{analysis.packNames.join(", ") || "Loaded pack"}</p>
                   <p className="mt-1 text-sm text-muted-foreground">{analysis.overallSummary}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${analysis.compatibility.minecraft189 ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/20 text-amber-700 dark:text-amber-300"}`}>
-                    {analysis.compatibility.minecraft189 ? "1.8.9 compatible" : "Needs review"}
-                  </span>
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${analysis.compatibility.eaglercraftCompatible ? "bg-sky-500/20 text-sky-700 dark:text-sky-300" : "bg-rose-500/20 text-rose-700 dark:text-rose-300"}`}>
-                    {analysis.compatibility.eaglercraftCompatible ? "Eaglercraft friendly" : "Eaglercraft warnings"}
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/20 text-amber-700 dark:text-amber-300"}`}>
+                    {analysis.issues.filter(i => i.severity === "warning").length === 0 ? "1.8.9 compatible" : "Needs review"}
                   </span>
                 </div>
               </div>
@@ -1927,11 +1924,6 @@ function AnalyzePackModal({
                   </div>
                 )}
               </div>
-              <div className={cardBase}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Performance</p>
-                <p className="mt-2 text-xl font-semibold text-foreground">{analysis.performanceEstimate.label}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{analysis.performanceEstimate.detail}</p>
-              </div>
             </div>
 
             <div className="grid gap-3 lg:grid-cols-2">
@@ -1947,14 +1939,6 @@ function AnalyzePackModal({
                     </span>
                   )) : <span className="text-sm text-muted-foreground">No major issues detected.</span>}
                 </div>
-              </div>
-              <div className={cardBase}>
-                <p className="text-sm font-semibold text-foreground">Compatibility warnings</p>
-                <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                  {analysis.compatibility.warnings.length ? analysis.compatibility.warnings.map((warning) => (
-                    <li key={warning} className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-amber-500" />{warning}</li>
-                  )) : <li>No compatibility warnings detected.</li>}
-                </ul>
               </div>
             </div>
 
@@ -2837,8 +2821,6 @@ export default function App() {
         animatedTextures: [],
         invalidAnimations: [],
         atlasAnalysis: [],
-        performanceEstimate: { label: "Unknown", detail: "Analysis could not be completed.", score: 0 },
-        compatibility: { minecraft189: false, eaglercraftCompatible: false, warnings: ["Analysis failed unexpectedly."] },
         overallSummary: "The pack could not be analyzed successfully.",
         issues: [{ severity: "error", label: "Analysis failed", detail: "The analyzer could not complete because of an unexpected error." }],
       });
