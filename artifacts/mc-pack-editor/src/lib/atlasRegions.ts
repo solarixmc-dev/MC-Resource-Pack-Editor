@@ -6,6 +6,7 @@ export interface AtlasRegion {
   w: number;
   h: number;
   description?: string;
+  mapsTo?: string; // For regions that should map to another region (e.g., hardcore hearts)
 }
 
 export interface AtlasDefinition {
@@ -24,6 +25,10 @@ const ICONS_REGIONS: AtlasRegion[] = [
   { id: "heart_half", label: "Heart (Half)", x: 61, y: 0, w: 9, h: 9, description: "Half heart icon" },
   { id: "heart_full_damage", label: "Heart (Damage Full)", x: 70, y: 0, w: 9, h: 9, description: "Recently lost full heart overlay" },
   { id: "heart_half_damage", label: "Heart (Damage Half)", x: 79, y: 0, w: 9, h: 9, description: "Recently lost half heart overlay" },
+  // Hardcore hearts (these will be mapped to regular hearts for overrides)
+  { id: "heart_hardcore_full", label: "Heart (Hardcore Full)", x: 88, y: 0, w: 9, h: 9, description: "Hardcore mode full heart", mapsTo: "heart_full" },
+  { id: "heart_hardcore_half", label: "Heart (Hardcore Half)", x: 97, y: 0, w: 9, h: 9, description: "Hardcore mode half heart", mapsTo: "heart_half" },
+  { id: "heart_hardcore_empty", label: "Heart (Hardcore Empty)", x: 106, y: 0, w: 9, h: 9, description: "Hardcore mode empty heart", mapsTo: "heart_empty" },
   { id: "armor_empty", label: "Armor (Empty)", x: 16, y: 9, w: 9, h: 9, description: "Empty armor icon" },
   { id: "armor_full", label: "Armor (Full)", x: 34, y: 9, w: 9, h: 9, description: "Full armor icon" },
   { id: "armor_half", label: "Armor (Half)", x: 25, y: 9, w: 9, h: 9, description: "Half armor icon" },

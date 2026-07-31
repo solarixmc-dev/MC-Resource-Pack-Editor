@@ -12,7 +12,6 @@ import {
   exportMergedPack,
   composeAtlas,
   cropAtlasRegion,
-  getHardcoreHeartMirrorRegion,
 } from "./lib/zipUtils";
 import { getAtlasDefinition, AtlasDefinition } from "./lib/atlasRegions";
 import { createCroppedTexturePreviewDataUrl, TEXTURE_THUMBNAIL_SIZE } from "./lib/texturePreview";
@@ -64,7 +63,7 @@ function Btn({
   const variants = {
     default: "bg-secondary text-secondary-foreground hover:bg-accent border border-border",
     ghost: "text-muted-foreground hover:text-foreground hover:bg-accent",
-    danger: "bg-destructive text-destructive-foreground hover:opacity-90",
+    danger: "bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/30",
     primary: "bg-primary text-primary-foreground hover:opacity-90",
   };
   return (
@@ -2041,6 +2040,8 @@ function TextureEditorModal({
   onSave: (path: string, packId: string | null, buffer: ArrayBuffer) => void;
   onClose: () => void;
 }) {
+  const isTextFile = /\.(json|mcmeta|txt|lang)$/i.test(texturePath);
+  
   const [tool, setTool] = useState<EditorTool>("pencil");
   const [color, setColor] = useState("#22c55e");
   const [hexInput, setHexInput] = useState("#22c55e");
@@ -2050,6 +2051,7 @@ function TextureEditorModal({
   const [recolorIntensity, setRecolorIntensity] = useState(0.6);
   const [recolorScope, setRecolorScope] = useState<"selection" | "whole">("selection");
   const [imageData, setImageData] = useState<ImageData | null>(null);
+  const [textContent, setTextContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [activeRegionId, setActiveRegionId] = useState<string>("whole");
   const [hasChanges, setHasChanges] = useState(false);
@@ -2084,23 +2086,36 @@ function TextureEditorModal({
       return;
     }
     setIsLoading(true);
-    loadImageDataFromBuffer(buffer, texturePath)
-      .then((next) => {
-        if (!cancelled) {
-          setImageData(next);
-          setHasChanges(false);
-          setEditHistory({ entries: [next], index: 0 });
-          setActiveRegionId("whole");
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setIsLoading(false);
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
+    
+    if (isTextFile) {
+      // Handle text files
+      const decoder = new TextDecoder();
+      const text = decoder.decode(buffer);
+      if (!cancelled) {
+        setTextContent(text);
+        setHasChanges(false);
+      }
+      setIsLoading(false);
+    } else {
+      // Handle image files
+      loadImageDataFromBuffer(buffer, texturePath)
+        .then((next) => {
+          if (!cancelled) {
+            setImageData(next);
+            setHasChanges(false);
+            setEditHistory({ entries: [next], index: 0 });
+            setActiveRegionId("whole");
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setIsLoading(false);
+        })
+        .finally(() => {
+          if (!cancelled) setIsLoading(false);
+        });
+    }
     return () => { cancelled = true; };
-  }, [activePackId, packs, texturePath]);
+  }, [activePackId, packs, texturePath, isTextFile]);
 
   useEffect(() => { drawImage(); }, [drawImage]);
   useEffect(() => { setHexInput(color.toUpperCase()); }, [color]);
@@ -2229,12 +2244,18 @@ function TextureEditorModal({
   };
 
   const handleSave = async () => {
-    if (!imageData) return;
-    const buffer = await imageDataToBuffer(imageData);
-    onSave(texturePath, activePackId, buffer);
+    if (isTextFile) {
+      const encoder = new TextEncoder();
+      const buffer = encoder.encode(textContent).buffer;
+      onSave(texturePath, activePackId, buffer);
+    } else {
+      if (!imageData) return;
+      const buffer = await imageDataToBuffer(imageData);
+      onSave(texturePath, activePackId, buffer);
+    }
   };
 
-  const canEdit = !isLoading && imageData;
+  const canEdit = !isLoading && (isTextFile ? textContent !== "" : imageData);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
@@ -2246,8 +2267,12 @@ function TextureEditorModal({
             <p className="text-sm text-muted-foreground">{texturePath}</p>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={undoEdit} disabled={editHistory.index <= 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
-            <button type="button" className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={redoEdit} disabled={editHistory.index >= editHistory.entries.length - 1} title="Redo (Ctrl/Cmd+Y)" aria-label="Redo">↷</button>
+            {!isTextFile && (
+              <>
+                <button type="button" className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={undoEdit} disabled={editHistory.index <= 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
+                <button type="button" className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={redoEdit} disabled={editHistory.index >= editHistory.entries.length - 1} title="Redo (Ctrl/Cmd+Y)" aria-label="Redo">↷</button>
+              </>
+            )}
             <button onClick={onClose} className="rounded-full border border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
           </div>
         </div>
@@ -2256,10 +2281,10 @@ function TextureEditorModal({
           <div className="min-w-0 rounded-[24px] border border-border bg-card/70 p-3">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-foreground">Canvas</p>
-                <p className="text-xs text-muted-foreground">Paint directly into the texture. The edit is saved back to the selected pack on export.</p>
+                <p className="text-sm font-semibold text-foreground">{isTextFile ? "Text Editor" : "Canvas"}</p>
+                <p className="text-xs text-muted-foreground">{isTextFile ? "Edit the text content directly. Changes are saved back to the selected pack on export." : "Paint directly into the texture. The edit is saved back to the selected pack on export."}</p>
               </div>
-              {atlasDef && (
+              {!isTextFile && atlasDef && (
                 <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm text-foreground">
                   {regionOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
                 </select>
@@ -2270,7 +2295,17 @@ function TextureEditorModal({
               className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border border-border bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)] p-3"
             >
               {isLoading ? (
-                <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading texture…</div>
+                <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading {isTextFile ? "text" : "texture"}…</div>
+              ) : isTextFile ? (
+                <textarea
+                  value={textContent}
+                  onChange={(e) => {
+                    setTextContent(e.target.value);
+                    setHasChanges(true);
+                  }}
+                  className="w-full h-full rounded-lg border border-border bg-background p-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+                  spellCheck={false}
+                />
               ) : canEdit ? (
                 <div className="checkered relative inline-block rounded-lg border border-border p-1 shadow-inner">
                   <canvas
@@ -2304,24 +2339,25 @@ function TextureEditorModal({
                   )}
                 </div>
               ) : (
-                <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">This texture could not be loaded for editing.</div>
+                <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">This {isTextFile ? "text" : "texture"} could not be loaded for editing.</div>
               )}
             </div>
           </div>
 
-          <div className="w-full rounded-[24px] border border-border bg-card/70 p-4">
-            <p className="text-sm font-semibold text-foreground">Tools</p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {[
-                { id: "pencil", label: "Brush" },
-                { id: "eraser", label: "Eraser" },
-                { id: "eyedropper", label: "Eyedropper" },
-              ].map((item) => (
-                <button key={item.id} className={`rounded-xl border px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/15 text-primary" : "border-border bg-background/70 text-foreground hover:bg-accent"}`} onClick={() => setTool(item.id as EditorTool)}>
-                  {item.label}
-                </button>
-              ))}
-            </div>
+          {!isTextFile && (
+            <div className="w-full rounded-[24px] border border-border bg-card/70 p-4">
+              <p className="text-sm font-semibold text-foreground">Tools</p>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {[
+                  { id: "pencil", label: "Brush" },
+                  { id: "eraser", label: "Eraser" },
+                  { id: "eyedropper", label: "Eyedropper" },
+                ].map((item) => (
+                  <button key={item.id} className={`rounded-xl border px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/15 text-primary" : "border-border bg-background/70 text-foreground hover:bg-accent"}`} onClick={() => setTool(item.id as EditorTool)}>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
 
             <section className="mt-4 rounded-2xl border border-border bg-background/70 p-3">
               <div className="flex items-center justify-between gap-2">
@@ -2419,6 +2455,26 @@ function TextureEditorModal({
               <button className="flex-1 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90" onClick={handleSave}>Save</button>
             </div>
           </div>
+          )}
+
+          {isTextFile && (
+            <div className="w-full rounded-[24px] border border-border bg-card/70 p-4">
+              <p className="text-sm font-semibold text-foreground">Text File Info</p>
+              <div className="mt-3 text-xs text-muted-foreground">
+                <p>This is a text file that can be edited directly in the editor above.</p>
+                <p className="mt-2">Changes will be saved back to the selected pack on export.</p>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-muted-foreground">
+                <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
+              </div>
+
+              <div className="mt-4 flex gap-2">
+                <button className="flex-1 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-accent" onClick={onClose}>Cancel</button>
+                <button className="flex-1 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90" onClick={handleSave}>Save</button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -2534,6 +2590,53 @@ export default function App() {
     setPackIcon(uploadDefaults.icon);
   }, [uploadDefaults]);
 
+  // Update pack info when pack order changes if copyFromTopPack is enabled
+  useEffect(() => {
+    if (uploadDefaults.copyFromTopPack && packs.length > 0) {
+      const topPack = packs[0];
+      
+      // Try to get pack icon
+      const iconBuffer = topPack.files.get("pack.png");
+      if (iconBuffer) {
+        const iconUrl = arrayBufferToDataURL(iconBuffer, "pack.png");
+        setPackIcon(iconUrl);
+      } else {
+        setPackIcon(null);
+      }
+
+      // Try to get pack.mcmeta for name and description
+      const mcmetaBuffer = topPack.files.get("pack.mcmeta");
+      if (mcmetaBuffer) {
+        try {
+          const decoder = new TextDecoder();
+          const mcmetaText = decoder.decode(mcmetaBuffer);
+          const mcmeta = JSON.parse(mcmetaText);
+          const packData = mcmeta.pack;
+          
+          if (packData?.description) {
+            // Handle Minecraft formatting codes in description
+            let description = packData.description;
+            if (typeof description === "object") {
+              description = description.text || "";
+            }
+            // Remove formatting codes
+            description = description.replace(/§[0-9a-fk-or]/g, "");
+            setPackDescription(description.trim());
+          } else {
+            setPackDescription(uploadDefaults.description);
+          }
+        } catch {
+          setPackDescription(uploadDefaults.description);
+        }
+      } else {
+        setPackDescription(uploadDefaults.description);
+      }
+
+      // Use pack name from filename
+      setPackName(topPack.name);
+    }
+  }, [packs, uploadDefaults.copyFromTopPack, uploadDefaults.name, uploadDefaults.description]);
+
   const removePack = useCallback((id: string) => {
     setPacks((prev) => prev.filter((p) => p.id !== id));
     setFolderSources((prev) => {
@@ -2559,11 +2662,48 @@ export default function App() {
     });
   }, []);
 
+  const clearAllPacks = useCallback(() => {
+    if (!confirm("Are you sure you want to clear all packs and start a new project? This cannot be undone.")) return;
+    
+    setPacks([]);
+    setFolderSources({});
+    setTextureOverrides({});
+    setAtlasRegionOverrides({});
+    setPackVisibility({});
+    setRemovedFiles({});
+    setPackName(uploadDefaults.name);
+    setPackDescription(uploadDefaults.description);
+    setPackIcon(uploadDefaults.icon);
+    setSelectedFolder("blocks");
+    setGlobalSearch("");
+    setJumpTarget(null);
+    setLightbox(null);
+    setEditingTexture(null);
+    setAnalysis(null);
+  }, [uploadDefaults.name, uploadDefaults.description, uploadDefaults.icon]);
+
   const handleAtlasRegionOverride = useCallback((atlasPath: string, regionId: string, packId: string | null) => {
     setAtlasRegionOverrides((prev) => {
       const next = { ...prev, [atlasPath]: { ...prev[atlasPath] } };
-      if (packId === null) delete next[atlasPath][regionId];
-      else next[atlasPath][regionId] = packId;
+      
+      // Check if this region maps to another region (e.g., hardcore hearts)
+      const atlasDef = getAtlasDefinition(atlasPath);
+      const region = atlasDef?.regions.find((r) => r.id === regionId);
+      
+      if (packId === null) {
+        delete next[atlasPath][regionId];
+        // Also remove override for mapped region
+        if (region?.mapsTo) {
+          delete next[atlasPath][region.mapsTo];
+        }
+      } else {
+        next[atlasPath][regionId] = packId;
+        // Also set override for mapped region
+        if (region?.mapsTo) {
+          next[atlasPath][region.mapsTo] = packId;
+        }
+      }
+      
       if (Object.keys(next[atlasPath]).length === 0) delete next[atlasPath];
       return next;
     });
@@ -2764,6 +2904,14 @@ export default function App() {
           <div className="flex items-center gap-2 flex-shrink-0">
             {packs.length > 0 && (
               <>
+                <Btn
+                  variant="danger"
+                  onClick={clearAllPacks}
+                  className="rounded-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20"
+                  title="Clear all packs and start a new project"
+                >
+                  🗑️
+                </Btn>
                 <Btn
                   variant="default"
                   onClick={handleAnalyze}

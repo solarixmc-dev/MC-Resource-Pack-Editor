@@ -47,6 +47,37 @@ export function getTextureFolder(path: string): string {
   // assets/minecraft/blockstates/... -> blockstates
   if (p.match(/assets\/\w+\/blockstates\//)) return "blockstates";
 
+  // Check for common texture subdirectories that might not be in MC_FOLDERS
+  const textureDirMatch = p.match(/assets\/\w+\/textures\/(.*)$/);
+  if (textureDirMatch) {
+    const subPath = textureDirMatch[1];
+    const parts = subPath.split('/');
+    if (parts.length > 0) {
+      const firstDir = parts[0];
+      // Map common subdirectories to appropriate folders
+      const folderMap: Record<string, string> = {
+        'sky': 'environment',
+        'clouds': 'environment', 
+        'end_sky': 'environment',
+        'moon': 'environment',
+        'sun': 'environment',
+        'particle': 'particle',
+        'entity': 'entity',
+        'item': 'items',
+        'block': 'blocks',
+        'gui': 'gui',
+        'font': 'font',
+        'map': 'map',
+        'colormap': 'colormap',
+        'mob_effect': 'gui',
+        'painting': 'entity',
+        'banner': 'entity',
+      };
+      if (folderMap[firstDir]) return folderMap[firstDir];
+      return firstDir; // Return the actual directory name if not mapped
+    }
+  }
+
   return "other";
 }
 
