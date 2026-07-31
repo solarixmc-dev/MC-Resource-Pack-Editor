@@ -176,7 +176,7 @@ function analyzeAtlas(packs: Pack[]): AtlasAnalysisEntry[] {
     {
       label: "HUD Icons Atlas",
       filePaths: ["gui/icons.png", "textures/gui/icons.png"],
-      requiredRegions: ["crosshair", "heart_full", "heart_empty", "armor_full", "hunger_full", "xp_bar_full", "heart_full_secondary"],
+      requiredRegions: ["crosshair", "heart_full", "heart_empty", "armor_full", "hunger_full", "xp_bar_full", "heart_hardcore_full"],
     },
     {
       label: "Widget Atlas",

@@ -1313,10 +1313,10 @@ function TextureLightbox({
 
         if (regionOverrides[region.id]) {
           patches.push({ region, buffer: sourceBuffer });
-          // Hardcore heart mapping is now handled via the mapsTo property in atlas regions
-          if (region.mapsTo) {
-            const hardcoreRegion = atlasDef.regions.find((r) => r.id === region.mapsTo);
-            if (hardcoreRegion) patches.push({ region: hardcoreRegion, sourceRegion: region, buffer: sourceBuffer });
+          // When a region is overridden, also override any regions that map to it (e.g., hardcore hearts map to normal hearts)
+          const mappedRegions = atlasDef.regions.filter((r) => r.mapsTo === region.id);
+          for (const mappedRegion of mappedRegions) {
+            patches.push({ region: mappedRegion, sourceRegion: region, buffer: sourceBuffer });
           }
         }
       }
@@ -1432,10 +1432,11 @@ function TextureLightbox({
                 </div>
               </div>
               <div className="divide-y divide-border">
-                {atlasDef.regions.map((region) => {
+                {atlasDef.regions.filter(region => !region.mapsTo).map((region) => {
                   const regionPackId = regionOverrides[region.id];
                   const regionOverridePack = packsWithFile.find(p => p.id === regionPackId);
                   const isPreviewedRegion = previewRegion?.id === region.id;
+                  const mappedRegions = atlasDef.regions.filter(r => r.mapsTo === region.id);
                   return (
                     <div
                       key={region.id}
@@ -1461,6 +1462,7 @@ function TextureLightbox({
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{region.label}</span>
                           {regionPackId && <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-semibold">override</span>}
+                          {mappedRegions.length > 0 && <span className="text-[10px] uppercase tracking-[0.2em] text-blue-400 font-semibold">→ {mappedRegions.map(r => r.label).join(', ')}</span>}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {region.description} · ({region.x},{region.y}) {region.w}×{region.h}px
@@ -2710,25 +2712,26 @@ export default function App() {
   const handleAtlasRegionOverride = useCallback((atlasPath: string, regionId: string, packId: string | null) => {
     setAtlasRegionOverrides((prev) => {
       const next = { ...prev, [atlasPath]: { ...prev[atlasPath] } };
-      
-      // Check if this region maps to another region (e.g., hardcore hearts)
+
       const atlasDef = getAtlasDefinition(atlasPath);
       const region = atlasDef?.regions.find((r) => r.id === regionId);
-      
+
       if (packId === null) {
         delete next[atlasPath][regionId];
-        // Also remove override for mapped region
-        if (region?.mapsTo) {
-          delete next[atlasPath][region.mapsTo];
+        // Also remove override for regions that map to this region (e.g., hardcore hearts map to normal hearts)
+        const mappedRegions = atlasDef?.regions.filter((r) => r.mapsTo === regionId) || [];
+        for (const mappedRegion of mappedRegions) {
+          delete next[atlasPath][mappedRegion.id];
         }
       } else {
         next[atlasPath][regionId] = packId;
-        // Also set override for mapped region
-        if (region?.mapsTo) {
-          next[atlasPath][region.mapsTo] = packId;
+        // Also set override for regions that map to this region (e.g., hardcore hearts map to normal hearts)
+        const mappedRegions = atlasDef?.regions.filter((r) => r.mapsTo === regionId) || [];
+        for (const mappedRegion of mappedRegions) {
+          next[atlasPath][mappedRegion.id] = packId;
         }
       }
-      
+
       if (Object.keys(next[atlasPath]).length === 0) delete next[atlasPath];
       return next;
     });

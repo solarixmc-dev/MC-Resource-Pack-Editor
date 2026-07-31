@@ -25,20 +25,16 @@ const ICONS_REGIONS: AtlasRegion[] = [
   { id: "heart_half", label: "Heart (Half)", x: 61, y: 0, w: 9, h: 9, description: "Half heart icon" },
   { id: "heart_full_damage", label: "Heart (Damage Full)", x: 70, y: 0, w: 9, h: 9, description: "Recently lost full heart overlay" },
   { id: "heart_half_damage", label: "Heart (Damage Half)", x: 79, y: 0, w: 9, h: 9, description: "Recently lost half heart overlay" },
-  // Hardcore hearts (these will be mapped to regular hearts for overrides)
-  { id: "heart_hardcore_full", label: "Heart (Hardcore Full)", x: 88, y: 0, w: 9, h: 9, description: "Hardcore mode full heart", mapsTo: "heart_full" },
-  { id: "heart_hardcore_half", label: "Heart (Hardcore Half)", x: 97, y: 0, w: 9, h: 9, description: "Hardcore mode half heart", mapsTo: "heart_half" },
-  { id: "heart_hardcore_empty", label: "Heart (Hardcore Empty)", x: 106, y: 0, w: 9, h: 9, description: "Hardcore mode empty heart", mapsTo: "heart_empty" },
   { id: "armor_empty", label: "Armor (Empty)", x: 16, y: 9, w: 9, h: 9, description: "Empty armor icon" },
   { id: "armor_full", label: "Armor (Full)", x: 34, y: 9, w: 9, h: 9, description: "Full armor icon" },
   { id: "armor_half", label: "Armor (Half)", x: 25, y: 9, w: 9, h: 9, description: "Half armor icon" },
   { id: "hunger_empty", label: "Hunger (Empty)", x: 16, y: 27, w: 9, h: 9, description: "Empty hunger icon" },
   { id: "hunger_full", label: "Hunger (Full)", x: 52, y: 27, w: 9, h: 9, description: "Full hunger icon" },
   { id: "hunger_half", label: "Hunger (Half)", x: 61, y: 27, w: 9, h: 9, description: "Half hunger icon" },
-  // Duplicate heart row before XP bar (y=36 to y=45 area)
-  { id: "heart_empty_secondary", label: "Heart (Empty - Secondary)", x: 16, y: 36, w: 9, h: 9, description: "Secondary empty heart icon", mapsTo: "heart_empty" },
-  { id: "heart_full_secondary", label: "Heart (Full - Secondary)", x: 52, y: 36, w: 9, h: 9, description: "Secondary full heart icon", mapsTo: "heart_full" },
-  { id: "heart_half_secondary", label: "Heart (Half - Secondary)", x: 61, y: 36, w: 9, h: 9, description: "Secondary half heart icon", mapsTo: "heart_half" },
+  // Hardcore hearts (separate row, will be mapped to regular hearts for overrides)
+  { id: "heart_hardcore_full", label: "Heart (Hardcore Full)", x: 52, y: 45, w: 9, h: 9, description: "Hardcore mode full heart", mapsTo: "heart_full" },
+  { id: "heart_hardcore_half", label: "Heart (Hardcore Half)", x: 61, y: 45, w: 9, h: 9, description: "Hardcore mode half heart", mapsTo: "heart_half" },
+  { id: "heart_hardcore_empty", label: "Heart (Hardcore Empty)", x: 16, y: 45, w: 9, h: 9, description: "Hardcore mode empty heart", mapsTo: "heart_empty" },
   { id: "xp_bar_empty", label: "XP Bar (Empty)", x: 0, y: 64, w: 182, h: 5, description: "Experience bar background" },
   { id: "xp_bar_full", label: "XP Bar (Full)", x: 0, y: 69, w: 182, h: 5, description: "Experience bar fill" },
 ];

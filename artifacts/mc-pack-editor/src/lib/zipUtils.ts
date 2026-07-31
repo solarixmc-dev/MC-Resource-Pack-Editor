@@ -443,11 +443,11 @@ export async function exportMergedPack(
           const buffer = overridePack.files.get(path)!;
           patches.push({ region, buffer });
 
-          // Use the new atlas regions mapping system for hardcore hearts
-          if (region.mapsTo) {
-            const atlasDef = getAtlasDefinition(path);
-            const hardcoreRegion = atlasDef?.regions.find((r) => r.id === region.mapsTo);
-            if (hardcoreRegion) patches.push({ region: hardcoreRegion, sourceRegion: region, buffer });
+          // When a region is overridden, also override any regions that map to it (e.g., hardcore hearts map to normal hearts)
+          const atlasDef = getAtlasDefinition(path);
+          const mappedRegions = atlasDef?.regions.filter((r) => r.mapsTo === region.id) || [];
+          for (const mappedRegion of mappedRegions) {
+            patches.push({ region: mappedRegion, sourceRegion: region, buffer });
           }
         }
 
