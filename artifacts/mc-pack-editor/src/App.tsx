@@ -2563,8 +2563,7 @@ export default function App() {
             if (typeof description === "object") {
               description = description.text || "";
             }
-            // Remove formatting codes
-            description = description.replace(/§[0-9a-fk-or]/g, "");
+            // Preserve formatting codes in description
             setPackDescription(description.trim());
           } else {
             setPackDescription(uploadDefaults.description);
@@ -2630,8 +2629,7 @@ export default function App() {
             if (typeof description === "object") {
               description = description.text || "";
             }
-            // Remove formatting codes
-            description = description.replace(/§[0-9a-fk-or]/g, "");
+            // Preserve formatting codes in description
             setPackDescription(description.trim());
           } else {
             setPackDescription(uploadDefaults.description);
@@ -2963,26 +2961,26 @@ export default function App() {
             <DropZone onLoad={handlePacksLoaded} />
           </div>
           {(totalOverrideCount > 0 || folderSourceCount > 0) && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0 mb-8">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0">
               {folderSourceCount > 0 && <span>📁 {folderSourceCount} folder source{folderSourceCount !== 1 ? "s" : ""}</span>}
               {totalOverrideCount > 0 && (
                 <details className="group relative">
-                  <summary className="cursor-pointer list-none flex items-center gap-1 hover:text-foreground group-open:self-start">
+                  <summary className="cursor-pointer list-none flex items-center gap-1 hover:text-foreground">
                     <span>🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
                     {atlasRegionOverrideCount > 0 && (
                       <span className="text-[10px]">({textureOverrideCount} texture, {atlasRegionOverrideCount} atlas)</span>
                     )}
                     <span className="inline-block transition-transform group-open:rotate-180">⌄</span>
                   </summary>
-                  <div className="absolute right-0 z-50 mt-2 max-h-56 w-80 overflow-y-auto rounded-lg border border-border bg-card p-1 shadow-xl">
+                  <div className="absolute right-0 top-0 z-50 mt-2 max-h-48 w-96 overflow-y-auto rounded-lg border border-border bg-card p-2 shadow-xl">
                     {Object.entries(textureOverrides).map(([path, packId]) => (
-                      <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-2 py-1.5 text-left hover:bg-accent">
+                      <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-3 py-2 text-left hover:bg-accent">
                         <span className="block truncate text-foreground">{path.split("/").pop()}</span>
                         <span className="block truncate text-[10px] text-muted-foreground">Texture override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
                       </button>
                     ))}
                     {Object.entries(atlasRegionOverrides).flatMap(([path, regions]) => Object.entries(regions).map(([regionId, packId]) => ({ path, regionId, packId }))).map(({ path, regionId, packId }) => (
-                      <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-2 py-1.5 text-left hover:bg-accent">
+                      <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-3 py-2 text-left hover:bg-accent">
                         <span className="block truncate text-foreground">{path.split("/").pop()} · {regionId}</span>
                         <span className="block truncate text-[10px] text-muted-foreground">Atlas override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
                       </button>
