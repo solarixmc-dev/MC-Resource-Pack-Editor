@@ -793,6 +793,7 @@ function TextureCard({
   onOverride,
   onOpenLightbox,
   onEditTexture,
+  onAtlasZoom,
   isRemoved,
   onToggleRemove,
   layoutMode,
@@ -806,6 +807,7 @@ function TextureCard({
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox?: () => void;
   onEditTexture?: (path: string, displayName: string, folder: string) => void;
+  onAtlasZoom?: (url: string, displayName: string) => void;
   isRemoved: boolean;
   onToggleRemove: (path: string) => void;
   layoutMode: LayoutMode;
@@ -821,6 +823,37 @@ function TextureCard({
   const isAtlas = !!getAtlasDefinition(texturePath);
 
   const modern = layoutMode === "modern";
+  
+  // Atlas preview state
+  const [atlasPreviewUrl, setAtlasPreviewUrl] = useState<string | null>(null);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+
+  // Generate atlas preview for atlas textures
+  useEffect(() => {
+    if (!isAtlas || packsWithFile.length === 0) {
+      setAtlasPreviewUrl(null);
+      return;
+    }
+
+    const generatePreview = async () => {
+      setIsGeneratingPreview(true);
+      try {
+        const effectivePack = packsWithFile.find((p) => p.id === effectivePackId) ?? packsWithFile[0];
+        const buffer = effectivePack?.files.get(texturePath);
+        if (buffer) {
+          const previewUrl = arrayBufferToDataURL(buffer, texturePath);
+          setAtlasPreviewUrl(previewUrl);
+        }
+      } catch (error) {
+        console.error("Failed to generate atlas preview:", error);
+        setAtlasPreviewUrl(null);
+      } finally {
+        setIsGeneratingPreview(false);
+      }
+    };
+
+    generatePreview();
+  }, [isAtlas, texturePath, effectivePackId, packsWithFile]);
 
   return (
     <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-[22px] border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : modern ? "border-border/70 bg-card/95 shadow-[0_16px_34px_-24px_rgba(15,23,42,0.22)] backdrop-blur-md hover:border-primary/40" : "border-border bg-card hover:border-primary/40"}`}>
@@ -860,6 +893,37 @@ function TextureCard({
               </button>
             );
           })}
+        </div>
+      )}
+
+      {/* Atlas preview for atlas textures */}
+      {isAtlas && atlasPreviewUrl && (
+        <div
+          className={`flex ${modern ? "border-b border-border/70 bg-muted/40" : "border-b border-border"}`}
+        >
+          <button
+            className="flex-1 flex items-center justify-center p-2 checkered min-h-[80px] relative transition-all cursor-pointer hover:brightness-110"
+            onClick={() => onAtlasZoom && onAtlasZoom(atlasPreviewUrl, displayName)}
+            title="Click to zoom atlas"
+          >
+            <img
+              src={atlasPreviewUrl}
+              alt={displayName}
+              className="max-w-full max-h-full object-contain"
+              style={{ imageRendering: "pixelated" }}
+            />
+            <div className="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
+              ATLAS
+            </div>
+          </button>
+        </div>
+      )}
+
+      {isAtlas && isGeneratingPreview && (
+        <div className={`flex ${modern ? "border-b border-border/70 bg-muted/40" : "border-b border-border"}`}>
+          <div className="flex-1 flex items-center justify-center p-2 min-h-[80px]">
+            <div className="text-xs text-muted-foreground">Loading atlas preview...</div>
+          </div>
         </div>
       )}
 
@@ -944,6 +1008,7 @@ function TextureGrid({
   onOverride,
   onOpenLightbox,
   onEditTexture,
+  onAtlasZoom,
   cols,
   removedFiles,
   onToggleRemove,
@@ -956,6 +1021,7 @@ function TextureGrid({
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox: (path: string, displayName: string, folder: string) => void;
   onEditTexture: (path: string, displayName: string, folder: string) => void;
+  onAtlasZoom: (url: string, displayName: string) => void;
   cols: number;
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
@@ -1013,6 +1079,7 @@ function TextureGrid({
               onOverride={onOverride}
               onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
               onEditTexture={() => onEditTexture(path, displayName, folder)}
+              onAtlasZoom={onAtlasZoom}
               isRemoved={!!removedFiles[path]}
               onToggleRemove={onToggleRemove}
               layoutMode={layoutMode}
@@ -1034,6 +1101,7 @@ function SearchAllResults({
   onOverride,
   onOpenLightbox,
   onEditTexture,
+  onAtlasZoom,
   cols,
   removedFiles,
   onToggleRemove,
@@ -1046,6 +1114,7 @@ function SearchAllResults({
   onOverride: (path: string, packId: string | null) => void;
   onOpenLightbox: (path: string, displayName: string, folder: string) => void;
   onEditTexture: (path: string, displayName: string, folder: string) => void;
+  onAtlasZoom: (url: string, displayName: string) => void;
   cols: number;
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
@@ -1097,6 +1166,7 @@ function SearchAllResults({
                 onOverride={onOverride}
                 onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
                 onEditTexture={() => onEditTexture(path, displayName, folder)}
+                onAtlasZoom={onAtlasZoom}
                 isRemoved={!!removedFiles[path]}
                 onToggleRemove={onToggleRemove}
                 layoutMode={layoutMode}
@@ -1294,8 +1364,11 @@ function TextureLightbox({
 
         if (regionOverrides[region.id]) {
           patches.push({ region, buffer: sourceBuffer });
-          const hardcoreRegion = getHardcoreHeartMirrorRegion(region);
-          if (hardcoreRegion) patches.push({ region: hardcoreRegion, sourceRegion: region, buffer: sourceBuffer });
+          // Hardcore heart mapping is now handled via the mapsTo property in atlas regions
+          if (region.mapsTo) {
+            const hardcoreRegion = atlasDef.regions.find((r) => r.id === region.mapsTo);
+            if (hardcoreRegion) patches.push({ region: hardcoreRegion, sourceRegion: region, buffer: sourceBuffer });
+          }
         }
       }
 
@@ -2498,6 +2571,7 @@ export default function App() {
   const [globalSearch, setGlobalSearch] = useState("");
   const [jumpTarget, setJumpTarget] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ path: string; displayName: string; folder: string } | null>(null);
+  const [atlasZoom, setAtlasZoom] = useState<{ url: string; displayName: string } | null>(null);
   // Settings
   const [texturesPerRow, setTexturesPerRow] = useState(6);
   const [darkMode, setDarkMode] = useState(() => {
@@ -3065,6 +3139,7 @@ export default function App() {
                   onOverride={handleOverride}
                   onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
                   onEditTexture={handleOpenTextureEditor}
+                  onAtlasZoom={(url, displayName) => setAtlasZoom({ url, displayName })}
                   cols={texturesPerRow}
                   removedFiles={removedFiles}
                   onToggleRemove={toggleRemovedFile}
@@ -3079,6 +3154,7 @@ export default function App() {
                   onOverride={handleOverride}
                   onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
                   onEditTexture={handleOpenTextureEditor}
+                  onAtlasZoom={(url, displayName) => setAtlasZoom({ url, displayName })}
                   cols={texturesPerRow}
                   removedFiles={removedFiles}
                   onToggleRemove={toggleRemovedFile}
@@ -3120,6 +3196,29 @@ export default function App() {
           onAtlasRegionOverride={handleAtlasRegionOverride}
           onClose={() => setLightbox(null)}
         />
+      )}
+
+      {/* ── Atlas zoom modal ── */}
+      {atlasZoom && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" onClick={() => setAtlasZoom(null)}>
+          <div className="max-w-[90vw] max-h-[90vh] rounded-[28px] border border-border bg-background/95 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Atlas Preview</p>
+                <h3 className="text-lg font-semibold text-foreground">{atlasZoom.displayName}</h3>
+              </div>
+              <button onClick={() => setAtlasZoom(null)} className="rounded-full border border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
+            </div>
+            <div className="p-4 flex items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]">
+              <img
+                src={atlasZoom.url}
+                alt={atlasZoom.displayName}
+                className="max-w-full max-h-[70vh] object-contain rounded-lg border border-border"
+                style={{ imageRendering: "pixelated" }}
+              />
+            </div>
+          </div>
+        </div>
       )}
 
       {analysisOpen && (

@@ -176,12 +176,6 @@ export function getLinkedAtlasRegionOverrides(
   return linked;
 }
 
-/** Minecraft's hardcore heart row is the normal heart row shifted down by 9px. */
-export function getHardcoreHeartMirrorRegion(region: AtlasRegion): AtlasRegion | null {
-  if (!region.id.startsWith("heart_")) return null;
-  return { ...region, id: `${region.id}_hardcore`, label: `${region.label} (Hardcore)`, y: region.y + 9 };
-}
-
 async function loadImage(buffer: ArrayBuffer, path: string): Promise<HTMLImageElement> {
   const dataUrl = arrayBufferToDataURL(buffer, path);
   return new Promise((resolve, reject) => {
@@ -449,10 +443,12 @@ export async function exportMergedPack(
           const buffer = overridePack.files.get(path)!;
           patches.push({ region, buffer });
 
-          // Keep hardcore hearts in sync unless a future explicit hardcore
-          // region override is supplied. The source remains the normal heart.
-          const hardcoreRegion = getHardcoreHeartMirrorRegion(region);
-          if (hardcoreRegion) patches.push({ region: hardcoreRegion, sourceRegion: region, buffer });
+          // Use the new atlas regions mapping system for hardcore hearts
+          if (region.mapsTo) {
+            const atlasDef = getAtlasDefinition(path);
+            const hardcoreRegion = atlasDef?.regions.find((r) => r.id === region.mapsTo);
+            if (hardcoreRegion) patches.push({ region: hardcoreRegion, sourceRegion: region, buffer });
+          }
         }
 
         if (patches.length > 0) {
