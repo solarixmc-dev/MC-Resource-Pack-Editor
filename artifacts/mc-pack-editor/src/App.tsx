@@ -2965,14 +2965,14 @@ export default function App() {
               {folderSourceCount > 0 && <span>📁 {folderSourceCount} folder source{folderSourceCount !== 1 ? "s" : ""}</span>}
               {totalOverrideCount > 0 && (
                 <details className="group relative">
-                  <summary className="cursor-pointer list-none flex items-center gap-1 hover:text-foreground">
+                  <summary className="cursor-pointer list-none flex items-center gap-1 hover:text-foreground group-open:self-start">
                     <span>🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
                     {atlasRegionOverrideCount > 0 && (
                       <span className="text-[10px]">({textureOverrideCount} texture, {atlasRegionOverrideCount} atlas)</span>
                     )}
                     <span className="inline-block transition-transform group-open:rotate-180">⌄</span>
                   </summary>
-                  <div className="absolute right-0 top-full z-[100] -mt-2 max-h-36 w-[400px] overflow-y-auto rounded-lg border border-border bg-card p-3 pb-4 shadow-xl">
+                  <div className="absolute right-0 top-full z-[100] mt-1 max-h-36 w-[400px] overflow-y-auto rounded-lg border border-border bg-card p-3 pb-4 shadow-xl">
                     {Object.entries(textureOverrides).map(([path, packId]) => (
                       <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-4 py-2 text-left hover:bg-accent">
                         <span className="block truncate text-foreground">{path.split("/").pop()}</span>
