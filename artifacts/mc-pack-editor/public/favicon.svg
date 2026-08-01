@@ -1,12 +1,25 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="180" height="180" rx="36" fill="#0F172A"/>
-  <rect x="38" y="38" width="104" height="104" rx="20" stroke="#5EEAD4" stroke-width="10"/>
-  <rect x="56" y="56" width="18" height="18" rx="4" fill="#5EEAD4"/>
-  <rect x="56" y="82" width="18" height="18" rx="4" fill="#5EEAD4"/>
-  <rect x="56" y="108" width="18" height="18" rx="4" fill="#5EEAD4"/>
-  <rect x="106" y="56" width="18" height="18" rx="4" fill="#5EEAD4"/>
-  <rect x="106" y="82" width="18" height="18" rx="4" fill="#5EEAD4"/>
-  <rect x="82" y="82" width="18" height="18" rx="4" fill="#5EEAD4"/>
-  <path d="M74 64L82 72L90 64" stroke="#5EEAD4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M90 116L82 108L74 116" stroke="#5EEAD4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect width="180" height="180" fill="#F5F5F5"/>
+  <!-- Top pins -->
+  <rect x="62" y="12" width="12" height="24" rx="6" fill="#000"/>
+  <rect x="90" y="12" width="12" height="24" rx="6" fill="#000"/>
+  <rect x="118" y="12" width="12" height="24" rx="6" fill="#000"/>
+  <!-- Right pins -->
+  <rect x="150" y="62" width="24" height="12" rx="6" fill="#000"/>
+  <rect x="150" y="90" width="24" height="12" rx="6" fill="#000"/>
+  <rect x="150" y="118" width="24" height="12" rx="6" fill="#000"/>
+  <!-- Bottom pins -->
+  <rect x="62" y="150" width="12" height="24" rx="6" fill="#000"/>
+  <rect x="90" y="150" width="12" height="24" rx="6" fill="#000"/>
+  <rect x="118" y="150" width="12" height="24" rx="6" fill="#000"/>
+  <!-- Left pins -->
+  <rect x="6" y="62" width="24" height="12" rx="6" fill="#000"/>
+  <rect x="6" y="90" width="24" height="12" rx="6" fill="#000"/>
+  <rect x="6" y="118" width="24" height="12" rx="6" fill="#000"/>
+  <!-- Outer square -->
+  <rect x="48" y="48" width="84" height="84" rx="8" fill="#000"/>
+  <!-- Inner white border -->
+  <rect x="56" y="56" width="68" height="68" rx="4" fill="none" stroke="#F5F5F5" stroke-width="6"/>
+  <!-- Center square -->
+  <rect x="74" y="74" width="32" height="32" rx="2" fill="none" stroke="#F5F5F5" stroke-width="4"/>
 </svg>
