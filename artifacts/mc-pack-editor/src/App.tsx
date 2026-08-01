@@ -2573,16 +2573,23 @@ export default function App() {
 
   const normalizeImportedPath = useCallback((file: File) => {
     const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath;
-    const rawPath = (relativePath ?? file.name).replace(/\\/g, "/").replace(/^\/+/, "");
+    let rawPath = (relativePath ?? file.name).replace(/\\/g, "/").replace(/^\/+/, "");
+    if (rawPath.startsWith("C:/fakepath/")) {
+      rawPath = rawPath.substring(12);
+    }
+    if (rawPath.match(/^[A-Za-z]:(\/|\\)/)) {
+      rawPath = rawPath.replace(/^[A-Za-z]:(\/|\\)+/, "");
+    }
+    const safeName = file.name || "unknown.bin";
+    const normalized = rawPath || safeName;
 
-    if (!rawPath) return "assets/minecraft/textures/misc/unknown.bin";
-    if (rawPath.startsWith("assets/")) return rawPath;
-    if (rawPath.startsWith("textures/") || rawPath.startsWith("models/") || rawPath.startsWith("sounds/") || rawPath.startsWith("lang/") || rawPath.startsWith("blockstates/")) {
-      return `assets/minecraft/${rawPath}`;
+    if (normalized.startsWith("assets/")) return normalized;
+    if (/^(textures|models|sounds|lang|blockstates)\//.test(normalized)) {
+      return `assets/minecraft/${normalized}`;
     }
 
-    const ext = rawPath.split(".").pop()?.toLowerCase();
-    const baseName = rawPath.replace(/\.[^.]+$/, "");
+    const ext = normalized.split(".").pop()?.toLowerCase();
+    const baseName = normalized.replace(/\.[^.]+$/, "");
     const lower = baseName.toLowerCase();
     let inferredFolder = "misc";
 
@@ -2593,11 +2600,19 @@ export default function App() {
     else if (/(block|terrain|stone|grass|dirt|oak|birch|sand|log|planks)/.test(lower)) inferredFolder = "blocks";
     else if (/(entity|mob|player|villager|painting|banner)/.test(lower)) inferredFolder = "entity";
 
+    const segments = normalized.split("/").filter(Boolean);
+    const fileName = segments.pop() ?? safeName;
+    const dirPath = segments.join("/");
+
     if (ext && ["png", "jpg", "jpeg", "gif", "tga"].includes(ext)) {
-      return `assets/minecraft/textures/${inferredFolder}/${rawPath}`;
+      return dirPath
+        ? `assets/minecraft/textures/${inferredFolder}/${dirPath}/${fileName}`
+        : `assets/minecraft/textures/${inferredFolder}/${fileName}`;
     }
 
-    return `assets/minecraft/${rawPath}`;
+    return dirPath
+      ? `assets/minecraft/${dirPath}/${fileName}`
+      : `assets/minecraft/${fileName}`;
   }, []);
 
   const createScratchedPackFromFiles = useCallback(async (files: FileList | File[]) => {
@@ -2621,7 +2636,10 @@ export default function App() {
       };
 
       setPacks((prev) => [newPack, ...prev]);
-      setSelectedFolder("blocks");
+      const firstImported = fileList[0];
+      const firstPath = normalizeImportedPath(firstImported);
+      const firstFolder = getTextureFolder(firstPath);
+      setSelectedFolder(firstFolder || "blocks");
       setGlobalSearch("");
     } finally {
       setCreatingPack(false);
