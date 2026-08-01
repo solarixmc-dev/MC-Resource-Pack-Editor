@@ -21,18 +21,34 @@ export const PACK_COLORS = [
   "#a78bfa", "#34d399", "#f472b6", "#38bdf8",
 ];
 
-export const MC_FOLDERS: { key: string; label: string; icon: string }[] = [
-  { key: "blocks",      label: "Blocks",        icon: "🧱" },
-  { key: "items",       label: "Items",         icon: "🗡️" },
-  { key: "gui",         label: "GUI",           icon: "📋" },
-  { key: "entity",      label: "Entity",        icon: "🐄" },
-  { key: "particle",    label: "Particles",     icon: "✨" },
-  { key: "environment", label: "Environment",   icon: "🌤️" },
-  { key: "font",        label: "Font",          icon: "🔤" },
-  { key: "misc",        label: "Misc",          icon: "📦" },
-  { key: "map",         label: "Map",           icon: "🗺️" },
-  { key: "colormap",    label: "Colormap",      icon: "🎨" },
-  { key: "models",      label: "Models",        icon: "📐" },
-  { key: "sounds",      label: "Sounds",        icon: "🔊" },
-  { key: "lang",        label: "Language",      icon: "🌐" },
+/** Semantic icon key — resolved to an SVG icon in components/icons.tsx. */
+export type FolderIconKey =
+  | "blocks"
+  | "items"
+  | "gui"
+  | "entity"
+  | "particle"
+  | "environment"
+  | "font"
+  | "misc"
+  | "map"
+  | "colormap"
+  | "models"
+  | "sounds"
+  | "lang";
+
+export const MC_FOLDERS: { key: string; label: string; icon: FolderIconKey }[] = [
+  { key: "blocks",      label: "Blocks",      icon: "blocks" },
+  { key: "items",       label: "Items",       icon: "items" },
+  { key: "gui",         label: "GUI",         icon: "gui" },
+  { key: "entity",      label: "Entity",      icon: "entity" },
+  { key: "particle",    label: "Particles",   icon: "particle" },
+  { key: "environment", label: "Environment", icon: "environment" },
+  { key: "font",        label: "Font",        icon: "font" },
+  { key: "misc",        label: "Misc",        icon: "misc" },
+  { key: "map",         label: "Map",         icon: "map" },
+  { key: "colormap",    label: "Colormap",    icon: "colormap" },
+  { key: "models",      label: "Models",      icon: "models" },
+  { key: "sounds",      label: "Sounds",      icon: "sounds" },
+  { key: "lang",        label: "Language",    icon: "lang" },
 ];

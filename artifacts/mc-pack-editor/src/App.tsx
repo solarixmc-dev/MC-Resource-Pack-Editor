@@ -1,5 +1,53 @@
 import { useState, useCallback, useRef, useMemo, useEffect, DragEvent, type PointerEvent } from "react";
-import { Pack, MC_FOLDERS, TextureOverrides, FolderSources, LayoutMode } from "./types";
+import { Toaster, toast } from "sonner";
+import {
+  AlertTriangle,
+  ArrowDownToLine,
+  ArrowUpDown,
+  Check,
+  ChevronDown,
+  Command as CommandIcon,
+  Crosshair,
+  Eye,
+  EyeOff,
+  FileArchive,
+  FolderTree,
+  GripVertical,
+  Image as ImageIcon,
+  Layers,
+  Maximize2,
+  Moon,
+  Package,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Pencil,
+  Rows3,
+  Search,
+  Settings,
+  Sparkles,
+  Sun,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
+import { Pack, MC_FOLDERS, TextureOverrides, FolderSources } from "./types";
+import { FolderIcon } from "./components/icons";
+import { CommandPalette, type PaletteAction } from "./components/CommandPalette";
+import {
+  Button,
+  EmptyState,
+  Field,
+  IconButton,
+  Kbd,
+  Modal,
+  PackBadge,
+  SectionLabel,
+  SegmentedControl,
+  StatPill,
+  Switch,
+  cn,
+  inputClass,
+} from "./components/ui-kit";
 import { analyzePackBundle, PackAnalysis } from "./lib/packAnalyzer";
 import {
   loadPackFromFile,
@@ -27,20 +75,10 @@ import {
 } from "./lib/textureEditor";
 
 // ─── Small UI atoms ────────────────────────────────────────────────────────────
+// Thin adapters over the shared UI kit so every screen shares one visual language.
 
 function Badge({ color, label }: { color: string; label: string }) {
-  return (
-    <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold"
-      style={{ background: color + "22", color, border: `1px solid ${color}55` }}
-    >
-      <span
-        className="w-2 h-2 rounded-full flex-shrink-0"
-        style={{ background: color }}
-      />
-      {label}
-    </span>
-  );
+  return <PackBadge color={color} label={label} />;
 }
 
 function Btn({
@@ -58,23 +96,10 @@ function Btn({
   disabled?: boolean;
   title?: string;
 }) {
-  const base =
-    "inline-flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition-colors focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer select-none";
-  const variants = {
-    default: "bg-secondary text-secondary-foreground hover:bg-accent border border-border",
-    ghost: "text-muted-foreground hover:text-foreground hover:bg-accent",
-    danger: "bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/30",
-    primary: "bg-primary text-primary-foreground hover:opacity-90",
-  };
   return (
-    <button
-      className={`${base} ${variants[variant]} ${className}`}
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-    >
+    <Button variant={variant} onClick={onClick} disabled={disabled} title={title} className={className}>
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -229,45 +254,49 @@ function PackOrderPanel({
     setOverIndex(null);
   };
 
-  const PRIORITY_LABELS = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
-
   return (
-    <div ref={containerRef} className="relative flex flex-col min-w-0">
+    <div ref={containerRef} className="relative flex min-w-0 flex-col">
       {/* Trigger button */}
-      <button
+      <Button
+        variant="default"
+        size="sm"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded border border-border bg-secondary hover:bg-accent text-sm font-medium transition-colors cursor-pointer select-none"
+        aria-expanded={open}
+        className={cn(open && "border-ring bg-accent")}
       >
-        <span className="text-base">⇅</span>
-        <span>Pack Priority</span>
-        <div className="flex items-center gap-1 mx-1">
-          {packs.map((p) => (
+        <ArrowUpDown className="h-3.5 w-3.5" aria-hidden="true" />
+        <span>Priority</span>
+        <span className="mx-0.5 flex items-center gap-1">
+          {packs.slice(0, 6).map((p, i) => (
             <span
               key={p.id}
-              className="w-2 h-2 rounded-full flex-shrink-0"
-              style={{ background: p.color }}
+              className="h-2 w-2 flex-shrink-0 rounded-full ring-1 ring-background"
+              style={{ background: p.color, marginLeft: i === 0 ? 0 : -4 }}
             />
           ))}
-        </div>
-        <span className="text-muted-foreground text-xs ml-auto">{open ? "▲" : "▼"}</span>
-      </button>
+        </span>
+        <ChevronDown
+          className={cn("h-3 w-3 text-muted-foreground transition-transform", open && "rotate-180")}
+          aria-hidden="true"
+        />
+      </Button>
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-72 bg-card border border-border rounded-lg shadow-lg overflow-hidden">
-          <div className="px-3 py-2 border-b border-border flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Auto priority order
-            </span>
-            <span className="text-xs text-muted-foreground">drag to reorder</span>
+        <div className="animate-pop absolute left-0 top-full z-50 mt-1.5 w-[22rem] overflow-hidden rounded-xl border border-border bg-popover shadow-xl">
+          <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
+            <SectionLabel>Load order</SectionLabel>
+            <span className="text-[10px] text-muted-foreground">Drag to reorder</span>
           </div>
-          <p className="px-3 pt-2 pb-1 text-xs text-muted-foreground">
-            When set to <span className="text-primary font-medium">auto</span>, the first pack is preferred. Textures missing from it fall through to the next pack.
+          <p className="border-b border-border/60 bg-muted/30 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+            The top pack wins. Files it&apos;s missing fall through to the next pack down &mdash; the same way
+            Minecraft stacks packs.
           </p>
-          <div className="p-2 flex flex-col gap-1">
+          <div className="flex flex-col gap-0.5 p-1.5">
             {packs.map((pack, i) => {
               const isDragging = dragIndex === i;
               const isOver = overIndex === i && dragIndex !== null && dragIndex !== i;
+              const hidden = packVisibility[pack.id] === false;
               return (
                 <div
                   key={pack.id}
@@ -276,53 +305,52 @@ function PackOrderPanel({
                   onDragOver={(e) => handleDragOver(e, i)}
                   onDrop={(e) => handleDrop(e, i)}
                   onDragEnd={handleDragEnd}
-                  className={`flex items-center gap-2 px-2 py-2 rounded border transition-all cursor-grab active:cursor-grabbing select-none
-                    ${isDragging ? "opacity-40 border-primary" : "border-transparent hover:border-border hover:bg-accent/50"}
-                    ${isOver ? "border-primary bg-primary/10" : ""}
-                  `}
+                  className={cn(
+                    "group flex cursor-grab select-none items-center gap-2 rounded-lg border px-2 py-2 transition-all active:cursor-grabbing",
+                    isDragging ? "border-ring opacity-40" : "border-transparent hover:bg-accent/60",
+                    isOver && "border-primary bg-primary/10",
+                    hidden && "opacity-50",
+                  )}
                 >
-                  {/* Drag handle */}
-                  <span className="text-muted-foreground text-base leading-none flex-shrink-0">⋮⋮</span>
+                  <GripVertical
+                    className="h-4 w-4 flex-shrink-0 text-muted-foreground/60"
+                    aria-hidden="true"
+                  />
 
-                  {/* Priority badge */}
+                  {/* Priority index */}
                   <span
-                    className="text-xs font-bold w-7 text-center flex-shrink-0 rounded py-0.5"
+                    className="tabular flex h-5 w-5 flex-shrink-0 items-center justify-center rounded text-[10px] font-bold"
                     style={{ background: pack.color + "22", color: pack.color }}
                   >
-                    {PRIORITY_LABELS[i] ?? `${i + 1}th`}
+                    {i + 1}
                   </span>
 
-                  {/* Color dot (static) */}
-                  <span
-                    className="w-3.5 h-3.5 rounded-full flex-shrink-0 border border-white/20"
-                    style={{ background: pack.color }}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-foreground">{pack.name}</span>
+                    <span className="tabular block text-[10px] text-muted-foreground">
+                      {pack.files.size.toLocaleString()} files
+                    </span>
+                  </span>
+
+                  <IconButton
+                    icon={hidden ? EyeOff : Eye}
+                    label={hidden ? "Show in comparison" : "Hide from comparison"}
+                    size="icon-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onVisibilityToggle(pack.id);
+                    }}
                   />
-                  <span className="text-sm text-foreground font-medium flex-1 truncate">
-                    {pack.name}
-                  </span>
-
-                  {/* File count */}
-                  <span className="text-xs text-muted-foreground flex-shrink-0">
-                    {pack.files.size.toLocaleString()} files
-                  </span>
-
-                  {/* Visibility toggle */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onVisibilityToggle(pack.id); }}
-                    className={`text-base flex-shrink-0 transition-all leading-none ${packVisibility[pack.id] === false ? "opacity-25 grayscale" : "opacity-70 hover:opacity-100"}`}
-                    title={packVisibility[pack.id] === false ? "Hidden from comparison — click to show" : "Visible in comparison — click to hide"}
-                  >
-                    👁
-                  </button>
-
-                  {/* Remove */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onRemove(pack.id); }}
-                    className="text-muted-foreground hover:text-destructive text-sm transition-colors flex-shrink-0"
-                    title="Remove pack"
-                  >
-                    ✕
-                  </button>
+                  <IconButton
+                    icon={X}
+                    label={`Remove ${pack.name}`}
+                    size="icon-sm"
+                    className="hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemove(pack.id);
+                    }}
+                  />
                 </div>
               );
             })}
@@ -335,33 +363,88 @@ function PackOrderPanel({
 
 // ─── Drop Zone ─────────────────────────────────────────────────────────────────
 
-function DropZone({ onLoad }: { onLoad: (packs: Pack[]) => void }) {
+function DropZone({
+  onLoad,
+  variant = "full",
+}: {
+  onLoad: (packs: Pack[]) => void;
+  variant?: "full" | "compact";
+}) {
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
-      const arr = Array.from(files).filter((f) =>
-        f.name.toLowerCase().endsWith(".zip")
-      );
-      if (!arr.length) return;
+      const arr = Array.from(files).filter((f) => f.name.toLowerCase().endsWith(".zip"));
+      if (!arr.length) {
+        toast.error("No ZIP files found", { description: "Resource packs must be .zip archives." });
+        return;
+      }
       setLoading(true);
       try {
         const loaded = await Promise.all(arr.map(loadPackFromFile));
         onLoad(loaded);
+        toast.success(`Loaded ${loaded.length} pack${loaded.length !== 1 ? "s" : ""}`, {
+          description: loaded.map((p) => p.name).join(", "),
+        });
       } catch (e) {
         console.error("Failed to load pack:", e);
+        toast.error("Could not read that pack", { description: "The ZIP may be corrupt or password protected." });
       } finally {
         setLoading(false);
       }
     },
-    [onLoad]
+    [onLoad],
   );
 
+  const input = (
+    <input
+      ref={inputRef}
+      type="file"
+      accept=".zip"
+      multiple
+      className="hidden"
+      onChange={(e) => e.target.files && handleFiles(e.target.files)}
+    />
+  );
+
+  // Compact: sits in the toolbar once packs are already loaded.
+  if (variant === "compact") {
+    return (
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          handleFiles(e.dataTransfer.files);
+        }}
+      >
+        {input}
+        <Button
+          variant={dragging ? "primary" : "default"}
+          size="sm"
+          icon={Upload}
+          loading={loading}
+          onClick={() => inputRef.current?.click()}
+        >
+          {loading ? "Loading…" : dragging ? "Drop to add" : "Add packs"}
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div
-      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+    <button
+      type="button"
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragging(true);
+      }}
       onDragLeave={() => setDragging(false)}
       onDrop={(e) => {
         e.preventDefault();
@@ -369,27 +452,38 @@ function DropZone({ onLoad }: { onLoad: (packs: Pack[]) => void }) {
         handleFiles(e.dataTransfer.files);
       }}
       onClick={() => inputRef.current?.click()}
-      className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-lg p-8 cursor-pointer transition-colors
-        ${dragging ? "border-primary bg-primary/10" : "border-border hover:border-primary/50 hover:bg-accent/30"}`}
+      className={cn(
+        "flex w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 transition-colors",
+        dragging
+          ? "border-primary bg-primary/10"
+          : "border-border hover:border-primary/50 hover:bg-accent/40",
+      )}
     >
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".zip"
-        multiple
-        className="hidden"
-        onChange={(e) => e.target.files && handleFiles(e.target.files)}
-      />
-      <div className="text-4xl">📦</div>
+      {input}
+      <span
+        className={cn(
+          "flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-card transition-colors",
+          dragging && "border-primary/40 bg-primary/15",
+        )}
+      >
+        <FileArchive
+          className={cn("h-5 w-5", dragging ? "text-primary" : "text-muted-foreground")}
+          aria-hidden="true"
+        />
+      </span>
       {loading ? (
-        <p className="text-sm text-muted-foreground animate-pulse">Loading packs…</p>
+        <span className="animate-pulse text-sm text-muted-foreground">Reading archives…</span>
       ) : (
         <>
-          <p className="text-sm font-medium text-foreground">Drop resource pack ZIPs here</p>
-          <p className="text-xs text-muted-foreground">or click to browse — multiple packs supported</p>
+          <span className="text-sm font-semibold text-foreground">
+            {dragging ? "Drop to load packs" : "Drop resource pack ZIPs here"}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            or click to browse &mdash; load several at once to compare them
+          </span>
         </>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -579,102 +673,120 @@ function PackSettings({
     });
   };
 
-  return (
-    <div className="flex items-start gap-3">
-      {/* Pack icon */}
-      <button
-        className="w-12 h-12 rounded border border-border flex-shrink-0 overflow-hidden checkered hover:border-primary transition-colors cursor-pointer mt-5"
-        onClick={() => iconRef.current?.click()}
-        title="Click to change pack icon"
-      >
-        {packIcon ? (
-          <img src={packIcon} alt="icon" className="w-full h-full object-cover texture-preview" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-xl">📦</div>
-        )}
-        <input ref={iconRef} type="file" accept="image/*" className="hidden" onChange={handleIcon} />
-      </button>
+  const hasFormatting = packName.includes("§") || packDescription.includes("§");
 
-      <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-        {/* Pack name */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground font-medium">Output Pack Name</label>
-          <input
-            ref={nameRef}
-            type="text"
-            value={packName}
-            onFocus={() => setActiveField("name")}
-            onChange={(e) => onNameChange(e.target.value)}
-            className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-full font-mono"
-            placeholder="My Resource Pack"
-          />
-          {packName.includes("§") && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-black rounded border border-border/50 text-sm min-h-[26px]">
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-start gap-3">
+        {/* Pack icon */}
+        <div className="flex flex-col items-center gap-1.5">
+          <button
+            className="checkered group relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-border transition-colors hover:border-primary"
+            onClick={() => iconRef.current?.click()}
+            title="Click to change pack icon"
+          >
+            {packIcon ? (
+              <img src={packIcon} alt="Pack icon" className="texture-preview h-full w-full object-cover" />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center">
+                <Package className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+              </span>
+            )}
+            <span className="absolute inset-0 flex items-center justify-center bg-background/80 opacity-0 transition-opacity group-hover:opacity-100">
+              <Upload className="h-4 w-4 text-foreground" aria-hidden="true" />
+            </span>
+          </button>
+          <span className="text-[10px] text-muted-foreground">pack.png</span>
+          <input ref={iconRef} type="file" accept="image/*" className="hidden" onChange={handleIcon} />
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <Field label="Pack name">
+            <input
+              ref={nameRef}
+              type="text"
+              value={packName}
+              onFocus={() => setActiveField("name")}
+              onChange={(e) => onNameChange(e.target.value)}
+              className={cn(inputClass, "font-mono")}
+              placeholder="My Resource Pack"
+            />
+          </Field>
+
+          <Field label="Description" hint="pack.mcmeta">
+            <input
+              ref={descRef}
+              type="text"
+              value={packDescription}
+              onFocus={() => setActiveField("desc")}
+              onChange={(e) => onDescriptionChange(e.target.value)}
+              className={cn(inputClass, "font-mono")}
+              placeholder="A Minecraft resource pack"
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* In-game preview — only meaningful once § codes are present */}
+      {hasFormatting && (
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>In-game preview</SectionLabel>
+          <div className="mc-surface flex flex-col gap-0.5 rounded-lg border border-border px-3 py-2 font-mono text-sm">
+            <div className="truncate">
               <McText text={packName} fallback="…" />
             </div>
-          )}
-        </div>
-
-        {/* Description */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground font-medium">
-            Description <span className="opacity-60">(pack.mcmeta)</span>
-          </label>
-          <input
-            ref={descRef}
-            type="text"
-            value={packDescription}
-            onFocus={() => setActiveField("desc")}
-            onChange={(e) => onDescriptionChange(e.target.value)}
-            className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-full font-mono"
-            placeholder="A Minecraft resource pack"
-          />
-          {packDescription.includes("§") && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-black rounded border border-border/50 text-sm min-h-[26px]">
+            <div className="truncate text-xs">
               <McText text={packDescription} fallback="…" />
             </div>
-          )}
+          </div>
         </div>
+      )}
 
-        {/* Format code toolbar */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1.5">
-            <label className="text-xs text-muted-foreground font-medium">Format codes</label>
-            <span className="text-xs text-primary">
-              → inserting into <span className="font-semibold">{activeField === "name" ? "Name" : "Description"}</span>
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-1 p-1.5 bg-secondary/50 rounded border border-border overflow-y-auto" style={{ maxHeight: 72 }}>
-            {/* Color codes */}
-            {MC_COLORS.map(({ code, color, label }) => (
-              <button
-                key={code}
-                onMouseDown={(e) => { e.preventDefault(); insertCode(code); }}
-                className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold hover:scale-110 transition-transform flex-shrink-0 border border-white/10"
-                style={{
-                  background: color === "#000000" || color === "#555555" ? color : color,
-                  color: ["#000000","#555555","#0000AA","#00AA00","#00AAAA","#AA0000","#AA00AA"].includes(color) ? "#fff" : "#000",
-                }}
-                title={`${label} (${code})`}
-              >
-                A
-              </button>
-            ))}
-            {/* Separator */}
-            <div className="w-px h-6 bg-border flex-shrink-0 mx-0.5" />
-            {/* Format codes */}
-            {MC_FORMATS.map(({ code, label, title, style }) => (
-              <button
-                key={code}
-                onMouseDown={(e) => { e.preventDefault(); insertCode(code); }}
-                className="px-2 h-6 rounded text-xs bg-muted hover:bg-accent text-foreground transition-colors flex-shrink-0 border border-border"
-                style={style}
-                title={title}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+      {/* Format code toolbar */}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <SectionLabel>Format codes</SectionLabel>
+          <span className="text-[10px] text-muted-foreground">
+            inserting into{" "}
+            <span className="font-semibold text-primary">{activeField === "name" ? "name" : "description"}</span>
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/40 p-2">
+          {MC_COLORS.map(({ code, color, label }) => (
+            <button
+              key={code}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                insertCode(code);
+              }}
+              className="h-6 w-6 flex-shrink-0 rounded border border-border/60 text-xs font-bold transition-transform hover:scale-110"
+              style={{
+                background: color,
+                color: ["#000000", "#555555", "#0000AA", "#00AA00", "#00AAAA", "#AA0000", "#AA00AA"].includes(color)
+                  ? "#fff"
+                  : "#000",
+              }}
+              title={`${label} (${code})`}
+              aria-label={`${label} color code`}
+            >
+              A
+            </button>
+          ))}
+          <span className="mx-1 h-6 w-px flex-shrink-0 bg-border" />
+          {MC_FORMATS.map(({ code, label, title, style }) => (
+            <button
+              key={code}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                insertCode(code);
+              }}
+              className="h-6 flex-shrink-0 rounded border border-border bg-secondary px-2 text-xs text-foreground transition-colors hover:bg-accent"
+              style={style}
+              title={title}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
     </div>
@@ -689,14 +801,14 @@ function FolderSidebar({
   onSelect,
   folderSources,
   onFolderSource,
-  layoutMode,
+  folderCounts,
 }: {
   packs: Pack[];
   selectedFolder: string;
   onSelect: (f: string) => void;
   folderSources: FolderSources;
   onFolderSource: (folder: string, packId: string | null) => void;
-  layoutMode: LayoutMode;
+  folderCounts: Map<string, number>;
 }) {
   const availableFolders = useMemo(() => getAllFoldersInPacks(packs), [packs]);
 
@@ -709,34 +821,79 @@ function FolderSidebar({
     const sourcePackId = folderSources[key];
     const sourcePack = packs.find((p) => p.id === sourcePackId);
     const active = selectedFolder === key;
-    const modern = layoutMode === "modern";
+    const count = folderCounts.get(key) ?? 0;
 
     return (
-      <div key={key} className={`group rounded-2xl border transition-all ${active ? (modern ? "border-primary/40 bg-primary/12" : "bg-primary/15") : (modern ? "border-transparent hover:border-border/70 hover:bg-card/70" : "hover:bg-accent/50")}`}>
+      <div key={key} className="flex flex-col">
         <button
-          className={`w-full flex items-center px-3 py-2.5 text-sm text-left ${modern ? "rounded-2xl" : ""}`}
           onClick={() => onSelect(key)}
+          aria-current={active ? "page" : undefined}
+          className={cn(
+            "group relative flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors",
+            active ? "bg-primary/12 text-primary" : "text-foreground hover:bg-accent/70",
+          )}
         >
-          <span className={`flex-1 font-medium leading-snug ${active ? "text-primary" : "text-foreground"}`}>
-            {label}
+          {/* Active accent bar */}
+          {active && (
+            <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r-full bg-primary" />
+          )}
+          <FolderIcon
+            folderKey={key}
+            className={cn("h-4 w-4 flex-shrink-0", active ? "text-primary" : "text-muted-foreground")}
+          />
+          <span className="min-w-0 flex-1 truncate font-medium">{label}</span>
+
+          {/* Source dot when this folder is pinned to one pack */}
+          {sourcePack && (
+            <span
+              className="h-1.5 w-1.5 flex-shrink-0 rounded-full"
+              style={{ background: sourcePack.color }}
+              title={`Pinned to ${sourcePack.name}`}
+            />
+          )}
+          <span
+            className={cn(
+              "tabular flex-shrink-0 text-[11px]",
+              active ? "text-primary/70" : "text-muted-foreground",
+            )}
+          >
+            {count}
           </span>
         </button>
-        {packs.length > 1 && (
-          <div className="px-3 pb-2 flex items-center gap-1 flex-wrap">
+
+        {/* Per-folder source picker — only for the open folder, to keep the rail calm */}
+        {active && packs.length > 1 && (
+          <div className="mb-1 ml-2.5 mt-1 flex flex-wrap items-center gap-1 border-l border-border pl-2.5">
             <button
-              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-primary/20 text-primary font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
-              onClick={(e) => { e.stopPropagation(); onFolderSource(key, null); }}
-              title="Use highest-priority pack for each file"
+              className={cn(
+                "rounded px-1.5 py-0.5 text-[11px] transition-colors",
+                !sourcePackId
+                  ? "bg-primary/15 font-semibold text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                onFolderSource(key, null);
+              }}
+              title="Use the highest-priority pack for each file"
             >
               auto
             </button>
             {packs.map((p) => (
               <button
                 key={p.id}
-                className={`text-xs px-2 py-0.5 rounded transition-colors ${sourcePackId === p.id ? "font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
-                style={sourcePackId === p.id ? { background: p.color + "33", color: p.color } : {}}
-                onClick={(e) => { e.stopPropagation(); onFolderSource(key, p.id); }}
-                title={p.name}
+                className={cn(
+                  "max-w-[7rem] truncate rounded px-1.5 py-0.5 text-[11px] transition-colors",
+                  sourcePackId === p.id
+                    ? "font-semibold"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                )}
+                style={sourcePackId === p.id ? { background: p.color + "26", color: p.color } : undefined}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFolderSource(key, p.id);
+                }}
+                title={`Always use ${p.name} for this folder`}
               >
                 {p.name}
               </button>
@@ -748,9 +905,14 @@ function FolderSidebar({
   };
 
   return (
-    <nav className={`flex flex-col gap-1.5 py-2 ${layoutMode === "modern" ? "px-2" : "px-0"}`}>
+    <nav aria-label="Resource folders" className="flex flex-col gap-0.5 px-2 py-2">
       {defined.map((f) => renderFolder(f.key, f.label))}
-      {extra.map((k) => renderFolder(k, k))}
+      {extra.length > 0 && (
+        <>
+          <SectionLabel className="px-2.5 pb-1 pt-3">Other</SectionLabel>
+          {extra.map((k) => renderFolder(k, k))}
+        </>
+      )}
     </nav>
   );
 }
@@ -808,7 +970,6 @@ function TextureCard({
   onEditTexture?: (path: string, displayName: string, folder: string) => void;
   isRemoved: boolean;
   onToggleRemove: (path: string) => void;
-  layoutMode: LayoutMode;
 }) {
   const overridePackId = textureOverrides[texturePath];
   const folderPackId = folderSources[folder];
@@ -819,117 +980,156 @@ function TextureCard({
 
   const isImg = isImagePath(texturePath);
   const isAtlas = !!getAtlasDefinition(texturePath);
-
-  const modern = layoutMode === "modern";
+  const multi = packsWithFile.length > 1;
 
   return (
-    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-[22px] border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : modern ? "border-border/70 bg-card/95 shadow-[0_16px_34px_-24px_rgba(15,23,42,0.22)] backdrop-blur-md hover:border-primary/40" : "border-border bg-card hover:border-primary/40"}`}>
-      {/* Texture previews row */}
+    <div
+      id={`texture-card-${texturePath}`}
+      className={cn(
+        "group/card relative flex flex-col overflow-hidden rounded-lg border bg-card transition-all",
+        isRemoved
+          ? "border-destructive/40 bg-destructive/5 opacity-60"
+          : "border-border hover:border-primary/50 hover:shadow-md",
+        overridePackId && !isRemoved && "border-primary/40",
+      )}
+    >
+      {/* Texture previews — one cell per pack that ships this file */}
       {isImg && (
-        <div
-          className={`flex ${modern ? "border-b border-border/70 bg-muted/40" : "border-b border-border"} ${packsWithFile.length === 1 ? "" : "divide-x divide-border"}`}
-        >
+        <div className={cn("flex border-b border-border bg-muted/30", multi && "divide-x divide-border")}>
           {packsWithFile.map((pack) => {
             const buf = pack.files.get(texturePath)!;
-            const isSelected =
-              effectivePackId === pack.id ||
-              (!effectivePackId && pack === packsWithFile[0]);
+            const isSelected = effectivePackId === pack.id || (!effectivePackId && pack === packsWithFile[0]);
             return (
               <button
                 key={pack.id}
-                className={`flex-1 flex items-center justify-center p-2 checkered min-h-[80px] relative transition-all ${
-                  packsWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
-                } ${isSelected && packsWithFile.length > 1 ? "ring-2 ring-inset ring-primary" : ""}`}
+                className={cn(
+                  "checkered relative flex min-h-[84px] flex-1 items-center justify-center p-2 transition-all",
+                  multi ? "cursor-pointer hover:brightness-110" : "cursor-default",
+                  isSelected && multi && "ring-2 ring-inset ring-primary",
+                )}
                 onClick={() => {
-                  if (packsWithFile.length <= 1) return;
-                  if (overridePackId === pack.id) {
-                    onOverride(texturePath, null);
-                  } else {
-                    onOverride(texturePath, pack.id);
-                  }
+                  if (!multi) return;
+                  onOverride(texturePath, overridePackId === pack.id ? null : pack.id);
                 }}
-                title={packsWithFile.length > 1 ? `Use from: ${pack.name}` : pack.name}
+                title={multi ? `Use this version from ${pack.name}` : pack.name}
               >
                 <CroppedTexturePreview buffer={buf} path={texturePath} alt={displayName} />
-                {packsWithFile.length > 1 && (
+                {multi && (
                   <span
-                    className="absolute bottom-1 right-1 w-2 h-2 rounded-full"
+                    className="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full ring-1 ring-background"
                     style={{ background: pack.color }}
                   />
                 )}
               </button>
             );
           })}
+
+          {/* Hover actions */}
+          <div className="absolute right-1.5 top-1.5 flex gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover/card:opacity-100">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenLightbox?.();
+              }}
+              title="Open larger view"
+              aria-label={`Open ${displayName} larger`}
+              className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-card/90 text-muted-foreground backdrop-blur transition-colors hover:text-foreground"
+            >
+              <Maximize2 className="h-3 w-3" aria-hidden="true" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditTexture?.(texturePath, displayName, folder);
+              }}
+              title="Edit pixels"
+              aria-label={`Edit ${displayName}`}
+              className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-card/90 text-muted-foreground backdrop-blur transition-colors hover:text-foreground"
+            >
+              <Pencil className="h-3 w-3" aria-hidden="true" />
+            </button>
+          </div>
+
+          {/* Atlas marker */}
+          {isAtlas && (
+            <span
+              className="absolute left-1.5 top-1.5 rounded border border-primary/30 bg-primary/15 px-1 py-px text-[9px] font-bold uppercase tracking-wide text-primary"
+              title="Atlas texture — per-region editing available"
+            >
+              Atlas
+            </span>
+          )}
         </div>
       )}
 
-      {/* File label & controls — click label to open lightbox */}
-      <div className={`flex items-center gap-1 px-2 py-1.5 ${modern ? "bg-background/40" : "bg-background/30"}`}>
+      {/* Filename row */}
+      <div className="flex items-center gap-1 px-2 py-1.5">
         <button
-          className={`flex-1 min-w-0 text-left transition-colors ${modern ? "hover:bg-accent/50" : "hover:bg-accent/40"}`}
+          className="min-w-0 flex-1 text-left"
           onClick={() => onOpenLightbox?.()}
-          title="Click to view larger"
+          title={`${displayName} — click to inspect`}
         >
-          <div className="flex items-center gap-1 min-w-0">
-            {isAtlas && (
-              <span className="text-[10px] text-primary font-bold flex-shrink-0" title="Atlas texture — region editor available">ATL</span>
+          <span
+            className={cn(
+              "block truncate font-mono text-[11px]",
+              isRemoved ? "text-destructive line-through" : "text-muted-foreground",
             )}
-            <span className="text-xs text-muted-foreground truncate flex-1" title={displayName}>
-              {displayName}
-            </span>
-            {overridePackId && (
-              <span
-                className="text-xs text-primary flex-shrink-0"
-                onClick={(e) => { e.stopPropagation(); onOverride(texturePath, null); }}
-                title="Clear override"
-              >
-                ✕
-              </span>
-            )}
-            <span className="text-[10px] text-muted-foreground/50 flex-shrink-0">⊞</span>
-          </div>
+          >
+            {displayName}
+          </span>
         </button>
+
         <button
-          className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          onClick={(e) => { e.stopPropagation(); onEditTexture?.(texturePath, displayName, folder); }}
-          title="Edit texture"
-          aria-label={`Edit ${displayName}`}
+          className={cn(
+            "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border transition-colors",
+            isRemoved
+              ? "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20"
+              : "border-border text-muted-foreground hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive",
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleRemove(texturePath);
+          }}
+          title={isRemoved ? "Include this file in the export" : "Exclude this file from the export"}
+          aria-label={isRemoved ? `Include ${displayName} in export` : `Exclude ${displayName} from export`}
         >
-          ✎
+          {isRemoved ? <X className="h-3 w-3" aria-hidden="true" /> : <Check className="h-3 w-3" aria-hidden="true" />}
         </button>
       </div>
 
-      <div className={`flex items-center justify-between gap-2 px-2 pb-2 ${modern ? "pt-1" : ""}`}>
-        <button
-          className={`flex h-5 w-5 items-center justify-center rounded-full border transition-colors ${isRemoved ? "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20" : "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"}`}
-          onClick={(e) => { e.stopPropagation(); onToggleRemove(texturePath); }}
-          title={isRemoved ? "Re-include this file in export" : "Remove this file from export"}
-          aria-label={isRemoved ? "Re-include this file in export" : "Remove this file from export"}
-        >
-          <span className="text-[10px] leading-none">{isRemoved ? "✕" : "✓"}</span>
-        </button>
-        {packsWithFile.length > 1 && (
-          <div className="flex gap-1 flex-wrap">
+      {/* Source selector */}
+      {multi && (
+        <div className="flex flex-wrap items-center gap-1 border-t border-border/60 px-2 py-1.5">
           <button
-            className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-primary/20 text-primary font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
+            className={cn(
+              "rounded px-1.5 py-0.5 text-[10px] transition-colors",
+              !overridePackId
+                ? "bg-primary/15 font-semibold text-primary"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground",
+            )}
             onClick={() => onOverride(texturePath, null)}
+            title="Follow pack priority"
           >
             auto
           </button>
-            {packsWithFile.map((p) => (
-              <button
-                key={p.id}
-                className={`text-xs px-1.5 py-0.5 rounded transition-colors truncate max-w-[60px] ${overridePackId === p.id ? "font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
-                style={overridePackId === p.id ? { background: p.color + "33", color: p.color } : {}}
-                onClick={() => onOverride(texturePath, overridePackId === p.id ? null : p.id)}
-                title={p.name}
-              >
-                {p.name}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+          {packsWithFile.map((p) => (
+            <button
+              key={p.id}
+              className={cn(
+                "max-w-[4.5rem] truncate rounded px-1.5 py-0.5 text-[10px] transition-colors",
+                overridePackId === p.id
+                  ? "font-semibold"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
+              )}
+              style={overridePackId === p.id ? { background: p.color + "26", color: p.color } : undefined}
+              onClick={() => onOverride(texturePath, overridePackId === p.id ? null : p.id)}
+              title={p.name}
+            >
+              {p.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -959,70 +1159,122 @@ function TextureGrid({
   cols: number;
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
-  layoutMode: LayoutMode;
 }) {
   const [search, setSearch] = useState("");
+  const [filterMode, setFilterMode] = useState<TextureFilter>("all");
 
-  const paths = useMemo(
-    () => getAllTexturePathsInFolder(packs, folder),
-    [packs, folder]
-  );
+  const paths = useMemo(() => getAllTexturePathsInFolder(packs, folder), [packs, folder]);
+
+  // A "conflict" is a file more than one loaded pack provides — the thing you
+  // actually need to make a decision about when merging packs.
+  const conflictPaths = useMemo(() => {
+    const set = new Set<string>();
+    for (const path of paths) {
+      let hits = 0;
+      for (const pack of packs) {
+        if (pack.files.has(path)) hits++;
+        if (hits > 1) break;
+      }
+      if (hits > 1) set.add(path);
+    }
+    return set;
+  }, [paths, packs]);
 
   const filtered = useMemo(() => {
-    if (!search) return paths;
-    const q = search.toLowerCase();
-    return paths.filter((p) => p.toLowerCase().includes(q));
-  }, [paths, search]);
+    let out = paths;
+    if (filterMode === "conflicts") out = out.filter((p) => conflictPaths.has(p));
+    else if (filterMode === "overridden") out = out.filter((p) => !!textureOverrides[p]);
+    if (search) {
+      const q = search.toLowerCase();
+      out = out.filter((p) => p.toLowerCase().includes(q));
+    }
+    return out;
+  }, [paths, search, filterMode, conflictPaths, textureOverrides]);
 
   if (!paths.length) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
-        <p className="text-sm">No files in this folder across uploaded packs</p>
-      </div>
+      <EmptyState
+        icon={FolderTree}
+        title="Nothing in this folder"
+        description="None of the loaded packs ship files here. Pick another folder from the sidebar."
+      />
     );
   }
 
   return (
-    <div className="flex flex-col gap-4 h-full">
-      <div className="flex items-center gap-3">
-        <input
-          type="search"
-          placeholder="Search in folder…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 flex-1"
+    <div className="flex h-full flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-[12rem] flex-1">
+          <Search
+            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <input
+            type="search"
+            placeholder="Filter this folder…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className={cn(inputClass, "pl-8")}
+          />
+        </div>
+
+        <SegmentedControl
+          value={filterMode}
+          onChange={setFilterMode}
+          options={[
+            { value: "all", label: "All" },
+            {
+              value: "conflicts",
+              label: `Conflicts${conflictPaths.size ? ` ${conflictPaths.size}` : ""}`,
+              title: "Files provided by more than one pack",
+            },
+            { value: "overridden", label: "Picked", title: "Files where you chose a specific pack" },
+          ]}
         />
-        <span className="text-xs text-muted-foreground whitespace-nowrap">
-          {filtered.length}/{paths.length} files
+
+        <span className="tabular whitespace-nowrap text-xs text-muted-foreground">
+          {filtered.length} of {paths.length}
         </span>
       </div>
 
-      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
-        {filtered.map((path) => {
-          const parts = path.split("/");
-          const displayName = parts[parts.length - 1];
-          return (
-            <TextureCard
-              key={path}
-              texturePath={path}
-              displayName={displayName}
-              packs={packs}
-              folderSources={folderSources}
-              textureOverrides={textureOverrides}
-              folder={folder}
-              onOverride={onOverride}
-              onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
-              onEditTexture={() => onEditTexture(path, displayName, folder)}
-              isRemoved={!!removedFiles[path]}
-              onToggleRemove={onToggleRemove}
-              layoutMode={layoutMode}
-            />
-          );
-        })}
-      </div>
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon={Search}
+          title="No files match"
+          description="Try a different search term or switch the filter back to All."
+        />
+      ) : (
+        <div
+          className="grid gap-2"
+          style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${Math.round(1100 / cols)}px, 1fr))` }}
+        >
+          {filtered.map((path) => {
+            const parts = path.split("/");
+            const displayName = parts[parts.length - 1];
+            return (
+              <TextureCard
+                key={path}
+                texturePath={path}
+                displayName={displayName}
+                packs={packs}
+                folderSources={folderSources}
+                textureOverrides={textureOverrides}
+                folder={folder}
+                onOverride={onOverride}
+                onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
+                onEditTexture={() => onEditTexture(path, displayName, folder)}
+                isRemoved={!!removedFiles[path]}
+                onToggleRemove={onToggleRemove}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
+
+type TextureFilter = "all" | "conflicts" | "overridden";
 
 // ─── Search All Results ─────────────────────────────────────────────────────────
 
@@ -1049,7 +1301,6 @@ function SearchAllResults({
   cols: number;
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
-  layoutMode: LayoutMode;
 }) {
   const allPaths = useMemo(() => {
     const set = new Set<string>();
@@ -1068,25 +1319,29 @@ function SearchAllResults({
 
   if (!filtered.length) {
     return (
-      <div className="flex flex-col items-center justify-center h-48 gap-2 text-muted-foreground">
-        <span className="text-3xl">🔍</span>
-        <p className="text-sm">No textures match <strong className="text-foreground">"{query}"</strong></p>
-      </div>
+      <EmptyState
+        icon={Search}
+        title={`No textures match “${query}”`}
+        description="Search looks at the full file path, so try a shorter fragment like “dirt” or “gui”."
+      />
     );
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-xs text-muted-foreground">
+    <div className="flex flex-col gap-3">
+      <p className="tabular text-xs text-muted-foreground">
         {filtered.length} result{filtered.length !== 1 ? "s" : ""} across all folders
       </p>
-      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+      <div
+        className="grid gap-2"
+        style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${Math.round(1100 / cols)}px, 1fr))` }}
+      >
         {filtered.map((path) => {
           const parts = path.split("/");
           const displayName = parts[parts.length - 1];
           const folder = getTextureFolder(path);
           return (
-            <div key={path} className="flex flex-col gap-0.5">
+            <div key={path} className="flex flex-col gap-1">
               <TextureCard
                 texturePath={path}
                 displayName={displayName}
@@ -1099,9 +1354,11 @@ function SearchAllResults({
                 onEditTexture={() => onEditTexture(path, displayName, folder)}
                 isRemoved={!!removedFiles[path]}
                 onToggleRemove={onToggleRemove}
-                layoutMode={layoutMode}
               />
-              <span className="text-[10px] text-muted-foreground text-center truncate px-1">{folder}</span>
+              <span className="flex items-center justify-center gap-1 truncate px-1 text-[10px] text-muted-foreground">
+                <FolderIcon folderKey={folder} className="h-3 w-3 flex-shrink-0" />
+                {folder}
+              </span>
             </div>
           );
         })}
