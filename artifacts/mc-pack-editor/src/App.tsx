@@ -2945,8 +2945,8 @@ export default function App() {
       </header>
 
       {/* ── Sub-header: pack settings + upload ── */}
-      <div className={`flex-shrink-0 border-b px-4 py-2 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-900/50 backdrop-blur-sm" : "border-slate-200/70 bg-white/70 backdrop-blur-sm") : "border-border bg-card/50"}`}>
-        <div className="flex items-center gap-4 flex-wrap">
+      <div className={`flex-shrink-0 border-b px-4 py-2 overflow-visible ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-900/50 backdrop-blur-sm" : "border-slate-200/70 bg-white/70 backdrop-blur-sm") : "border-border bg-card/50"}`}>
+        <div className="flex items-start gap-4 flex-wrap overflow-visible">
           <div className="flex-1 min-w-[150px]">
             <PackSettings
               packName={packName}
@@ -2961,10 +2961,10 @@ export default function App() {
             <DropZone onLoad={handlePacksLoaded} />
           </div>
           {(totalOverrideCount > 0 || folderSourceCount > 0) && (
-            <div className="flex items-start gap-2 px-2 py-1 text-xs text-muted-foreground flex-shrink-0 sm:px-3">
+            <div className="flex items-start gap-2 px-2 py-1 text-xs text-muted-foreground flex-shrink-0 sm:px-3 overflow-visible">
               {folderSourceCount > 0 && <span className="pt-0.5">📁 {folderSourceCount} folder source{folderSourceCount !== 1 ? "s" : ""}</span>}
               {totalOverrideCount > 0 && (
-                <details className="group relative">
+                <details className="group relative overflow-visible">
                   <summary className="cursor-pointer list-none flex items-center gap-1 rounded-full px-2 py-1 hover:bg-accent/50 hover:text-foreground group-open:self-start">
                     <span className="font-medium">🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
                     {atlasRegionOverrideCount > 0 && (
