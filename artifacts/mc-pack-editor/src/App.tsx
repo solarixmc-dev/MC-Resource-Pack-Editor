@@ -2961,26 +2961,26 @@ export default function App() {
             <DropZone onLoad={handlePacksLoaded} />
           </div>
           {(totalOverrideCount > 0 || folderSourceCount > 0) && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0">
-              {folderSourceCount > 0 && <span>📁 {folderSourceCount} folder source{folderSourceCount !== 1 ? "s" : ""}</span>}
+            <div className="flex items-start gap-2 px-2 py-1 text-xs text-muted-foreground flex-shrink-0 sm:px-3">
+              {folderSourceCount > 0 && <span className="pt-0.5">📁 {folderSourceCount} folder source{folderSourceCount !== 1 ? "s" : ""}</span>}
               {totalOverrideCount > 0 && (
                 <details className="group relative">
-                  <summary className="cursor-pointer list-none flex items-center gap-1 hover:text-foreground group-open:self-start">
-                    <span>🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
+                  <summary className="cursor-pointer list-none flex items-center gap-1 rounded-full px-2 py-1 hover:bg-accent/50 hover:text-foreground group-open:self-start">
+                    <span className="font-medium">🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
                     {atlasRegionOverrideCount > 0 && (
                       <span className="text-[10px]">({textureOverrideCount} texture, {atlasRegionOverrideCount} atlas)</span>
                     )}
-                    <span className="inline-block transition-transform group-open:rotate-180">⌄</span>
+                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border/60 bg-background/70 text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">▾</span>
                   </summary>
-                  <div className="absolute right-0 top-full z-[100] mt-1 max-h-36 w-[400px] overflow-y-auto rounded-lg border border-border bg-card p-3 pb-4 shadow-xl">
+                  <div className="absolute bottom-full left-0 right-auto z-[100] mb-2 max-h-[min(18rem,45vh)] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-border bg-card/95 p-3 pb-4 shadow-2xl backdrop-blur">
                     {Object.entries(textureOverrides).map(([path, packId]) => (
-                      <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-4 py-2 text-left hover:bg-accent">
+                      <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-3 py-2 text-left hover:bg-accent/70">
                         <span className="block truncate text-foreground">{path.split("/").pop()}</span>
                         <span className="block truncate text-[10px] text-muted-foreground">Texture override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
                       </button>
                     ))}
                     {Object.entries(atlasRegionOverrides).flatMap(([path, regions]) => Object.entries(regions).map(([regionId, packId]) => ({ path, regionId, packId }))).map(({ path, regionId, packId }) => (
-                      <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-4 py-2 text-left hover:bg-accent">
+                      <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-3 py-2 text-left hover:bg-accent/70">
                         <span className="block truncate text-foreground">{path.split("/").pop()} · {regionId}</span>
                         <span className="block truncate text-[10px] text-muted-foreground">Atlas override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
                       </button>

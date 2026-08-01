@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { Pack, TextureEntry, PACK_COLORS } from "../types";
+import { Pack, TextureEntry, PACK_COLORS, MC_FOLDERS } from "../types";
 import { AtlasRegion, getAtlasDefinition } from "./atlasRegions";
 
 let packColorIndex = 0;
@@ -30,10 +30,6 @@ export function getTextureFolder(path: string): string {
   // Normalize: strip leading slash
   const p = path.replace(/^\//, "");
 
-  // assets/minecraft/textures/blocks/... -> blocks
-  const texMatch = p.match(/assets\/\w+\/textures\/([^/]+)\//);
-  if (texMatch) return texMatch[1];
-
   // assets/minecraft/models/block/... -> models
   const modelMatch = p.match(/assets\/\w+\/models\/([^/]+)\//);
   if (modelMatch) return "models";
@@ -47,57 +43,62 @@ export function getTextureFolder(path: string): string {
   // assets/minecraft/blockstates/... -> blockstates
   if (p.match(/assets\/\w+\/blockstates\//)) return "blockstates";
 
-  // Check for common texture subdirectories that might not be in MC_FOLDERS
+  const knownTextureFolders = new Set(MC_FOLDERS.map((folder) => folder.key));
+  const folderMap: Record<string, string> = {
+    sky: "environment",
+    skies: "environment",
+    clouds: "environment",
+    end_sky: "environment",
+    moon: "environment",
+    sun: "environment",
+    particle: "particle",
+    particles: "particle",
+    entity: "entity",
+    item: "items",
+    items: "items",
+    block: "blocks",
+    blocks: "blocks",
+    gui: "gui",
+    font: "font",
+    map: "map",
+    colormap: "colormap",
+    mob_effect: "gui",
+    painting: "entity",
+    banner: "entity",
+    world: "environment",
+    world0: "environment",
+    world1: "environment",
+    world2: "environment",
+    world3: "environment",
+    world4: "environment",
+    world5: "environment",
+    world_nether: "environment",
+    world_end: "environment",
+    dimension: "environment",
+    terrain: "blocks",
+    armor: "items",
+    misc: "misc",
+  };
+
+  // Check for texture paths under assets/<namespace>/textures/...
   const textureDirMatch = p.match(/assets\/\w+\/textures\/(.*)$/);
   if (textureDirMatch) {
     const subPath = textureDirMatch[1];
-    const parts = subPath.split('/');
+    const parts = subPath.split('/').filter(Boolean);
     if (parts.length > 0) {
       const firstDir = parts[0];
-      // Map common subdirectories to appropriate folders
-      const folderMap: Record<string, string> = {
-        'sky': 'environment',
-        'clouds': 'environment', 
-        'end_sky': 'environment',
-        'moon': 'environment',
-        'sun': 'environment',
-        'particle': 'particle',
-        'entity': 'entity',
-        'item': 'items',
-        'block': 'blocks',
-        'gui': 'gui',
-        'font': 'font',
-        'map': 'map',
-        'colormap': 'colormap',
-        'mob_effect': 'gui',
-        'painting': 'entity',
-        'banner': 'entity',
-        'world': 'environment',
-        'dimension': 'environment',
-      };
       if (folderMap[firstDir]) return folderMap[firstDir];
-      return firstDir; // Return the actual directory name if not mapped
+      if (knownTextureFolders.has(firstDir)) return firstDir;
+      return firstDir;
     }
   }
 
   // Handle files directly in textures directory (like world0.png)
-  const directTextureMatch = p.match(/assets\/\w+\/textures\/([^/]+)\.png$/);
+  const directTextureMatch = p.match(/assets\/\w+\/textures\/([^/]+)\.(png|jpg|jpeg|gif|tga)$/i);
   if (directTextureMatch) {
-    const filename = directTextureMatch[1];
-    // Map common direct textures to appropriate folders
-    const directFileMap: Record<string, string> = {
-      'world': 'environment',
-      'world0': 'environment',
-      'world1': 'environment',
-      'world2': 'environment',
-      'world3': 'environment',
-      'world4': 'environment',
-      'world5': 'environment',
-      'world_nether': 'environment',
-      'world_end': 'environment',
-    };
-    if (directFileMap[filename]) return directFileMap[filename];
-    return 'environment'; // Default direct textures to environment
+    const filename = directTextureMatch[1].toLowerCase();
+    if (folderMap[filename]) return folderMap[filename];
+    return "environment";
   }
 
   return "other";
