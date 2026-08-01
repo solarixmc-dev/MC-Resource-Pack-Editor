@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useMemo, useEffect, DragEvent, type PointerEvent } from "react";
-import { Pack, MC_FOLDERS, TextureOverrides, FolderSources, LayoutMode } from "./types";
+import { Pack, MC_FOLDERS, PACK_COLORS, TextureOverrides, FolderSources, LayoutMode } from "./types";
 import { analyzePackBundle, PackAnalysis } from "./lib/packAnalyzer";
 import {
   loadPackFromFile,
@@ -335,6 +335,16 @@ function PackOrderPanel({
 
 // ─── Drop Zone ─────────────────────────────────────────────────────────────────
 
+function CloudUploadIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M7 18a4 4 0 1 1 1.2-7.8A5.5 5.5 0 1 1 17.5 16H17" />
+      <path d="M12 13v6" />
+      <path d="m9 16 3-3 3 3" />
+    </svg>
+  );
+}
+
 function DropZone({ onLoad }: { onLoad: (packs: Pack[]) => void }) {
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -369,8 +379,8 @@ function DropZone({ onLoad }: { onLoad: (packs: Pack[]) => void }) {
         handleFiles(e.dataTransfer.files);
       }}
       onClick={() => inputRef.current?.click()}
-      className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-lg p-8 cursor-pointer transition-colors
-        ${dragging ? "border-primary bg-primary/10" : "border-border hover:border-primary/50 hover:bg-accent/30"}`}
+      className={`flex flex-col items-center justify-center gap-3 rounded-[22px] border border-dashed p-6 text-center cursor-pointer transition-all
+        ${dragging ? "border-primary bg-primary/10 shadow-[0_0_0_1px_rgba(59,130,246,0.2)]" : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-accent/20"}`}
     >
       <input
         ref={inputRef}
@@ -380,13 +390,15 @@ function DropZone({ onLoad }: { onLoad: (packs: Pack[]) => void }) {
         className="hidden"
         onChange={(e) => e.target.files && handleFiles(e.target.files)}
       />
-      <div className="text-4xl">📦</div>
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <CloudUploadIcon className="h-6 w-6" />
+      </div>
       {loading ? (
         <p className="text-sm text-muted-foreground animate-pulse">Loading packs…</p>
       ) : (
         <>
-          <p className="text-sm font-medium text-foreground">Drop resource pack ZIPs here</p>
-          <p className="text-xs text-muted-foreground">or click to browse — multiple packs supported</p>
+          <p className="text-sm font-semibold text-foreground">Drop resource pack ZIPs</p>
+          <p className="text-xs leading-5 text-muted-foreground">Import one or more packs, or use the new pack button to start from imported textures.</p>
         </>
       )}
     </div>
@@ -822,6 +834,23 @@ function TextureCard({
 
   const modern = layoutMode === "modern";
 
+  const handleDownloadTexture = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    const selectedPack = packsWithFile.find((p) => p.id === effectivePackId) ?? packsWithFile[0];
+    const buffer = selectedPack?.files.get(texturePath);
+    if (!buffer) return;
+
+    const blob = new Blob([buffer], { type: "image/png" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = displayName.toLowerCase().endsWith(".png") ? displayName : `${displayName}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-[22px] border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : modern ? "border-border/70 bg-card/95 shadow-[0_16px_34px_-24px_rgba(15,23,42,0.22)] backdrop-blur-md hover:border-primary/40" : "border-border bg-card hover:border-primary/40"}`}>
       {/* Texture previews row */}
@@ -888,6 +917,14 @@ function TextureCard({
             )}
             <span className="text-[10px] text-muted-foreground/50 flex-shrink-0">⊞</span>
           </div>
+        </button>
+        <button
+          className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          onClick={handleDownloadTexture}
+          title="Download texture as PNG"
+          aria-label={`Download ${displayName}`}
+        >
+          ⬇
         </button>
         <button
           className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -2501,6 +2538,7 @@ export default function App() {
   const [atlasRegionOverrides, setAtlasRegionOverrides] = useState<Record<string, Record<string, string>>>({});
   const [uploadDefaults, setUploadDefaults] = useState<UploadDefaults>(() => readUploadDefaults());
   const [packName, setPackName] = useState(uploadDefaults.name);
+  const [creatingPack, setCreatingPack] = useState(false);
   const [packDescription, setPackDescription] = useState(uploadDefaults.description);
   const [packIcon, setPackIcon] = useState<string | null>(uploadDefaults.icon);
   const [exporting, setExporting] = useState(false);
@@ -2527,6 +2565,68 @@ export default function App() {
   const [removedFiles, setRemovedFiles] = useState<Record<string, boolean>>({});
   // Icon cropping
   const [cropSource, setCropSource] = useState<string | null>(null);
+  const importFolderInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    document.title = "MCTextureLab";
+  }, []);
+
+  const normalizeImportedPath = useCallback((file: File) => {
+    const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath;
+    const rawPath = (relativePath ?? file.name).replace(/\\/g, "/").replace(/^\/+/, "");
+
+    if (!rawPath) return "assets/minecraft/textures/misc/unknown.bin";
+    if (rawPath.startsWith("assets/")) return rawPath;
+    if (rawPath.startsWith("textures/") || rawPath.startsWith("models/") || rawPath.startsWith("sounds/") || rawPath.startsWith("lang/") || rawPath.startsWith("blockstates/")) {
+      return `assets/minecraft/${rawPath}`;
+    }
+
+    const ext = rawPath.split(".").pop()?.toLowerCase();
+    const baseName = rawPath.replace(/\.[^.]+$/, "");
+    const lower = baseName.toLowerCase();
+    let inferredFolder = "misc";
+
+    if (/(sky|cloud|end_sky|moon|sun|world)/.test(lower)) inferredFolder = "environment";
+    else if (/(particle|particles)/.test(lower)) inferredFolder = "particle";
+    else if (/(gui|icon|widget|mob_effect)/.test(lower)) inferredFolder = "gui";
+    else if (/(item|armor|tool|sword|pickaxe|bow)/.test(lower)) inferredFolder = "items";
+    else if (/(block|terrain|stone|grass|dirt|oak|birch|sand|log|planks)/.test(lower)) inferredFolder = "blocks";
+    else if (/(entity|mob|player|villager|painting|banner)/.test(lower)) inferredFolder = "entity";
+
+    if (ext && ["png", "jpg", "jpeg", "gif", "tga"].includes(ext)) {
+      return `assets/minecraft/textures/${inferredFolder}/${rawPath}`;
+    }
+
+    return `assets/minecraft/${rawPath}`;
+  }, []);
+
+  const createScratchedPackFromFiles = useCallback(async (files: FileList | File[]) => {
+    const fileList = Array.from(files);
+    if (!fileList.length) return;
+
+    setCreatingPack(true);
+    try {
+      const importedFiles = new Map<string, ArrayBuffer>();
+      await Promise.all(fileList.map(async (file) => {
+        const path = normalizeImportedPath(file);
+        importedFiles.set(path, await file.arrayBuffer());
+      }));
+
+      const folderName = fileList[0]?.webkitRelativePath?.split("/")[0] ?? "Scratch Pack";
+      const newPack: Pack = {
+        id: crypto.randomUUID(),
+        name: folderName === "Scratch Pack" ? "Scratch Pack" : `${folderName} (scratch)`,
+        files: importedFiles,
+        color: PACK_COLORS[packs.length % PACK_COLORS.length],
+      };
+
+      setPacks((prev) => [newPack, ...prev]);
+      setSelectedFolder("blocks");
+      setGlobalSearch("");
+    } finally {
+      setCreatingPack(false);
+    }
+  }, [packs.length, normalizeImportedPath]);
 
   const handlePacksLoaded = useCallback((newPacks: Pack[]) => {
     setPacks((prev) => {
@@ -2884,7 +2984,7 @@ export default function App() {
             >
               ⚙
             </button>
-            <h1 className={`text-base font-bold ${layoutMode === "modern" ? (darkMode ? "text-white" : "text-slate-900") : "text-foreground"}`}>MC Resource Pack Editor</h1>
+            <h1 className={`text-base font-bold ${layoutMode === "modern" ? (darkMode ? "text-white" : "text-slate-900") : "text-foreground"}`}>MCTextureLab</h1>
             <span className={`text-xs px-1.5 py-0.5 rounded ${layoutMode === "modern" ? (darkMode ? "bg-white/10 text-slate-300" : "bg-white/70 text-slate-600") : "text-muted-foreground bg-secondary"}`}>1.8</span>
           </div>
 
@@ -2957,8 +3057,29 @@ export default function App() {
               onIconChange={(d) => { if (d === null) setPackIcon(null); else setCropSource(d); }}
             />
           </div>
-          <div className="flex-shrink-0 w-56">
+          <div className="flex-shrink-0 w-[17rem] space-y-2">
             <DropZone onLoad={handlePacksLoaded} />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => importFolderInputRef.current?.click()}
+                className="flex-1 rounded-full border border-border/80 bg-background/80 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                {creatingPack ? "Creating…" : "Create pack from files"}
+              </button>
+              <input
+                ref={importFolderInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files) {
+                    createScratchedPackFromFiles(e.target.files);
+                    e.target.value = "";
+                  }
+                }}
+              />
+            </div>
           </div>
           {(totalOverrideCount > 0 || folderSourceCount > 0) && (
             <div className="flex items-start gap-2 px-2 py-1 text-xs text-muted-foreground flex-shrink-0 sm:px-3 overflow-visible">
@@ -2997,7 +3118,7 @@ export default function App() {
       {packs.length === 0 ? (
         <div className="flex-1 flex items-center justify-center p-8">
           <div className={`text-center max-w-xl px-8 py-10 rounded-[28px] border ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-gradient-to-br from-slate-900/85 via-slate-900/70 to-emerald-950/70 shadow-[0_25px_60px_-30px_rgba(2,6,23,0.95)]" : "border-slate-200/80 bg-gradient-to-br from-white via-slate-50 to-emerald-50/70 shadow-[0_24px_52px_-28px_rgba(15,23,42,0.2)]") : "border-border bg-card"}`}>
-            <h2 className="text-xl font-bold mb-2">Minecraft 1.8 Resource Pack Editor</h2>
+            <h2 className="text-xl font-bold mb-2">MCTextureLab</h2>
             <p className={`text-sm ${layoutMode === "modern" ? (darkMode ? "text-slate-300" : "text-slate-600") : "text-muted-foreground"}`}>
               Upload one or more resource pack ZIP files above to compare textures, set default sources per folder, override individual textures, and export a merged pack.
             </p>
