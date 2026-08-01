@@ -2972,7 +2972,7 @@ export default function App() {
                     )}
                     <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border/60 bg-background/70 text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">▾</span>
                   </summary>
-                  <div className="absolute left-1/2 top-full z-[100] mt-2 -translate-x-1/2 max-h-[min(18rem,45vh)] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-border bg-card/95 p-3 pb-4 shadow-2xl backdrop-blur">
+                  <div className="absolute left-1/2 top-full z-[100] mt-2 -translate-x-1/2 max-h-[10rem] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-border bg-card/95 p-3 pb-4 shadow-2xl backdrop-blur">
                     {Object.entries(textureOverrides).map(([path, packId]) => (
                       <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-3 py-2 text-left hover:bg-accent/70">
                         <span className="block truncate text-foreground">{path.split("/").pop()}</span>
