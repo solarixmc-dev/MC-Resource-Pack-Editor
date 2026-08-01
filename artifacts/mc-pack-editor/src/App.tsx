@@ -957,7 +957,6 @@ function TextureCard({
   onEditTexture,
   isRemoved,
   onToggleRemove,
-  layoutMode,
 }: {
   texturePath: string;
   displayName: string;
@@ -1147,7 +1146,6 @@ function TextureGrid({
   cols,
   removedFiles,
   onToggleRemove,
-  layoutMode,
 }: {
   packs: Pack[];
   folder: string;
@@ -1289,7 +1287,6 @@ function SearchAllResults({
   cols,
   removedFiles,
   onToggleRemove,
-  layoutMode,
 }: {
   query: string;
   packs: Pack[];
@@ -2773,7 +2770,8 @@ export default function App() {
     const saved = window.localStorage.getItem("mc-pack-editor-theme");
     return saved ? saved === "dark" : true;
   });
-  const layoutMode: LayoutMode = "modern";
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [inspectorOpen, setInspectorOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [editingTexture, setEditingTexture] = useState<{ path: string; displayName: string; folder: string; packId: string | null } | null>(null);
