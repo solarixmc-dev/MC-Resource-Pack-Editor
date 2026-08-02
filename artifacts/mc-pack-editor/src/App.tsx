@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useMemo, useEffect, DragEvent, type PointerEvent } from "react";
-import { Pack, MC_FOLDERS, PACK_COLORS, TextureOverrides, FolderSources, LayoutMode } from "./types";
+import { Pack, MC_FOLDERS, TextureOverrides, FolderSources, LayoutMode } from "./types";
 import { analyzePackBundle, PackAnalysis } from "./lib/packAnalyzer";
 import {
   loadPackFromFile,
@@ -31,11 +31,10 @@ import {
 function Badge({ color, label }: { color: string; label: string }) {
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold"
-      style={{ background: color + "22", color, border: `1px solid ${color}55` }}
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200"
     >
       <span
-        className="w-2 h-2 rounded-full flex-shrink-0"
+        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
         style={{ background: color }}
       />
       {label}
@@ -59,12 +58,12 @@ function Btn({
   title?: string;
 }) {
   const base =
-    "inline-flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition-colors focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer select-none";
+    "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer select-none";
   const variants = {
-    default: "bg-secondary text-secondary-foreground hover:bg-accent border border-border",
-    ghost: "text-muted-foreground hover:text-foreground hover:bg-accent",
-    danger: "bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/30",
-    primary: "bg-primary text-primary-foreground hover:opacity-90",
+    default: "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200",
+    ghost: "text-slate-600 hover:text-slate-900 hover:bg-slate-100",
+    danger: "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200",
+    primary: "bg-blue-500 text-white hover:bg-blue-600",
   };
   return (
     <button
@@ -236,7 +235,7 @@ function PackOrderPanel({
       {/* Trigger button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded border border-border bg-secondary hover:bg-accent text-sm font-medium transition-colors cursor-pointer select-none"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-sm font-medium transition-colors cursor-pointer select-none"
       >
         <span className="text-base">⇅</span>
         <span>Pack Priority</span>
@@ -254,15 +253,15 @@ function PackOrderPanel({
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-72 bg-card border border-border rounded-lg shadow-lg overflow-hidden">
-          <div className="px-3 py-2 border-b border-border flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        <div className="absolute top-full left-0 z-50 mt-1 w-72 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
+          <div className="px-3 py-2 border-b border-slate-200 flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
               Auto priority order
             </span>
-            <span className="text-xs text-muted-foreground">drag to reorder</span>
+            <span className="text-xs text-slate-500">drag to reorder</span>
           </div>
-          <p className="px-3 pt-2 pb-1 text-xs text-muted-foreground">
-            When set to <span className="text-primary font-medium">auto</span>, the first pack is preferred. Textures missing from it fall through to the next pack.
+          <p className="px-3 pt-2 pb-1 text-xs text-slate-500">
+            When set to <span className="text-blue-600 font-medium">auto</span>, the first pack is preferred. Textures missing from it fall through to the next pack.
           </p>
           <div className="p-2 flex flex-col gap-1">
             {packs.map((pack, i) => {
@@ -277,12 +276,12 @@ function PackOrderPanel({
                   onDrop={(e) => handleDrop(e, i)}
                   onDragEnd={handleDragEnd}
                   className={`flex items-center gap-2 px-2 py-2 rounded border transition-all cursor-grab active:cursor-grabbing select-none
-                    ${isDragging ? "opacity-40 border-primary" : "border-transparent hover:border-border hover:bg-accent/50"}
-                    ${isOver ? "border-primary bg-primary/10" : ""}
+                    ${isDragging ? "opacity-40 border-blue-500" : "border-transparent hover:border-slate-200 hover:bg-slate-50"}
+                    ${isOver ? "border-blue-500 bg-blue-50" : ""}
                   `}
                 >
                   {/* Drag handle */}
-                  <span className="text-muted-foreground text-base leading-none flex-shrink-0">⋮⋮</span>
+                  <span className="text-slate-400 text-base leading-none flex-shrink-0">⋮⋮</span>
 
                   {/* Priority badge */}
                   <span
@@ -297,7 +296,7 @@ function PackOrderPanel({
                     className="w-3.5 h-3.5 rounded-full flex-shrink-0 border border-white/20"
                     style={{ background: pack.color }}
                   />
-                  <span className="text-sm text-foreground font-medium flex-1 truncate">
+                  <span className="text-sm text-slate-700 font-medium flex-1 truncate">
                     {pack.name}
                   </span>
 
@@ -335,16 +334,6 @@ function PackOrderPanel({
 
 // ─── Drop Zone ─────────────────────────────────────────────────────────────────
 
-function CloudUploadIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M7 18a4 4 0 1 1 1.2-7.8A5.5 5.5 0 1 1 17.5 16H17" />
-      <path d="M12 13v6" />
-      <path d="m9 16 3-3 3 3" />
-    </svg>
-  );
-}
-
 function DropZone({ onLoad }: { onLoad: (packs: Pack[]) => void }) {
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -379,8 +368,8 @@ function DropZone({ onLoad }: { onLoad: (packs: Pack[]) => void }) {
         handleFiles(e.dataTransfer.files);
       }}
       onClick={() => inputRef.current?.click()}
-      className={`flex flex-col items-center justify-center gap-3 rounded-[22px] border border-dashed p-6 text-center cursor-pointer transition-all
-        ${dragging ? "border-primary bg-primary/10 shadow-[0_0_0_1px_rgba(59,130,246,0.2)]" : "border-border/80 bg-background/60 hover:border-primary/50 hover:bg-accent/20"}`}
+      className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-lg p-8 cursor-pointer transition-colors
+        ${dragging ? "border-blue-500 bg-blue-50" : "border-slate-300 hover:border-blue-400 hover:bg-slate-50"}`}
     >
       <input
         ref={inputRef}
@@ -390,15 +379,13 @@ function DropZone({ onLoad }: { onLoad: (packs: Pack[]) => void }) {
         className="hidden"
         onChange={(e) => e.target.files && handleFiles(e.target.files)}
       />
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-        <CloudUploadIcon className="h-6 w-6" />
-      </div>
+      <div className="text-4xl">📦</div>
       {loading ? (
-        <p className="text-sm text-muted-foreground animate-pulse">Loading packs…</p>
+        <p className="text-sm text-slate-500 animate-pulse">Loading packs…</p>
       ) : (
         <>
-          <p className="text-sm font-semibold text-foreground">Drop resource pack ZIPs</p>
-          <p className="text-xs leading-5 text-muted-foreground">Import one or more packs, or use the new pack button to start from imported textures.</p>
+          <p className="text-sm font-medium text-slate-700">Drop resource pack ZIPs here</p>
+          <p className="text-xs text-slate-500">or click to browse — multiple packs supported</p>
         </>
       )}
     </div>
@@ -455,7 +442,7 @@ function parseMcText(raw: string): McSegment[] {
 function McText({ text, fallback = "—" }: { text: string; fallback?: string }) {
   const segments = parseMcText(text);
   if (!segments.length) {
-    return <span className="text-muted-foreground italic text-xs">{fallback}</span>;
+    return <span className="text-slate-400 italic text-xs">{fallback}</span>;
   }
   return (
     <>
@@ -595,7 +582,7 @@ function PackSettings({
     <div className="flex items-start gap-3">
       {/* Pack icon */}
       <button
-        className="w-12 h-12 rounded border border-border flex-shrink-0 overflow-hidden checkered hover:border-primary transition-colors cursor-pointer mt-5"
+        className="w-12 h-12 rounded-lg border border-slate-200 flex-shrink-0 overflow-hidden checkered hover:border-blue-400 transition-colors cursor-pointer mt-5"
         onClick={() => iconRef.current?.click()}
         title="Click to change pack icon"
       >
@@ -610,18 +597,18 @@ function PackSettings({
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
         {/* Pack name */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground font-medium">Output Pack Name</label>
+          <label className="text-xs text-slate-500 font-medium">Output Pack Name</label>
           <input
             ref={nameRef}
             type="text"
             value={packName}
             onFocus={() => setActiveField("name")}
             onChange={(e) => onNameChange(e.target.value)}
-            className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-full font-mono"
+            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full font-mono"
             placeholder="My Resource Pack"
           />
           {packName.includes("§") && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-black rounded border border-border/50 text-sm min-h-[26px]">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-black rounded-lg border border-slate-700 text-sm min-h-[26px]">
               <McText text={packName} fallback="…" />
             </div>
           )}
@@ -629,7 +616,7 @@ function PackSettings({
 
         {/* Description */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground font-medium">
+          <label className="text-xs text-slate-500 font-medium">
             Description <span className="opacity-60">(pack.mcmeta)</span>
           </label>
           <input
@@ -638,11 +625,11 @@ function PackSettings({
             value={packDescription}
             onFocus={() => setActiveField("desc")}
             onChange={(e) => onDescriptionChange(e.target.value)}
-            className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-full font-mono"
+            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full font-mono"
             placeholder="A Minecraft resource pack"
           />
           {packDescription.includes("§") && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-black rounded border border-border/50 text-sm min-h-[26px]">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-black rounded-lg border border-slate-700 text-sm min-h-[26px]">
               <McText text={packDescription} fallback="…" />
             </div>
           )}
@@ -651,12 +638,12 @@ function PackSettings({
         {/* Format code toolbar */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5">
-            <label className="text-xs text-muted-foreground font-medium">Format codes</label>
-            <span className="text-xs text-primary">
+            <label className="text-xs text-slate-500 font-medium">Format codes</label>
+            <span className="text-xs text-blue-600">
               → inserting into <span className="font-semibold">{activeField === "name" ? "Name" : "Description"}</span>
             </span>
           </div>
-          <div className="flex flex-wrap gap-1 p-1.5 bg-secondary/50 rounded border border-border overflow-y-auto" style={{ maxHeight: 72 }}>
+          <div className="flex flex-wrap gap-1 p-1.5 bg-slate-50 rounded-lg border border-slate-200 overflow-y-auto" style={{ maxHeight: 72 }}>
             {/* Color codes */}
             {MC_COLORS.map(({ code, color, label }) => (
               <button
@@ -673,13 +660,13 @@ function PackSettings({
               </button>
             ))}
             {/* Separator */}
-            <div className="w-px h-6 bg-border flex-shrink-0 mx-0.5" />
+            <div className="w-px h-6 bg-slate-300 flex-shrink-0 mx-0.5" />
             {/* Format codes */}
             {MC_FORMATS.map(({ code, label, title, style }) => (
               <button
                 key={code}
                 onMouseDown={(e) => { e.preventDefault(); insertCode(code); }}
-                className="px-2 h-6 rounded text-xs bg-muted hover:bg-accent text-foreground transition-colors flex-shrink-0 border border-border"
+                className="px-2 h-6 rounded text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex-shrink-0 border border-slate-200"
                 style={style}
                 title={title}
               >
@@ -721,22 +708,21 @@ function FolderSidebar({
     const sourcePackId = folderSources[key];
     const sourcePack = packs.find((p) => p.id === sourcePackId);
     const active = selectedFolder === key;
-    const modern = layoutMode === "modern";
 
     return (
-      <div key={key} className={`group rounded-2xl border transition-all ${active ? (modern ? "border-primary/40 bg-primary/12" : "bg-primary/15") : (modern ? "border-transparent hover:border-border/70 hover:bg-card/70" : "hover:bg-accent/50")}`}>
+      <div key={key} className={`group rounded-lg border transition-all ${active ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}>
         <button
-          className={`w-full flex items-center px-3 py-2.5 text-sm text-left ${modern ? "rounded-2xl" : ""}`}
+          className="w-full flex items-center px-3 py-2.5 text-sm text-left rounded-lg"
           onClick={() => onSelect(key)}
         >
-          <span className={`flex-1 font-medium leading-snug ${active ? "text-primary" : "text-foreground"}`}>
+          <span className={`flex-1 font-medium leading-snug ${active ? "text-blue-600" : "text-slate-700"}`}>
             {label}
           </span>
         </button>
         {packs.length > 1 && (
           <div className="px-3 pb-2 flex items-center gap-1 flex-wrap">
             <button
-              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-primary/20 text-primary font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
+              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-blue-100 text-blue-600 font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
               onClick={(e) => { e.stopPropagation(); onFolderSource(key, null); }}
               title="Use highest-priority pack for each file"
             >
@@ -745,7 +731,7 @@ function FolderSidebar({
             {packs.map((p) => (
               <button
                 key={p.id}
-                className={`text-xs px-2 py-0.5 rounded transition-colors ${sourcePackId === p.id ? "font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
+                className={`text-xs px-2 py-0.5 rounded transition-colors ${sourcePackId === p.id ? "font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
                 style={sourcePackId === p.id ? { background: p.color + "33", color: p.color } : {}}
                 onClick={(e) => { e.stopPropagation(); onFolderSource(key, p.id); }}
                 title={p.name}
@@ -760,7 +746,7 @@ function FolderSidebar({
   };
 
   return (
-    <nav className={`flex flex-col gap-1.5 py-2 ${layoutMode === "modern" ? "px-2" : "px-0"}`}>
+    <nav className="flex flex-col gap-1.5 py-2 px-2">
       {defined.map((f) => renderFolder(f.key, f.label))}
       {extra.map((k) => renderFolder(k, k))}
     </nav>
@@ -832,31 +818,12 @@ function TextureCard({
   const isImg = isImagePath(texturePath);
   const isAtlas = !!getAtlasDefinition(texturePath);
 
-  const modern = layoutMode === "modern";
-
-  const handleDownloadTexture = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    const selectedPack = packsWithFile.find((p) => p.id === effectivePackId) ?? packsWithFile[0];
-    const buffer = selectedPack?.files.get(texturePath);
-    if (!buffer) return;
-
-    const blob = new Blob([buffer], { type: "image/png" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = displayName.toLowerCase().endsWith(".png") ? displayName : `${displayName}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
   return (
-    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-[22px] border transition-all ${isRemoved ? "border-destructive/40 bg-destructive/10 opacity-70" : modern ? "border-border/70 bg-card/95 shadow-[0_16px_34px_-24px_rgba(15,23,42,0.22)] backdrop-blur-md hover:border-primary/40" : "border-border bg-card hover:border-primary/40"}`}>
+    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-lg border transition-all ${isRemoved ? "border-red-300 bg-red-50 opacity-70" : "border-slate-200 bg-white hover:border-blue-300 shadow-sm"}`}>
       {/* Texture previews row */}
       {isImg && (
         <div
-          className={`flex ${modern ? "border-b border-border/70 bg-muted/40" : "border-b border-border"} ${packsWithFile.length === 1 ? "" : "divide-x divide-border"}`}
+          className={`flex border-b border-slate-100 ${packsWithFile.length === 1 ? "" : "divide-x divide-slate-100"}`}
         >
           {packsWithFile.map((pack) => {
             const buf = pack.files.get(texturePath)!;
@@ -868,7 +835,7 @@ function TextureCard({
                 key={pack.id}
                 className={`flex-1 flex items-center justify-center p-2 checkered min-h-[80px] relative transition-all ${
                   packsWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
-                } ${isSelected && packsWithFile.length > 1 ? "ring-2 ring-inset ring-primary" : ""}`}
+                } ${isSelected && packsWithFile.length > 1 ? "ring-2 ring-inset ring-blue-500" : ""}`}
                 onClick={() => {
                   if (packsWithFile.length <= 1) return;
                   if (overridePackId === pack.id) {
@@ -893,41 +860,33 @@ function TextureCard({
       )}
 
       {/* File label & controls — click label to open lightbox */}
-      <div className={`flex items-center gap-1 px-2 py-1.5 ${modern ? "bg-background/40" : "bg-background/30"}`}>
+      <div className="flex items-center gap-1 px-2 py-1.5 bg-slate-50">
         <button
-          className={`flex-1 min-w-0 text-left transition-colors ${modern ? "hover:bg-accent/50" : "hover:bg-accent/40"}`}
+          className="flex-1 min-w-0 text-left transition-colors hover:bg-slate-100"
           onClick={() => onOpenLightbox?.()}
           title="Click to view larger"
         >
           <div className="flex items-center gap-1 min-w-0">
             {isAtlas && (
-              <span className="text-[10px] text-primary font-bold flex-shrink-0" title="Atlas texture — region editor available">ATL</span>
+              <span className="text-[10px] text-blue-600 font-bold flex-shrink-0" title="Atlas texture — region editor available">ATL</span>
             )}
-            <span className="text-xs text-muted-foreground truncate flex-1" title={displayName}>
+            <span className="text-xs text-slate-500 truncate flex-1" title={displayName}>
               {displayName}
             </span>
             {overridePackId && (
               <span
-                className="text-xs text-primary flex-shrink-0"
+                className="text-xs text-blue-600 flex-shrink-0"
                 onClick={(e) => { e.stopPropagation(); onOverride(texturePath, null); }}
                 title="Clear override"
               >
                 ✕
               </span>
             )}
-            <span className="text-[10px] text-muted-foreground/50 flex-shrink-0">⊞</span>
+            <span className="text-[10px] text-slate-400 flex-shrink-0">⊞</span>
           </div>
         </button>
         <button
-          className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          onClick={handleDownloadTexture}
-          title="Download texture as PNG"
-          aria-label={`Download ${displayName}`}
-        >
-          ⬇
-        </button>
-        <button
-          className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="flex h-6 w-6 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
           onClick={(e) => { e.stopPropagation(); onEditTexture?.(texturePath, displayName, folder); }}
           title="Edit texture"
           aria-label={`Edit ${displayName}`}
@@ -936,9 +895,9 @@ function TextureCard({
         </button>
       </div>
 
-      <div className={`flex items-center justify-between gap-2 px-2 pb-2 ${modern ? "pt-1" : ""}`}>
+      <div className="flex items-center justify-between gap-2 px-2 pb-2 pt-1">
         <button
-          className={`flex h-5 w-5 items-center justify-center rounded-full border transition-colors ${isRemoved ? "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20" : "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"}`}
+          className={`flex h-5 w-5 items-center justify-center rounded-full border transition-colors ${isRemoved ? "border-red-300 bg-red-50 text-red-500 hover:bg-red-100" : "border-green-300 bg-green-50 text-green-600 hover:bg-green-100"}`}
           onClick={(e) => { e.stopPropagation(); onToggleRemove(texturePath); }}
           title={isRemoved ? "Re-include this file in export" : "Remove this file from export"}
           aria-label={isRemoved ? "Re-include this file in export" : "Remove this file from export"}
@@ -948,7 +907,7 @@ function TextureCard({
         {packsWithFile.length > 1 && (
           <div className="flex gap-1 flex-wrap">
           <button
-            className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-primary/20 text-primary font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
+            className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-blue-100 text-blue-600 font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
             onClick={() => onOverride(texturePath, null)}
           >
             auto
@@ -956,7 +915,7 @@ function TextureCard({
             {packsWithFile.map((p) => (
               <button
                 key={p.id}
-                className={`text-xs px-1.5 py-0.5 rounded transition-colors truncate max-w-[60px] ${overridePackId === p.id ? "font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
+                className={`text-xs px-1.5 py-0.5 rounded transition-colors truncate max-w-[60px] ${overridePackId === p.id ? "font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
                 style={overridePackId === p.id ? { background: p.color + "33", color: p.color } : {}}
                 onClick={() => onOverride(texturePath, overridePackId === p.id ? null : p.id)}
                 title={p.name}
@@ -1403,18 +1362,18 @@ function TextureLightbox({
     >
       <div className="flex min-h-full justify-center p-4 sm:p-6" onClick={onClose}>
         <div
-          className="my-4 w-full max-w-3xl flex-shrink-0 rounded-xl border border-border bg-card shadow-2xl"
+          className="my-4 w-full max-w-3xl flex-shrink-0 rounded-lg border border-slate-200 bg-white shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-            <span className="text-sm font-semibold">{displayName}</span>
-            <span className="text-xs text-muted-foreground">{texturePath}</span>
+          <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
+            <span className="text-sm font-semibold text-slate-700">{displayName}</span>
+            <span className="text-xs text-slate-500">{texturePath}</span>
             {atlasDef && (
-              <span className="rounded bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">Atlas</span>
+              <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600">Atlas</span>
             )}
             <button
-              className="ml-auto text-lg leading-none text-muted-foreground hover:text-foreground"
+              className="ml-auto text-lg leading-none text-slate-400 hover:text-slate-600"
               onClick={onClose}
             >
               ✕
@@ -1435,40 +1394,40 @@ function TextureLightbox({
 
           {/* Atlas region editor */}
           {atlasDef && packsWithFile.length > 0 && (
-            <div className="flex-shrink-0 rounded-lg border border-border">
-              <div className="px-3 py-2 bg-secondary/50 border-b border-border">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="flex-shrink-0 rounded-lg border border-slate-200">
+              <div className="px-3 py-2 bg-slate-50 border-b border-slate-200">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   {atlasDef.label} — Region Overrides
                 </span>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Pick a different pack for each region. On export, regions are composited onto the base atlas.
                 </p>
               </div>
-              <div className="px-3 py-3 border-b border-border bg-background/60">
+              <div className="px-3 py-3 border-b border-slate-200 bg-slate-50">
                 <div className="flex items-start gap-3 flex-wrap">
                   <div className="flex-1 min-w-[220px]">
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">HUD preview</div>
-                    <p className="text-xs text-muted-foreground mt-1">This shows the selected GUI slice as it will appear in the atlas when the override is applied.</p>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">HUD preview</div>
+                    <p className="text-xs text-slate-500 mt-1">This shows the selected GUI slice as it will appear in the atlas when the override is applied.</p>
                   </div>
-                  <div className="flex items-center gap-2 rounded-lg border border-border bg-black/30 p-2">
+                  <div className="flex items-center gap-2 rounded-lg border border-slate-300 bg-black/30 p-2">
                     {previewRegion && regionPreviewUrls[previewRegion.id] ? (
                       <img
                         src={regionPreviewUrls[previewRegion.id]}
                         alt={previewRegion.label}
-                        className="h-14 w-14 rounded-md border border-border bg-black/50 object-contain"
+                        className="h-14 w-14 rounded-md border border-slate-300 bg-black/50 object-contain"
                         style={{ imageRendering: "pixelated" }}
                       />
                     ) : (
-                      <div className="h-14 w-14 rounded-md border border-dashed border-border bg-black/30" />
+                      <div className="h-14 w-14 rounded-md border border-dashed border-slate-300 bg-black/30" />
                     )}
-                    <div className="text-xs text-muted-foreground">
-                      <div className="font-semibold text-foreground">{previewRegion?.label ?? "Region"}</div>
+                    <div className="text-xs text-slate-500">
+                      <div className="font-semibold text-slate-700">{previewRegion?.label ?? "Region"}</div>
                       <div>Live slice preview</div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-slate-200">
                 {atlasDef.regions.filter(region => !region.mapsTo).map((region) => {
                   const regionPackId = regionOverrides[region.id];
                   const regionOverridePack = packsWithFile.find(p => p.id === regionPackId);
@@ -1477,7 +1436,7 @@ function TextureLightbox({
                   return (
                     <div
                       key={region.id}
-                      className={`flex items-center gap-3 px-3 py-2.5 border-l-4 transition-colors ${regionPackId ? "shadow-[inset_0_0_0_1px_rgba(74,222,128,0.35)]" : ""} ${isPreviewedRegion ? "bg-accent/40" : ""}`}
+                      className={`flex items-center gap-3 px-3 py-2.5 border-l-4 transition-colors ${regionPackId ? "shadow-[inset_0_0_0_1px_rgba(74,222,128,0.35)]" : ""} ${isPreviewedRegion ? "bg-slate-100" : ""}`}
                       style={{
                         borderLeftColor: regionOverridePack ? regionOverridePack.color : "transparent",
                         background: regionPackId
@@ -1489,25 +1448,25 @@ function TextureLightbox({
                         <img
                           src={regionPreviewUrls[region.id]}
                           alt={region.label}
-                          className="h-10 w-10 rounded border border-border bg-black/40 object-contain flex-shrink-0"
+                          className="h-10 w-10 rounded border border-slate-300 bg-black/40 object-contain flex-shrink-0"
                           style={{ imageRendering: "pixelated" }}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded border border-dashed border-border bg-black/30 flex-shrink-0" />
+                        <div className="h-10 w-10 rounded border border-dashed border-slate-300 bg-black/30 flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{region.label}</span>
-                          {regionPackId && <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-semibold">override</span>}
-                          {mappedRegions.length > 0 && <span className="text-[10px] uppercase tracking-[0.2em] text-blue-400 font-semibold">→ {mappedRegions.map(r => r.label).join(', ')}</span>}
+                          <span className="text-sm font-medium text-slate-700">{region.label}</span>
+                          {regionPackId && <span className="text-[10px] uppercase tracking-[0.2em] text-green-500 font-semibold">override</span>}
+                          {mappedRegions.length > 0 && <span className="text-[10px] uppercase tracking-[0.2em] text-blue-500 font-semibold">→ {mappedRegions.map(r => r.label).join(', ')}</span>}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-slate-500">
                           {region.description} · ({region.x},{region.y}) {region.w}×{region.h}px
                         </div>
                       </div>
                       <div className="flex gap-1 flex-wrap justify-end">
                         <button
-                          className={`text-xs px-2 py-0.5 rounded transition-colors ${!regionPackId ? "bg-primary/20 text-primary font-semibold" : "text-muted-foreground hover:bg-accent"}`}
+                          className={`text-xs px-2 py-0.5 rounded transition-colors ${!regionPackId ? "bg-blue-100 text-blue-600 font-semibold" : "text-slate-500 hover:bg-slate-100"}`}
                           onClick={() => {
                             setPreviewRegionId(region.id);
                             onAtlasRegionOverride(texturePath, region.id, null);
@@ -1518,7 +1477,7 @@ function TextureLightbox({
                         {packsWithFile.map((p) => (
                           <button
                             key={p.id}
-                            className={`text-xs px-2 py-0.5 rounded transition-colors max-w-[80px] truncate ${regionPackId === p.id ? "font-semibold" : "text-muted-foreground hover:bg-accent"}`}
+                            className={`text-xs px-2 py-0.5 rounded transition-colors max-w-[80px] truncate ${regionPackId === p.id ? "font-semibold" : "text-slate-500 hover:bg-slate-100"}`}
                             style={regionPackId === p.id ? { background: p.color + "33", color: p.color } : {}}
                             onClick={() => {
                               setPreviewRegionId(region.id);
@@ -1889,42 +1848,42 @@ function AnalyzePackModal({
   isAnalyzing: boolean;
   onClose: () => void;
 }) {
-  const cardBase = "rounded-2xl border border-border/70 bg-card/90 p-3 shadow-sm";
+  const cardBase = "rounded-lg border border-slate-200 bg-white p-3 shadow-sm";
   const toneClasses: Record<string, string> = {
-    info: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300",
-    warning: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-    error: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+    info: "border-sky-500/30 bg-sky-500/10 text-sky-700",
+    warning: "border-amber-500/30 bg-amber-500/10 text-amber-700",
+    error: "border-rose-500/30 bg-rose-500/10 text-rose-700",
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-[28px] border border-border bg-background/95 p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-lg border border-slate-200 bg-white p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Pack analysis</p>
-            <h3 className="text-xl font-semibold text-foreground">Resource pack health overview</h3>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Pack analysis</p>
+            <h3 className="text-xl font-semibold text-slate-700">Resource pack health overview</h3>
           </div>
-          <button onClick={onClose} className="rounded-full border border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
+          <button onClick={onClose} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-sm text-slate-500 hover:text-slate-700">✕</button>
         </div>
 
         {isAnalyzing || !analysis ? (
-          <div className="mt-6 flex min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-border bg-card/60">
+          <div className="mt-6 flex min-h-[220px] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50">
             <div className="text-center">
               <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-2xl text-emerald-600">✨</div>
-              <p className="text-sm font-medium text-foreground">Scanning the current pack locally…</p>
-              <p className="mt-1 text-sm text-muted-foreground">Using the current uploaded ZIP data and atlas definitions.</p>
+              <p className="text-sm font-medium text-slate-700">Scanning the current pack locally…</p>
+              <p className="mt-1 text-sm text-slate-500">Using the current uploaded ZIP data and atlas definitions.</p>
             </div>
           </div>
         ) : (
           <div className="mt-6 space-y-4">
-            <div className={`rounded-[24px] border p-4 ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "border-emerald-500/30 bg-emerald-500/10" : "border-amber-500/30 bg-amber-500/10"}`}>
+            <div className={`rounded-lg border p-4 ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "border-emerald-500/30 bg-emerald-500/10" : "border-amber-500/30 bg-amber-500/10"}`}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{analysis.packNames.join(", ") || "Loaded pack"}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{analysis.overallSummary}</p>
+                  <p className="text-sm font-semibold text-slate-700">{analysis.packNames.join(", ") || "Loaded pack"}</p>
+                  <p className="mt-1 text-sm text-slate-500">{analysis.overallSummary}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/20 text-amber-700 dark:text-amber-300"}`}>
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "bg-emerald-500/20 text-emerald-700" : "bg-amber-500/20 text-amber-700"}`}>
                     {analysis.issues.filter(i => i.severity === "warning").length === 0 ? "1.8.9 compatible" : "Needs review"}
                   </span>
                 </div>
@@ -1933,22 +1892,22 @@ function AnalyzePackModal({
 
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <div className={cardBase}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">File size</p>
-                <p className="mt-2 text-xl font-semibold text-foreground">{analysis.totalSizeLabel}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{analysis.totalFiles} files inspected</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">File size</p>
+                <p className="mt-2 text-xl font-semibold text-slate-700">{analysis.totalSizeLabel}</p>
+                <p className="mt-1 text-sm text-slate-500">{analysis.totalFiles} files inspected</p>
               </div>
               <div className={cardBase}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Base texture resolution</p>
-                <p className="mt-2 text-xl font-semibold text-foreground">{analysis.baseTextureResolution}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{analysis.mixedResolutions ? "Mixed resolutions detected" : "Consistent texture size"}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Base texture resolution</p>
+                <p className="mt-2 text-xl font-semibold text-slate-700">{analysis.baseTextureResolution}</p>
+                <p className="mt-1 text-sm text-slate-500">{analysis.mixedResolutions ? "Mixed resolutions detected" : "Consistent texture size"}</p>
               </div>
               <div className={cardBase}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Modified textures</p>
-                <p className="mt-2 text-xl font-semibold text-foreground">{analysis.modifiedTextureCount}</p>
-                <p className="mt-1 text-sm text-muted-foreground">Unique textures reviewed</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Modified textures</p>
+                <p className="mt-2 text-xl font-semibold text-slate-700">{analysis.modifiedTextureCount}</p>
+                <p className="mt-1 text-sm text-slate-500">Unique textures reviewed</p>
                 {analysis.texturesByFolder.size > 0 && (
                   <div className="mt-3">
-                    <select className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50">
+                    <select className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
                       <option value="">All textures ({analysis.modifiedTextureCount})</option>
                       {Array.from(analysis.texturesByFolder.entries())
                         .sort(([a], [b]) => a.localeCompare(b))
@@ -2386,27 +2345,27 @@ function TextureEditorModal({
                   )}
                 </div>
               ) : (
-                <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">This {isTextFile ? "text" : "texture"} could not be loaded for editing.</div>
+                <div className="flex h-80 items-center justify-center text-sm text-slate-500">This {isTextFile ? "text" : "texture"} could not be loaded for editing.</div>
               )}
             </div>
           </div>
 
           {!isTextFile && (
-            <div className="w-full rounded-[24px] border border-border bg-card/70 p-4">
-              <p className="text-sm font-semibold text-foreground">Tools</p>
+            <div className="w-full rounded-lg border border-slate-200 bg-white p-4">
+              <p className="text-sm font-semibold text-slate-700">Tools</p>
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {[
                   { id: "pencil", label: "Brush" },
                   { id: "eraser", label: "Eraser" },
                   { id: "eyedropper", label: "Eyedropper" },
                 ].map((item) => (
-                  <button key={item.id} className={`rounded-xl border px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/15 text-primary" : "border-border bg-background/70 text-foreground hover:bg-accent"}`} onClick={() => setTool(item.id as EditorTool)}>
+                  <button key={item.id} className={`rounded-lg border px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-blue-500 bg-blue-50 text-blue-600" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`} onClick={() => setTool(item.id as EditorTool)}>
                     {item.label}
                   </button>
                 ))}
               </div>
 
-            <section className="mt-4 rounded-2xl border border-border bg-background/70 p-3">
+            <section className="mt-4 rounded-lg border border-slate-200 bg-white p-3">
               <div className="flex items-center justify-between gap-2">
                 <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Color</label>
                 <div className="flex overflow-hidden rounded-lg border border-border text-[11px] font-semibold uppercase tracking-[0.14em]">
@@ -2538,7 +2497,6 @@ export default function App() {
   const [atlasRegionOverrides, setAtlasRegionOverrides] = useState<Record<string, Record<string, string>>>({});
   const [uploadDefaults, setUploadDefaults] = useState<UploadDefaults>(() => readUploadDefaults());
   const [packName, setPackName] = useState(uploadDefaults.name);
-  const [creatingPack, setCreatingPack] = useState(false);
   const [packDescription, setPackDescription] = useState(uploadDefaults.description);
   const [packIcon, setPackIcon] = useState<string | null>(uploadDefaults.icon);
   const [exporting, setExporting] = useState(false);
@@ -2565,86 +2523,6 @@ export default function App() {
   const [removedFiles, setRemovedFiles] = useState<Record<string, boolean>>({});
   // Icon cropping
   const [cropSource, setCropSource] = useState<string | null>(null);
-  const importFolderInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    document.title = "MCTextureLab";
-  }, []);
-
-  const normalizeImportedPath = useCallback((file: File) => {
-    const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath;
-    let rawPath = (relativePath ?? file.name).replace(/\\/g, "/").replace(/^\/+/, "");
-    if (rawPath.startsWith("C:/fakepath/")) {
-      rawPath = rawPath.substring(12);
-    }
-    if (rawPath.match(/^[A-Za-z]:(\/|\\)/)) {
-      rawPath = rawPath.replace(/^[A-Za-z]:(\/|\\)+/, "");
-    }
-    const safeName = file.name || "unknown.bin";
-    const normalized = rawPath || safeName;
-
-    if (normalized.startsWith("assets/")) return normalized;
-    if (/^(textures|models|sounds|lang|blockstates)\//.test(normalized)) {
-      return `assets/minecraft/${normalized}`;
-    }
-
-    const ext = normalized.split(".").pop()?.toLowerCase();
-    const baseName = normalized.replace(/\.[^.]+$/, "");
-    const lower = baseName.toLowerCase();
-    let inferredFolder = "misc";
-
-    if (/(sky|cloud|end_sky|moon|sun|world)/.test(lower)) inferredFolder = "environment";
-    else if (/(particle|particles)/.test(lower)) inferredFolder = "particle";
-    else if (/(gui|icon|widget|mob_effect)/.test(lower)) inferredFolder = "gui";
-    else if (/(item|armor|tool|sword|pickaxe|bow)/.test(lower)) inferredFolder = "items";
-    else if (/(block|terrain|stone|grass|dirt|oak|birch|sand|log|planks)/.test(lower)) inferredFolder = "blocks";
-    else if (/(entity|mob|player|villager|painting|banner)/.test(lower)) inferredFolder = "entity";
-
-    const segments = normalized.split("/").filter(Boolean);
-    const fileName = segments.pop() ?? safeName;
-    const dirPath = segments.join("/");
-
-    if (ext && ["png", "jpg", "jpeg", "gif", "tga"].includes(ext)) {
-      return dirPath
-        ? `assets/minecraft/textures/${inferredFolder}/${dirPath}/${fileName}`
-        : `assets/minecraft/textures/${inferredFolder}/${fileName}`;
-    }
-
-    return dirPath
-      ? `assets/minecraft/${dirPath}/${fileName}`
-      : `assets/minecraft/${fileName}`;
-  }, []);
-
-  const createScratchedPackFromFiles = useCallback(async (files: FileList | File[]) => {
-    const fileList = Array.from(files);
-    if (!fileList.length) return;
-
-    setCreatingPack(true);
-    try {
-      const importedFiles = new Map<string, ArrayBuffer>();
-      await Promise.all(fileList.map(async (file) => {
-        const path = normalizeImportedPath(file);
-        importedFiles.set(path, await file.arrayBuffer());
-      }));
-
-      const folderName = fileList[0]?.webkitRelativePath?.split("/")[0] ?? "Scratch Pack";
-      const newPack: Pack = {
-        id: crypto.randomUUID(),
-        name: folderName === "Scratch Pack" ? "Scratch Pack" : `${folderName} (scratch)`,
-        files: importedFiles,
-        color: PACK_COLORS[packs.length % PACK_COLORS.length],
-      };
-
-      setPacks((prev) => [newPack, ...prev]);
-      const firstImported = fileList[0];
-      const firstPath = normalizeImportedPath(firstImported);
-      const firstFolder = getTextureFolder(firstPath);
-      setSelectedFolder(firstFolder || "blocks");
-      setGlobalSearch("");
-    } finally {
-      setCreatingPack(false);
-    }
-  }, [packs.length, normalizeImportedPath]);
 
   const handlePacksLoaded = useCallback((newPacks: Pack[]) => {
     setPacks((prev) => {
@@ -2989,28 +2867,86 @@ export default function App() {
   };
 
   return (
-    <div className={`flex flex-col h-screen overflow-hidden${darkMode ? " dark" : ""} ${layoutMode === "modern" ? (darkMode ? "bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.16),_transparent_28%)] text-foreground" : "bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.12),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.12),_transparent_24%)] text-foreground") : "bg-background text-foreground"}`}>
-      {/* ── Header ── */}
-      <header className={`flex-shrink-0 border-b px-4 py-3 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-gradient-to-br from-slate-950/90 via-slate-900/85 to-emerald-950/70 text-slate-100 shadow-[0_18px_40px_-24px_rgba(2,6,23,0.85)]" : "border-slate-200/80 bg-gradient-to-br from-white via-slate-50 to-emerald-50/70 text-slate-900 shadow-[0_16px_36px_-24px_rgba(15,23,42,0.18)]") : "border-border bg-card"}`}>
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Settings gear */}
+    <div className={`flex flex-col h-screen overflow-hidden bg-slate-50 text-slate-900`}>
+      {/* ── Top Navigation Bar ── */}
+      <nav className="flex-shrink-0 border-b border-slate-200 bg-white px-6 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                MC
+              </div>
+              <span className="font-semibold text-slate-700">Resource Pack Editor</span>
+              <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full">1.8</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              {packs.length > 0 && (
+                <>
+                  <span className="px-3 py-1.5 bg-slate-100 rounded-full text-slate-600">{packs.length} pack{packs.length !== 1 ? "s" : ""}</span>
+                  <span className="px-3 py-1.5 bg-slate-100 rounded-full text-slate-600">{Object.keys(textureOverrides).length + Object.values(atlasRegionOverrides).reduce((sum, r) => sum + Object.keys(r).length, 0)} override{Object.keys(textureOverrides).length + Object.values(atlasRegionOverrides).reduce((sum, r) => sum + Object.keys(r).length, 0) !== 1 ? "s" : ""}</span>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {packs.length > 0 && (
+              <>
+                <button
+                  onClick={handleAnalyze}
+                  disabled={analyzing}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <span className={analyzing ? "animate-pulse" : ""}>✨</span>
+                  {analyzing ? "Analyzing…" : "Analyze"}
+                </button>
+                <button
+                  onClick={handleExport}
+                  disabled={exporting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {exporting ? "Exporting…" : "Export"}
+                </button>
+              </>
+            )}
             <button
               onClick={() => setSettingsOpen((v) => !v)}
-              className={`w-9 h-9 rounded-full flex items-center justify-center text-base transition-colors border ${settingsOpen ? (layoutMode === "modern" ? (darkMode ? "bg-white/15 text-white border-white/20" : "bg-primary/20 text-primary border-primary/40") : "bg-primary/20 text-primary border-primary/40") : (layoutMode === "modern" ? (darkMode ? "text-slate-300 hover:text-white hover:bg-white/10 border-transparent" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 border-transparent") : "text-muted-foreground hover:text-foreground hover:bg-accent border-transparent")}`}
+              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
               title="Settings"
             >
-              ⚙
+              ⚙️
             </button>
-            <h1 className={`text-base font-bold ${layoutMode === "modern" ? (darkMode ? "text-white" : "text-slate-900") : "text-foreground"}`}>MCTextureLab</h1>
-            <span className={`text-xs px-1.5 py-0.5 rounded ${layoutMode === "modern" ? (darkMode ? "bg-white/10 text-slate-300" : "bg-white/70 text-slate-600") : "text-muted-foreground bg-secondary"}`}>1.8</span>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {darkMode ? "☀️" : "🌙"}
+            </button>
           </div>
+        </div>
+      </nav>
 
-          <div className="flex-1 min-w-0 flex items-center gap-3">
-            {packs.length === 0 ? (
-              <p className={`text-xs ${layoutMode === "modern" ? (darkMode ? "text-slate-300" : "text-slate-600") : "text-muted-foreground"}`}>Upload resource pack ZIPs to get started</p>
-            ) : (
-              <>
+      {/* ── Main Content Area ── */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* ── Left Sidebar ── */}
+        <aside className="flex-shrink-0 w-64 border-r border-slate-200 bg-white">
+          <div className="p-4 border-b border-slate-100">
+            <h2 className="text-sm font-semibold text-slate-700 mb-3">Packs</h2>
+            <DropZone onLoad={handlePacksLoaded} />
+          </div>
+          
+          {packs.length > 0 && (
+            <>
+              <div className="p-4 border-b border-slate-100">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-slate-700">Pack Order</h2>
+                  <button
+                    onClick={clearAllPacks}
+                    className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                  >
+                    Clear all
+                  </button>
+                </div>
                 <PackOrderPanel
                   packs={packs}
                   onReorder={reorderPacks}
@@ -3018,220 +2954,114 @@ export default function App() {
                   packVisibility={packVisibility}
                   onVisibilityToggle={handleVisibilityToggle}
                 />
-                <div className="flex items-center gap-2 flex-wrap">
-                  {packs.map((p) => (
-                    <Badge key={p.id} color={p.color} label={p.name} />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {packs.length > 0 && (
-              <>
-                <Btn
-                  variant="danger"
-                  onClick={clearAllPacks}
-                  className="rounded-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20"
-                  title="Clear all packs and start a new project"
-                >
-                  🗑️
-                </Btn>
-                <Btn
-                  variant="default"
-                  onClick={handleAnalyze}
-                  disabled={analyzing}
-                  className="font-semibold rounded-full border-emerald-500/30 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 hover:shadow-[0_0_16px_rgba(16,185,129,0.2)] dark:text-emerald-300"
-                  title="Analyze the currently loaded packs"
-                >
-                  <span className={`text-sm ${analyzing ? "animate-pulse" : ""}`}>✨</span>
-                  {analyzing ? "Analyzing…" : "Analyze Pack"}
-                </Btn>
-                <Btn
-                  variant="primary"
-                  onClick={handleExport}
-                  disabled={exporting}
-                  className="font-semibold rounded-full hover:shadow-[0_0_18px_rgba(59,130,246,0.22)]"
-                >
-                  {exporting ? "Exporting…" : "↓ Export ZIP"}
-                </Btn>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* ── Sub-header: pack settings + upload ── */}
-      <div className={`flex-shrink-0 border-b px-4 py-2 overflow-visible ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-900/50 backdrop-blur-sm" : "border-slate-200/70 bg-white/70 backdrop-blur-sm") : "border-border bg-card/50"}`}>
-        <div className="flex items-start gap-4 flex-wrap overflow-visible">
-          <div className="flex-1 min-w-[150px]">
-            <PackSettings
-              packName={packName}
-              packDescription={packDescription}
-              packIcon={packIcon}
-              onNameChange={setPackName}
-              onDescriptionChange={setPackDescription}
-              onIconChange={(d) => { if (d === null) setPackIcon(null); else setCropSource(d); }}
-            />
-          </div>
-          <div className="flex-shrink-0 w-[17rem] space-y-2">
-            <DropZone onLoad={handlePacksLoaded} />
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => importFolderInputRef.current?.click()}
-                className="flex-1 rounded-full border border-border/80 bg-background/80 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-              >
-                {creatingPack ? "Creating…" : "Create pack from files"}
-              </button>
-              <input
-                ref={importFolderInputRef}
-                type="file"
-                multiple
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files) {
-                    createScratchedPackFromFiles(e.target.files);
-                    e.target.value = "";
-                  }
-                }}
-              />
-            </div>
-          </div>
-          {(totalOverrideCount > 0 || folderSourceCount > 0) && (
-            <div className="flex items-start gap-2 px-2 py-1 text-xs text-muted-foreground flex-shrink-0 sm:px-3 overflow-visible">
-              {folderSourceCount > 0 && <span className="pt-0.5">📁 {folderSourceCount} folder source{folderSourceCount !== 1 ? "s" : ""}</span>}
-              {totalOverrideCount > 0 && (
-                <details className="group relative overflow-visible">
-                  <summary className="cursor-pointer list-none flex items-center gap-1 rounded-full px-2 py-1 hover:bg-accent/50 hover:text-foreground group-open:self-start">
-                    <span className="font-medium">🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
-                    {atlasRegionOverrideCount > 0 && (
-                      <span className="text-[10px]">({textureOverrideCount} texture, {atlasRegionOverrideCount} atlas)</span>
-                    )}
-                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border/60 bg-background/70 text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">▾</span>
-                  </summary>
-                  <div className="absolute left-1/2 top-full z-[100] mt-2 -translate-x-1/2 max-h-[10rem] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-border bg-card/95 p-3 pb-4 shadow-2xl backdrop-blur">
-                    {Object.entries(textureOverrides).map(([path, packId]) => (
-                      <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-3 py-2 text-left hover:bg-accent/70">
-                        <span className="block truncate text-foreground">{path.split("/").pop()}</span>
-                        <span className="block truncate text-[10px] text-muted-foreground">Texture override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
-                      </button>
-                    ))}
-                    {Object.entries(atlasRegionOverrides).flatMap(([path, regions]) => Object.entries(regions).map(([regionId, packId]) => ({ path, regionId, packId }))).map(({ path, regionId, packId }) => (
-                      <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className="block w-full rounded px-3 py-2 text-left hover:bg-accent/70">
-                        <span className="block truncate text-foreground">{path.split("/").pop()} · {regionId}</span>
-                        <span className="block truncate text-[10px] text-muted-foreground">Atlas override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
-                      </button>
-                    ))}
-                  </div>
-                </details>
-              )}
-            </div>
+              </div>
+              
+              <div className="p-4 border-b border-slate-100">
+                <h2 className="text-sm font-semibold text-slate-700 mb-3">Pack Settings</h2>
+                <PackSettings
+                  packName={packName}
+                  packDescription={packDescription}
+                  packIcon={packIcon}
+                  onNameChange={setPackName}
+                  onDescriptionChange={setPackDescription}
+                  onIconChange={(d) => { if (d === null) setPackIcon(null); else setCropSource(d); }}
+                />
+              </div>
+            </>
           )}
-        </div>
-      </div>
-
-      {/* ── Body ── */}
-      {packs.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className={`text-center max-w-xl px-8 py-10 rounded-[28px] border ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-gradient-to-br from-slate-900/85 via-slate-900/70 to-emerald-950/70 shadow-[0_25px_60px_-30px_rgba(2,6,23,0.95)]" : "border-slate-200/80 bg-gradient-to-br from-white via-slate-50 to-emerald-50/70 shadow-[0_24px_52px_-28px_rgba(15,23,42,0.2)]") : "border-border bg-card"}`}>
-            <h2 className="text-xl font-bold mb-2">MCTextureLab</h2>
-            <p className={`text-sm ${layoutMode === "modern" ? (darkMode ? "text-slate-300" : "text-slate-600") : "text-muted-foreground"}`}>
-              Upload one or more resource pack ZIP files above to compare textures, set default sources per folder, override individual textures, and export a merged pack.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-1 min-h-0">
-          {/* Sidebar */}
-          <aside
-            className={`flex-shrink-0 border-r overflow-y-auto transition-all duration-200 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-900/70 backdrop-blur-xl" : "border-slate-200/70 bg-white/70 backdrop-blur-xl") : "border-border bg-sidebar"} ${sidebarOpen ? "w-60" : "w-0 overflow-hidden border-r-0"}`}
-          >
-            <div className={`px-3 py-3 border-b ${layoutMode === "modern" ? (darkMode ? "border-white/10" : "border-slate-200/70") : "border-sidebar-border"}`}>
-              <span className={`text-xs font-semibold uppercase tracking-wider ${layoutMode === "modern" ? (darkMode ? "text-slate-300" : "text-slate-600") : "text-muted-foreground"}`}>Folders</span>
-            </div>
+          
+          <div className="p-4">
+            <h2 className="text-sm font-semibold text-slate-700 mb-3">Folders</h2>
             <FolderSidebar
-              packs={packs}
+              packs={visiblePacks}
               selectedFolder={selectedFolder}
               onSelect={setSelectedFolder}
               folderSources={folderSources}
               onFolderSource={handleFolderSource}
               layoutMode={layoutMode}
             />
-          </aside>
+          </div>
+        </aside>
 
-          {/* Toggle sidebar */}
-          <button
-            onClick={() => setSidebarOpen((v) => !v)}
-            className="flex-shrink-0 w-5 flex items-center justify-center bg-sidebar border-r border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-          >
-            <span className="text-xs">{sidebarOpen ? "‹" : "›"}</span>
-          </button>
-
-          {/* Main content */}
-          <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
-            {/* Folder header + global search */}
-            <div className={`flex-shrink-0 px-4 py-3 border-b flex items-center gap-3 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-900/40 backdrop-blur-sm" : "border-slate-200/70 bg-white/70 backdrop-blur-sm") : "border-border bg-card"}`}>
-              {globalSearch ? (
-                <span className="font-semibold">Search results</span>
-              ) : (
-                <span className="font-semibold">
-                  {MC_FOLDERS.find((f) => f.key === selectedFolder)?.label ?? selectedFolder}
-                </span>
-              )}
-              <div className="ml-auto flex items-center gap-2">
+        {/* ── Main Content ── */}
+        <main className="flex-1 overflow-hidden flex flex-col">
+          {/* Toolbar */}
+          <div className="flex-shrink-0 border-b border-slate-200 bg-white px-6 py-3">
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
                 <input
-                  type="search"
-                  placeholder="Search all textures…"
+                  type="text"
+                  placeholder="Search textures..."
                   value={globalSearch}
                   onChange={(e) => setGlobalSearch(e.target.value)}
-                  className={`border rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-48 ${layoutMode === "modern" ? (darkMode ? "border-white/10 bg-slate-950/50 text-slate-100 placeholder:text-slate-400" : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400") : "bg-secondary border-border text-foreground"}`}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50"
+                  disabled={packs.length === 0}
                 />
-                {!globalSearch && packs.length > 1 && (
-                  <span className="text-xs text-muted-foreground hidden xl:block">
-                    Click preview to pick pack • Click name for folder default
-                  </span>
-                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  {sidebarOpen ? "☰" : "☷"}
+                </button>
               </div>
             </div>
+          </div>
 
-            {/* Texture grid or search results */}
-            <div className="flex-1 overflow-y-auto p-4">
-              {globalSearch ? (
-                <SearchAllResults
-                  query={globalSearch}
-                  packs={visiblePacks}
-                  folderSources={folderSources}
-                  textureOverrides={textureOverrides}
-                  onOverride={handleOverride}
-                  onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
-                  onEditTexture={handleOpenTextureEditor}
-                  cols={texturesPerRow}
-                  removedFiles={removedFiles}
-                  onToggleRemove={toggleRemovedFile}
-                  layoutMode={layoutMode}
-                />
-              ) : (
-                <TextureGrid
-                  packs={visiblePacks}
-                  folder={selectedFolder}
-                  folderSources={folderSources}
-                  textureOverrides={textureOverrides}
-                  onOverride={handleOverride}
-                  onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
-                  onEditTexture={handleOpenTextureEditor}
-                  cols={texturesPerRow}
-                  removedFiles={removedFiles}
-                  onToggleRemove={toggleRemovedFile}
-                  layoutMode={layoutMode}
-                />
-              )}
-            </div>
-          </main>
-        </div>
-      )}
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {packs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full">
+                <div className="text-center max-w-md">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+                    MC
+                  </div>
+                  <h2 className="text-xl font-semibold text-slate-700 mb-2">No packs loaded</h2>
+                  <p className="text-slate-500">Upload resource pack ZIP files to get started with texture editing and merging.</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {!globalSearch && packs.length > 1 && (
+                  <div className="mb-4 text-sm text-slate-500">
+                    Click preview to pick pack • Click name for folder default
+                  </div>
+                )}
+                {globalSearch ? (
+                  <SearchAllResults
+                    query={globalSearch}
+                    packs={visiblePacks}
+                    folderSources={folderSources}
+                    textureOverrides={textureOverrides}
+                    onOverride={handleOverride}
+                    onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
+                    onEditTexture={handleOpenTextureEditor}
+                    cols={texturesPerRow}
+                    removedFiles={removedFiles}
+                    onToggleRemove={toggleRemovedFile}
+                    layoutMode={layoutMode}
+                  />
+                ) : (
+                  <TextureGrid
+                    packs={visiblePacks}
+                    folder={selectedFolder}
+                    folderSources={folderSources}
+                    textureOverrides={textureOverrides}
+                    onOverride={handleOverride}
+                    onOpenLightbox={(path, displayName, folder) => setLightbox({ path, displayName, folder })}
+                    onEditTexture={handleOpenTextureEditor}
+                    cols={texturesPerRow}
+                    removedFiles={removedFiles}
+                    onToggleRemove={toggleRemovedFile}
+                    layoutMode={layoutMode}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        </main>
+      </div>
 
       {/* ── Texture editor modal ── */}
       {editingTexture && (
