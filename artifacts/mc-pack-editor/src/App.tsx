@@ -173,12 +173,14 @@ function PackOrderPanel({
   onRemove,
   packVisibility,
   onVisibilityToggle,
+  darkMode,
 }: {
   packs: Pack[];
   onReorder: (newOrder: Pack[]) => void;
   onRemove: (id: string) => void;
   packVisibility: Record<string, boolean>;
   onVisibilityToggle: (id: string) => void;
+  darkMode: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -235,7 +237,7 @@ function PackOrderPanel({
       {/* Trigger button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-sm font-medium transition-colors cursor-pointer select-none"
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer select-none ${darkMode ? "border-slate-600 bg-slate-700 hover:bg-slate-600 text-slate-200" : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700"}`}
       >
         <span className="text-base">⇅</span>
         <span>Pack Priority</span>
@@ -248,20 +250,20 @@ function PackOrderPanel({
             />
           ))}
         </div>
-        <span className="text-muted-foreground text-xs ml-auto">{open ? "▲" : "▼"}</span>
+        <span className={`text-xs ml-auto ${darkMode ? "text-slate-400" : "text-slate-500"}`}>{open ? "▲" : "▼"}</span>
       </button>
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-72 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
-          <div className="px-3 py-2 border-b border-slate-200 flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <div className={`absolute top-full left-0 z-50 mt-1 w-72 border rounded-lg shadow-lg overflow-hidden ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
+          <div className={`px-3 py-2 border-b flex items-center justify-between ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
+            <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
               Auto priority order
             </span>
-            <span className="text-xs text-slate-500">drag to reorder</span>
+            <span className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>drag to reorder</span>
           </div>
-          <p className="px-3 pt-2 pb-1 text-xs text-slate-500">
-            When set to <span className="text-blue-600 font-medium">auto</span>, the first pack is preferred. Textures missing from it fall through to the next pack.
+          <p className={`px-3 pt-2 pb-1 text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+            When set to <span className="font-medium text-blue-500">auto</span>, the first pack is preferred. Textures missing from it fall through to the next pack.
           </p>
           <div className="p-2 flex flex-col gap-1">
             {packs.map((pack, i) => {
@@ -276,12 +278,12 @@ function PackOrderPanel({
                   onDrop={(e) => handleDrop(e, i)}
                   onDragEnd={handleDragEnd}
                   className={`flex items-center gap-2 px-2 py-2 rounded border transition-all cursor-grab active:cursor-grabbing select-none
-                    ${isDragging ? "opacity-40 border-blue-500" : "border-transparent hover:border-slate-200 hover:bg-slate-50"}
-                    ${isOver ? "border-blue-500 bg-blue-50" : ""}
+                    ${isDragging ? "opacity-40 border-blue-500" : darkMode ? "border-transparent hover:border-slate-600 hover:bg-slate-700" : "border-transparent hover:border-slate-200 hover:bg-slate-50"}
+                    ${isOver ? "border-blue-500 bg-blue-500/10" : ""}
                   `}
                 >
                   {/* Drag handle */}
-                  <span className="text-slate-400 text-base leading-none flex-shrink-0">⋮⋮</span>
+                  <span className={`text-base leading-none flex-shrink-0 ${darkMode ? "text-slate-500" : "text-slate-400"}`}>⋮⋮</span>
 
                   {/* Priority badge */}
                   <span
@@ -296,12 +298,12 @@ function PackOrderPanel({
                     className="w-3.5 h-3.5 rounded-full flex-shrink-0 border border-white/20"
                     style={{ background: pack.color }}
                   />
-                  <span className="text-sm text-slate-700 font-medium flex-1 truncate">
+                  <span className={`text-sm font-medium flex-1 truncate ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
                     {pack.name}
                   </span>
 
                   {/* File count */}
-                  <span className="text-xs text-muted-foreground flex-shrink-0">
+                  <span className={`text-xs flex-shrink-0 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
                     {pack.files.size.toLocaleString()} files
                   </span>
 
@@ -317,7 +319,7 @@ function PackOrderPanel({
                   {/* Remove */}
                   <button
                     onClick={(e) => { e.stopPropagation(); onRemove(pack.id); }}
-                    className="text-muted-foreground hover:text-destructive text-sm transition-colors flex-shrink-0"
+                    className={`text-sm transition-colors flex-shrink-0 ${darkMode ? "text-slate-400 hover:text-red-400" : "text-slate-400 hover:text-red-500"}`}
                     title="Remove pack"
                   >
                     ✕
@@ -334,7 +336,7 @@ function PackOrderPanel({
 
 // ─── Drop Zone ─────────────────────────────────────────────────────────────────
 
-function DropZone({ onLoad }: { onLoad: (packs: Pack[]) => void }) {
+function DropZone({ onLoad, darkMode }: { onLoad: (packs: Pack[]) => void; darkMode: boolean }) {
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -369,7 +371,7 @@ function DropZone({ onLoad }: { onLoad: (packs: Pack[]) => void }) {
       }}
       onClick={() => inputRef.current?.click()}
       className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-lg p-8 cursor-pointer transition-colors
-        ${dragging ? "border-blue-500 bg-blue-50" : "border-slate-300 hover:border-blue-400 hover:bg-slate-50"}`}
+        ${dragging ? "border-blue-500 bg-blue-500/10" : darkMode ? "border-slate-600 hover:border-blue-400 hover:bg-slate-700" : "border-slate-300 hover:border-blue-400 hover:bg-slate-50"}`}
     >
       <input
         ref={inputRef}
@@ -381,11 +383,11 @@ function DropZone({ onLoad }: { onLoad: (packs: Pack[]) => void }) {
       />
       <div className="text-4xl">📦</div>
       {loading ? (
-        <p className="text-sm text-slate-500 animate-pulse">Loading packs…</p>
+        <p className={`text-sm animate-pulse ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Loading packs…</p>
       ) : (
         <>
-          <p className="text-sm font-medium text-slate-700">Drop resource pack ZIPs here</p>
-          <p className="text-xs text-slate-500">or click to browse — multiple packs supported</p>
+          <p className={`text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Drop resource pack ZIPs here</p>
+          <p className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>or click to browse — multiple packs supported</p>
         </>
       )}
     </div>
@@ -811,6 +813,7 @@ function TextureCard({
   isRemoved,
   onToggleRemove,
   layoutMode,
+  darkMode,
 }: {
   texturePath: string;
   displayName: string;
@@ -824,6 +827,7 @@ function TextureCard({
   isRemoved: boolean;
   onToggleRemove: (path: string) => void;
   layoutMode: LayoutMode;
+  darkMode: boolean;
 }) {
   const overridePackId = textureOverrides[texturePath];
   const folderPackId = folderSources[folder];
@@ -836,11 +840,11 @@ function TextureCard({
   const isAtlas = !!getAtlasDefinition(texturePath);
 
   return (
-    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-lg border transition-all ${isRemoved ? "border-red-300 bg-red-50 opacity-70" : "border-slate-200 bg-white hover:border-blue-300 shadow-sm"}`}>
+    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-lg border transition-all ${isRemoved ? "border-red-300 bg-red-50 opacity-70" : `${darkMode ? "border-slate-700 bg-slate-800 hover:border-blue-400" : "border-slate-200 bg-white hover:border-blue-300"} shadow-sm`}`}>
       {/* Texture previews row */}
       {isImg && (
         <div
-          className={`flex border-b border-slate-100 ${packsWithFile.length === 1 ? "" : "divide-x divide-slate-100"}`}
+          className={`flex border-b ${darkMode ? "border-slate-700" : "border-slate-100"} ${packsWithFile.length === 1 ? "" : darkMode ? "divide-x divide-slate-700" : "divide-x divide-slate-100"}`}
         >
           {packsWithFile.map((pack) => {
             const buf = pack.files.get(texturePath)!;
@@ -877,22 +881,22 @@ function TextureCard({
       )}
 
       {/* File label & controls — click label to open lightbox */}
-      <div className="flex items-center gap-1 px-2 py-1.5 bg-slate-50">
+      <div className={`flex items-center gap-1 px-2 py-1.5 ${darkMode ? "bg-slate-700" : "bg-slate-50"}`}>
         <button
-          className="flex-1 min-w-0 text-left transition-colors hover:bg-slate-100"
+          className={`flex-1 min-w-0 text-left transition-colors ${darkMode ? "hover:bg-slate-600" : "hover:bg-slate-100"}`}
           onClick={() => onOpenLightbox?.()}
           title="Click to view larger"
         >
           <div className="flex items-center gap-1 min-w-0">
             {isAtlas && (
-              <span className="text-[10px] text-blue-600 font-bold flex-shrink-0" title="Atlas texture — region editor available">ATL</span>
+              <span className={`text-[10px] font-bold flex-shrink-0 ${darkMode ? "text-blue-400" : "text-blue-600"}`} title="Atlas texture — region editor available">ATL</span>
             )}
-            <span className="text-xs text-slate-500 truncate flex-1" title={displayName}>
+            <span className={`text-xs truncate flex-1 ${darkMode ? "text-slate-300" : "text-slate-500"}`} title={displayName}>
               {displayName}
             </span>
             {overridePackId && (
               <span
-                className="text-xs text-blue-600 flex-shrink-0"
+                className={`text-xs flex-shrink-0 ${darkMode ? "text-blue-400" : "text-blue-600"}`}
                 onClick={(e) => { e.stopPropagation(); onOverride(texturePath, null); }}
                 title="Clear override"
               >
@@ -961,6 +965,7 @@ function TextureGrid({
   removedFiles,
   onToggleRemove,
   layoutMode,
+  darkMode,
 }: {
   packs: Pack[];
   folder: string;
@@ -973,6 +978,7 @@ function TextureGrid({
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
   layoutMode: LayoutMode;
+  darkMode: boolean;
 }) {
   const [search, setSearch] = useState("");
 
@@ -1029,6 +1035,7 @@ function TextureGrid({
               isRemoved={!!removedFiles[path]}
               onToggleRemove={onToggleRemove}
               layoutMode={layoutMode}
+              darkMode={darkMode}
             />
           );
         })}
@@ -1051,6 +1058,7 @@ function SearchAllResults({
   removedFiles,
   onToggleRemove,
   layoutMode,
+  darkMode,
 }: {
   query: string;
   packs: Pack[];
@@ -1063,6 +1071,7 @@ function SearchAllResults({
   removedFiles: Record<string, boolean>;
   onToggleRemove: (path: string) => void;
   layoutMode: LayoutMode;
+  darkMode: boolean;
 }) {
   const allPaths = useMemo(() => {
     const set = new Set<string>();
@@ -1113,6 +1122,7 @@ function SearchAllResults({
                 isRemoved={!!removedFiles[path]}
                 onToggleRemove={onToggleRemove}
                 layoutMode={layoutMode}
+                darkMode={darkMode}
               />
               <span className="text-[10px] text-muted-foreground text-center truncate px-1">{folder}</span>
             </div>
@@ -2949,7 +2959,7 @@ export default function App() {
         <aside className={`flex-shrink-0 w-64 border-r ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
           <div className={`p-4 border-b ${darkMode ? "border-slate-700" : "border-slate-100"}`}>
             <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Packs</h2>
-            <DropZone onLoad={handlePacksLoaded} />
+            <DropZone onLoad={handlePacksLoaded} darkMode={darkMode} />
           </div>
           
           {packs.length > 0 && (
@@ -2970,6 +2980,7 @@ export default function App() {
                   onRemove={removePack}
                   packVisibility={packVisibility}
                   onVisibilityToggle={handleVisibilityToggle}
+                  darkMode={darkMode}
                 />
               </div>
               
@@ -2988,17 +2999,20 @@ export default function App() {
             </>
           )}
           
-          <div className="p-4">
-            <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Folders</h2>
-            <FolderSidebar
-              packs={visiblePacks}
-              selectedFolder={selectedFolder}
-              onSelect={setSelectedFolder}
-              folderSources={folderSources}
-              onFolderSource={handleFolderSource}
-              layoutMode={layoutMode}
-            />
-          </div>
+          {sidebarOpen && (
+            <div className="p-4">
+              <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Folders</h2>
+              <FolderSidebar
+                packs={visiblePacks}
+                selectedFolder={selectedFolder}
+                onSelect={setSelectedFolder}
+                folderSources={folderSources}
+                onFolderSource={handleFolderSource}
+                layoutMode={layoutMode}
+                darkMode={darkMode}
+              />
+            </div>
+          )}
         </aside>
 
         {/* ── Main Content ── */}
@@ -3045,8 +3059,9 @@ export default function App() {
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
                   className={`px-3 py-2 text-sm rounded-lg transition-colors ${darkMode ? "text-slate-300 hover:text-slate-100 hover:bg-slate-700" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}
+                  title="Toggle folder panel"
                 >
-                  {sidebarOpen ? "☰" : "☷"}
+                  ☰
                 </button>
               </div>
             </div>
@@ -3084,6 +3099,7 @@ export default function App() {
                     removedFiles={removedFiles}
                     onToggleRemove={toggleRemovedFile}
                     layoutMode={layoutMode}
+                    darkMode={darkMode}
                   />
                 ) : (
                   <TextureGrid
@@ -3098,6 +3114,7 @@ export default function App() {
                     removedFiles={removedFiles}
                     onToggleRemove={toggleRemovedFile}
                     layoutMode={layoutMode}
+                    darkMode={darkMode}
                   />
                 )}
               </>
