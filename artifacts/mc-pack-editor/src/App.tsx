@@ -2999,20 +2999,6 @@ export default function App() {
             </>
           )}
           
-          {sidebarOpen && (
-            <div className="p-4">
-              <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Folders</h2>
-              <FolderSidebar
-                packs={visiblePacks}
-                selectedFolder={selectedFolder}
-                onSelect={setSelectedFolder}
-                folderSources={folderSources}
-                onFolderSource={handleFolderSource}
-                layoutMode={layoutMode}
-                darkMode={darkMode}
-              />
-            </div>
-          )}
         </aside>
 
         {/* ── Main Content ── */}
@@ -3058,7 +3044,7 @@ export default function App() {
                 )}
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${darkMode ? "text-slate-300 hover:text-slate-100 hover:bg-slate-700" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}
+                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${darkMode ? "text-slate-300 hover:text-slate-100 hover:bg-slate-700" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"} ${sidebarOpen && packs.length > 0 ? "bg-blue-500/15 text-blue-500" : ""}`}
                   title="Toggle folder panel"
                 >
                   ☰
@@ -3121,6 +3107,31 @@ export default function App() {
             )}
           </div>
         </main>
+
+        {/* ── Right Sidebar (Folders) ── */}
+        {sidebarOpen && packs.length > 0 && (
+          <aside className={`flex-shrink-0 w-64 border-l overflow-y-auto ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
+            <div className={`sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
+              <h2 className={`text-sm font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Folders</h2>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className={`p-1 rounded-lg transition-colors ${darkMode ? "text-slate-400 hover:text-slate-100 hover:bg-slate-700" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
+                title="Close folder panel"
+              >
+                ✕
+              </button>
+            </div>
+            <FolderSidebar
+              packs={visiblePacks}
+              selectedFolder={selectedFolder}
+              onSelect={setSelectedFolder}
+              folderSources={folderSources}
+              onFolderSource={handleFolderSource}
+              layoutMode={layoutMode}
+              darkMode={darkMode}
+            />
+          </aside>
+        )}
       </div>
 
       {/* ── Texture editor modal ── */}
