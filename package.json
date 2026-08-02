@@ -9,10 +9,12 @@
   },
   "private": true,
   "devDependencies": {
+    "@esbuild/win32-arm64": "^0.28.1",
+    "@rollup/rollup-win32-arm64-msvc": "^4.62.3",
     "prettier": "^3.8.3",
     "typescript": "~5.9.3"
   },
   "dependencies": {
-    "esbuild": "0.27.3"
+    "esbuild": "0.28.1"
   }
 }
