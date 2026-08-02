@@ -561,7 +561,6 @@ function PackSettings({
   const descRef = useRef<HTMLInputElement>(null);
   const [activeField, setActiveField] = useState<"name" | "desc">("desc");
   const [colorCodesOpen, setColorCodesOpen] = useState(false);
-  const darkMode = document.documentElement.classList.contains("dark");
 
   const handleIcon = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
