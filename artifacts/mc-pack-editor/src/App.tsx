@@ -471,30 +471,34 @@ function McText({ text, fallback = "—" }: { text: string; fallback?: string })
 // ─── Minecraft format codes ────────────────────────────────────────────────────
 
 const MC_COLORS = [
+  // Black/White
   { code: "§0", color: "#000000", label: "Black" },
+  { code: "§f", color: "#FFFFFF", label: "White" },
+  // Dark colors
+  { code: "§8", color: "#555555", label: "Dark Gray" },
   { code: "§1", color: "#0000AA", label: "Dark Blue" },
   { code: "§2", color: "#00AA00", label: "Dark Green" },
-  { code: "§3", color: "#00AAAA", label: "Dark Aqua" },
   { code: "§4", color: "#AA0000", label: "Dark Red" },
   { code: "§5", color: "#AA00AA", label: "Dark Purple" },
-  { code: "§6", color: "#FFAA00", label: "Gold" },
+  { code: "§3", color: "#00AAAA", label: "Dark Aqua" },
+  // Light colors
   { code: "§7", color: "#AAAAAA", label: "Gray" },
-  { code: "§8", color: "#555555", label: "Dark Gray" },
   { code: "§9", color: "#5555FF", label: "Blue" },
   { code: "§a", color: "#55FF55", label: "Green" },
-  { code: "§b", color: "#55FFFF", label: "Aqua" },
   { code: "§c", color: "#FF5555", label: "Red" },
   { code: "§d", color: "#FF55FF", label: "Light Purple" },
+  { code: "§b", color: "#55FFFF", label: "Aqua" },
+  // Gold/Yellow
+  { code: "§6", color: "#FFAA00", label: "Gold" },
   { code: "§e", color: "#FFFF55", label: "Yellow" },
-  { code: "§f", color: "#FFFFFF", label: "White" },
 ];
 
 const MC_FORMATS = [
-  { code: "§k", label: "Obf", title: "Obfuscated (§k)", style: {} },
   { code: "§l", label: "B",   title: "Bold (§l)",        style: { fontWeight: "bold" as const } },
-  { code: "§m", label: "S",   title: "Strikethrough (§m)", style: { textDecoration: "line-through" } },
-  { code: "§n", label: "U",   title: "Underline (§n)",   style: { textDecoration: "underline" } },
   { code: "§o", label: "I",   title: "Italic (§o)",      style: { fontStyle: "italic" as const } },
+  { code: "§n", label: "U",   title: "Underline (§n)",   style: { textDecoration: "underline" } },
+  { code: "§m", label: "S",   title: "Strikethrough (§m)", style: { textDecoration: "line-through" } },
+  { code: "§k", label: "Obf", title: "Obfuscated (§k)", style: {} },
   { code: "§r", label: "R",   title: "Reset (§r)",       style: {} },
 ];
 
@@ -542,6 +546,7 @@ function PackSettings({
   onNameChange,
   onDescriptionChange,
   onIconChange,
+  darkMode,
 }: {
   packName: string;
   packDescription: string;
@@ -549,11 +554,14 @@ function PackSettings({
   onNameChange: (n: string) => void;
   onDescriptionChange: (d: string) => void;
   onIconChange: (d: string | null) => void;
+  darkMode: boolean;
 }) {
   const iconRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLInputElement>(null);
   const [activeField, setActiveField] = useState<"name" | "desc">("desc");
+  const [colorCodesOpen, setColorCodesOpen] = useState(false);
+  const darkMode = document.documentElement.classList.contains("dark");
 
   const handleIcon = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -582,7 +590,7 @@ function PackSettings({
     <div className="flex items-start gap-3">
       {/* Pack icon */}
       <button
-        className="w-12 h-12 rounded-lg border border-slate-200 flex-shrink-0 overflow-hidden checkered hover:border-blue-400 transition-colors cursor-pointer mt-5"
+        className={`w-12 h-12 rounded-lg border flex-shrink-0 overflow-hidden checkered transition-colors cursor-pointer mt-5 ${darkMode ? "border-slate-600 hover:border-blue-400" : "border-slate-200 hover:border-blue-400"}`}
         onClick={() => iconRef.current?.click()}
         title="Click to change pack icon"
       >
@@ -597,14 +605,14 @@ function PackSettings({
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
         {/* Pack name */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500 font-medium">Output Pack Name</label>
+          <label className={`text-xs font-medium ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Output Pack Name</label>
           <input
             ref={nameRef}
             type="text"
             value={packName}
             onFocus={() => setActiveField("name")}
             onChange={(e) => onNameChange(e.target.value)}
-            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full font-mono"
+            className={`rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
             placeholder="My Resource Pack"
           />
           {packName.includes("§") && (
@@ -616,7 +624,7 @@ function PackSettings({
 
         {/* Description */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500 font-medium">
+          <label className={`text-xs font-medium ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
             Description <span className="opacity-60">(pack.mcmeta)</span>
           </label>
           <input
@@ -625,7 +633,7 @@ function PackSettings({
             value={packDescription}
             onFocus={() => setActiveField("desc")}
             onChange={(e) => onDescriptionChange(e.target.value)}
-            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full font-mono"
+            className={`rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
             placeholder="A Minecraft resource pack"
           />
           {packDescription.includes("§") && (
@@ -637,43 +645,51 @@ function PackSettings({
 
         {/* Format code toolbar */}
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1.5">
-            <label className="text-xs text-slate-500 font-medium">Format codes</label>
-            <span className="text-xs text-blue-600">
+          <button
+            onClick={() => setColorCodesOpen(!colorCodesOpen)}
+            className="flex items-center gap-1.5 text-left"
+          >
+            <label className={`text-xs font-medium ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Format codes</label>
+            <span className={`text-xs ${darkMode ? "text-blue-400" : "text-blue-600"}`}>
               → inserting into <span className="font-semibold">{activeField === "name" ? "Name" : "Description"}</span>
             </span>
-          </div>
-          <div className="flex flex-wrap gap-1 p-1.5 bg-slate-50 rounded-lg border border-slate-200 overflow-y-auto" style={{ maxHeight: 72 }}>
-            {/* Color codes */}
-            {MC_COLORS.map(({ code, color, label }) => (
-              <button
-                key={code}
-                onMouseDown={(e) => { e.preventDefault(); insertCode(code); }}
-                className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold hover:scale-110 transition-transform flex-shrink-0 border border-white/10"
-                style={{
-                  background: color === "#000000" || color === "#555555" ? color : color,
-                  color: ["#000000","#555555","#0000AA","#00AA00","#00AAAA","#AA0000","#AA00AA"].includes(color) ? "#fff" : "#000",
-                }}
-                title={`${label} (${code})`}
-              >
-                A
-              </button>
-            ))}
-            {/* Separator */}
-            <div className="w-px h-6 bg-slate-300 flex-shrink-0 mx-0.5" />
-            {/* Format codes */}
-            {MC_FORMATS.map(({ code, label, title, style }) => (
-              <button
-                key={code}
-                onMouseDown={(e) => { e.preventDefault(); insertCode(code); }}
-                className="px-2 h-6 rounded text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex-shrink-0 border border-slate-200"
-                style={style}
-                title={title}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+            <span className={`ml-auto text-xs transition-transform ${darkMode ? "text-slate-400" : "text-slate-400"}`}>{colorCodesOpen ? "▲" : "▼"}</span>
+          </button>
+          {colorCodesOpen && (
+            <div className={`flex flex-col gap-2 p-2 rounded-lg border ${darkMode ? "bg-slate-700 border-slate-600" : "bg-slate-50 border-slate-200"}`}>
+              {/* Color codes */}
+              <div className="flex flex-wrap gap-1">
+                {MC_COLORS.map(({ code, color, label }) => (
+                  <button
+                    key={code}
+                    onMouseDown={(e) => { e.preventDefault(); insertCode(code); }}
+                    className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold hover:scale-110 transition-transform flex-shrink-0 border border-white/10"
+                    style={{
+                      background: color === "#000000" || color === "#555555" ? color : color,
+                      color: ["#000000","#555555","#0000AA","#00AA00","#00AAAA","#AA0000","#AA00AA"].includes(color) ? "#fff" : "#000",
+                    }}
+                    title={`${label} (${code})`}
+                  >
+                    A
+                  </button>
+                ))}
+              </div>
+              {/* Format codes */}
+              <div className="flex flex-wrap gap-1">
+                {MC_FORMATS.map(({ code, label, title, style }) => (
+                  <button
+                    key={code}
+                    onMouseDown={(e) => { e.preventDefault(); insertCode(code); }}
+                    className={`px-2 h-6 rounded text-xs transition-colors flex-shrink-0 border ${darkMode ? "bg-slate-600 hover:bg-slate-500 text-slate-200 border-slate-500" : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"}`}
+                    style={style}
+                    title={title}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -689,6 +705,7 @@ function FolderSidebar({
   folderSources,
   onFolderSource,
   layoutMode,
+  darkMode,
 }: {
   packs: Pack[];
   selectedFolder: string;
@@ -696,6 +713,7 @@ function FolderSidebar({
   folderSources: FolderSources;
   onFolderSource: (folder: string, packId: string | null) => void;
   layoutMode: LayoutMode;
+  darkMode: boolean;
 }) {
   const availableFolders = useMemo(() => getAllFoldersInPacks(packs), [packs]);
 
@@ -710,19 +728,19 @@ function FolderSidebar({
     const active = selectedFolder === key;
 
     return (
-      <div key={key} className={`group rounded-lg border transition-all ${active ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}>
+      <div key={key} className={`group rounded-lg border transition-all ${active ? "border-blue-400 bg-blue-500/10" : `${darkMode ? "border-slate-700 hover:border-slate-600 hover:bg-slate-700" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`} ${darkMode ? "bg-slate-800" : "bg-white"}`}>
         <button
           className="w-full flex items-center px-3 py-2.5 text-sm text-left rounded-lg"
           onClick={() => onSelect(key)}
         >
-          <span className={`flex-1 font-medium leading-snug ${active ? "text-blue-600" : "text-slate-700"}`}>
+          <span className={`flex-1 font-medium leading-snug ${active ? "text-blue-500" : darkMode ? "text-slate-200" : "text-slate-700"}`}>
             {label}
           </span>
         </button>
         {packs.length > 1 && (
           <div className="px-3 pb-2 flex items-center gap-1 flex-wrap">
             <button
-              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-blue-100 text-blue-600 font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
+              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-blue-100 text-blue-600 font-semibold" : darkMode ? "text-slate-400 hover:text-slate-200 hover:bg-slate-700" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
               onClick={(e) => { e.stopPropagation(); onFolderSource(key, null); }}
               title="Use highest-priority pack for each file"
             >
@@ -731,7 +749,7 @@ function FolderSidebar({
             {packs.map((p) => (
               <button
                 key={p.id}
-                className={`text-xs px-2 py-0.5 rounded transition-colors ${sourcePackId === p.id ? "font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
+                className={`text-xs px-2 py-0.5 rounded transition-colors ${sourcePackId === p.id ? "font-semibold" : darkMode ? "text-slate-400 hover:text-slate-200 hover:bg-slate-700" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
                 style={sourcePackId === p.id ? { background: p.color + "33", color: p.color } : {}}
                 onClick={(e) => { e.stopPropagation(); onFolderSource(key, p.id); }}
                 title={p.name}
@@ -1710,46 +1728,46 @@ function SettingsModal({
   const clampCols = (n: number) => Math.max(1, Math.min(12, n));
 
   return (
-    <div className="fixed inset-0 z-50" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="absolute top-14 left-4 w-76 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-2xl flex flex-col overflow-hidden"
+        className={`w-76 rounded-xl shadow-2xl flex flex-col overflow-hidden ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}
         style={{ width: 288 }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <span className="font-semibold text-sm">Settings</span>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-lg leading-none">✕</button>
+        <div className={`flex items-center justify-between px-4 py-3 border-b ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
+          <span className={`font-semibold text-sm ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Settings</span>
+          <button onClick={onClose} className={`text-lg leading-none ${darkMode ? "text-slate-400 hover:text-slate-100" : "text-slate-400 hover:text-slate-700"}`}>✕</button>
         </div>
 
         {/* Display */}
-        <div className="px-4 py-3 flex flex-col gap-3 border-b border-border">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Display</span>
+        <div className={`px-4 py-3 flex flex-col gap-3 border-b ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
+          <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Display</span>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm flex-1">Textures per row</span>
+            <span className={`text-sm flex-1 ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Textures per row</span>
             <button
               onClick={() => onTexturesPerRowChange(clampCols(texturesPerRow - 1))}
-              className="w-7 h-7 rounded bg-secondary hover:bg-accent border border-border text-sm font-bold flex items-center justify-center transition-colors"
+              className={`w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}
             >−</button>
             <input
               type="number"
               value={texturesPerRow}
               onChange={(e) => onTexturesPerRowChange(clampCols(parseInt(e.target.value) || 6))}
-              className="w-10 text-center bg-secondary border border-border rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
+              className={`w-10 text-center rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
               min={1} max={12}
             />
             <button
               onClick={() => onTexturesPerRowChange(clampCols(texturesPerRow + 1))}
-              className="w-7 h-7 rounded bg-secondary hover:bg-accent border border-border text-sm font-bold flex items-center justify-center transition-colors"
+              className={`w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}
             >+</button>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm flex-1">{darkMode ? "Dark mode" : "Light mode"}</span>
+            <span className={`text-sm flex-1 ${darkMode ? "text-slate-300" : "text-slate-700"}`}>{darkMode ? "Dark mode" : "Light mode"}</span>
             <button
               onClick={() => onDarkModeChange(!darkMode)}
-              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${darkMode ? "bg-primary" : "bg-secondary border border-border"}`}
+              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${darkMode ? "bg-blue-500" : "bg-slate-200"}`}
             >
               <span
                 className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${darkMode ? "right-0.5" : "left-0.5"}`}
@@ -1761,21 +1779,21 @@ function SettingsModal({
 
 {/* Upload defaults */}
         <div className="px-4 py-3 flex flex-col gap-3">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Upload defaults</span>
+          <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Upload defaults</span>
 
           {/* Copy from top pack */}
           <div className="flex items-center gap-2">
-            <span className="text-sm flex-1">Copy from top imported pack</span>
+            <span className={`text-sm flex-1 ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Copy from top imported pack</span>
             <button
               onClick={() => onCopyFromTopPackChange(!copyFromTopPack)}
-              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${copyFromTopPack ? "bg-primary" : "bg-secondary border border-border"}`}
+              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${copyFromTopPack ? "bg-blue-500" : "bg-slate-200"}`}
             >
               <span
                 className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${copyFromTopPack ? "right-0.5" : "left-0.5"}`}
               />
             </button>
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
             When enabled, copies icon, name, and description from the top imported pack. When disabled, uses manual defaults.
           </div>
 
@@ -1783,7 +1801,7 @@ function SettingsModal({
           <div className="flex items-center gap-3">
             <div className="relative flex-shrink-0">
               <button
-                className="w-14 h-14 rounded border border-border overflow-hidden checkered hover:border-primary transition-colors cursor-pointer"
+                className={`w-14 h-14 rounded border overflow-hidden checkered transition-colors cursor-pointer ${darkMode ? "border-slate-600 hover:border-blue-400" : "border-slate-200 hover:border-blue-400"}`}
                 onClick={() => iconInputRef.current?.click()}
                 title="Click to set pack icon"
               >
@@ -1795,14 +1813,14 @@ function SettingsModal({
               </button>
               {defaultPackIcon && (
                 <button
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center hover:opacity-90"
+                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center hover:opacity-90"
                   onClick={onDefaultIconRemove}
                   title="Remove icon"
                 >✕</button>
               )}
             </div>
             <input ref={iconInputRef} type="file" accept="image/*" className="hidden" onChange={handleIconFile} />
-            <div className="flex-1 text-xs text-muted-foreground">
+            <div className={`flex-1 text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
               {defaultPackIcon ? "Click icon to replace" : "Click icon to upload"}
               <br />These values are used as defaults for new uploads.
             </div>
@@ -1810,24 +1828,24 @@ function SettingsModal({
 
           {/* Name */}
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted-foreground">Default pack name</label>
+            <label className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Default pack name</label>
             <input
               type="text"
               value={defaultPackName}
               onChange={(e) => onDefaultNameChange(e.target.value)}
-              className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 font-mono"
+              className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
               placeholder="My Resource Pack"
             />
           </div>
 
           {/* Description */}
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted-foreground">Default description (pack.mcmeta)</label>
+            <label className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Default description (pack.mcmeta)</label>
             <input
               type="text"
               value={defaultPackDescription}
               onChange={(e) => onDefaultDescriptionChange(e.target.value)}
-              className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 font-mono"
+              className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
               placeholder="A Minecraft resource pack"
             />
           </div>
@@ -2867,23 +2885,23 @@ export default function App() {
   };
 
   return (
-    <div className={`flex flex-col h-screen overflow-hidden bg-slate-50 text-slate-900`}>
+    <div className={`flex flex-col h-screen overflow-hidden ${darkMode ? "bg-slate-900 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
       {/* ── Top Navigation Bar ── */}
-      <nav className="flex-shrink-0 border-b border-slate-200 bg-white px-6 py-3">
+      <nav className={`flex-shrink-0 border-b px-6 py-3 ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
                 MC
               </div>
-              <span className="font-semibold text-slate-700">Resource Pack Editor</span>
-              <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full">1.8</span>
+              <span className={`font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Resource Pack Editor</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? "bg-slate-700 text-slate-300" : "bg-slate-100 text-slate-500"}`}>1.8</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-slate-500">
+            <div className={`flex items-center gap-2 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
               {packs.length > 0 && (
                 <>
-                  <span className="px-3 py-1.5 bg-slate-100 rounded-full text-slate-600">{packs.length} pack{packs.length !== 1 ? "s" : ""}</span>
-                  <span className="px-3 py-1.5 bg-slate-100 rounded-full text-slate-600">{Object.keys(textureOverrides).length + Object.values(atlasRegionOverrides).reduce((sum, r) => sum + Object.keys(r).length, 0)} override{Object.keys(textureOverrides).length + Object.values(atlasRegionOverrides).reduce((sum, r) => sum + Object.keys(r).length, 0) !== 1 ? "s" : ""}</span>
+                  <span className={`px-3 py-1.5 rounded-full ${darkMode ? "bg-slate-700 text-slate-300" : "bg-slate-100 text-slate-600"}`}>{packs.length} pack{packs.length !== 1 ? "s" : ""}</span>
+                  <span className={`px-3 py-1.5 rounded-full ${darkMode ? "bg-slate-700 text-slate-300" : "bg-slate-100 text-slate-600"}`}>{Object.keys(textureOverrides).length + Object.values(atlasRegionOverrides).reduce((sum, r) => sum + Object.keys(r).length, 0)} override{Object.keys(textureOverrides).length + Object.values(atlasRegionOverrides).reduce((sum, r) => sum + Object.keys(r).length, 0) !== 1 ? "s" : ""}</span>
                 </>
               )}
             </div>
@@ -2894,7 +2912,7 @@ export default function App() {
                 <button
                   onClick={handleAnalyze}
                   disabled={analyzing}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50"
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${darkMode ? "text-slate-300 hover:text-slate-100 hover:bg-slate-700" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}
                 >
                   <span className={analyzing ? "animate-pulse" : ""}>✨</span>
                   {analyzing ? "Analyzing…" : "Analyze"}
@@ -2910,14 +2928,14 @@ export default function App() {
             )}
             <button
               onClick={() => setSettingsOpen((v) => !v)}
-              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              className={`p-2 rounded-lg transition-colors ${darkMode ? "text-slate-400 hover:text-slate-100 hover:bg-slate-700" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
               title="Settings"
             >
               ⚙️
             </button>
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              className={`p-2 rounded-lg transition-colors ${darkMode ? "text-slate-400 hover:text-slate-100 hover:bg-slate-700" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
               title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
             >
               {darkMode ? "☀️" : "🌙"}
@@ -2929,17 +2947,17 @@ export default function App() {
       {/* ── Main Content Area ── */}
       <div className="flex flex-1 overflow-hidden">
         {/* ── Left Sidebar ── */}
-        <aside className="flex-shrink-0 w-64 border-r border-slate-200 bg-white">
-          <div className="p-4 border-b border-slate-100">
-            <h2 className="text-sm font-semibold text-slate-700 mb-3">Packs</h2>
+        <aside className={`flex-shrink-0 w-64 border-r ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
+          <div className={`p-4 border-b ${darkMode ? "border-slate-700" : "border-slate-100"}`}>
+            <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Packs</h2>
             <DropZone onLoad={handlePacksLoaded} />
           </div>
           
           {packs.length > 0 && (
             <>
-              <div className="p-4 border-b border-slate-100">
+              <div className={`p-4 border-b ${darkMode ? "border-slate-700" : "border-slate-100"}`}>
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold text-slate-700">Pack Order</h2>
+                  <h2 className={`text-sm font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Pack Order</h2>
                   <button
                     onClick={clearAllPacks}
                     className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors"
@@ -2956,8 +2974,8 @@ export default function App() {
                 />
               </div>
               
-              <div className="p-4 border-b border-slate-100">
-                <h2 className="text-sm font-semibold text-slate-700 mb-3">Pack Settings</h2>
+              <div className={`p-4 border-b ${darkMode ? "border-slate-700" : "border-slate-100"}`}>
+                <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Pack Settings</h2>
                 <PackSettings
                   packName={packName}
                   packDescription={packDescription}
@@ -2965,13 +2983,14 @@ export default function App() {
                   onNameChange={setPackName}
                   onDescriptionChange={setPackDescription}
                   onIconChange={(d) => { if (d === null) setPackIcon(null); else setCropSource(d); }}
+                  darkMode={darkMode}
                 />
               </div>
             </>
           )}
           
           <div className="p-4">
-            <h2 className="text-sm font-semibold text-slate-700 mb-3">Folders</h2>
+            <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Folders</h2>
             <FolderSidebar
               packs={visiblePacks}
               selectedFolder={selectedFolder}
@@ -2986,7 +3005,7 @@ export default function App() {
         {/* ── Main Content ── */}
         <main className="flex-1 overflow-hidden flex flex-col">
           {/* Toolbar */}
-          <div className="flex-shrink-0 border-b border-slate-200 bg-white px-6 py-3">
+          <div className={`flex-shrink-0 border-b px-6 py-3 ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
             <div className="flex items-center gap-4">
               <div className="flex-1">
                 <input
@@ -2994,14 +3013,39 @@ export default function App() {
                   placeholder="Search textures..."
                   value={globalSearch}
                   onChange={(e) => setGlobalSearch(e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50"
+                  className={`w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 ${darkMode ? "border-slate-600 bg-slate-700 text-slate-100 placeholder:text-slate-400" : "border-slate-200 bg-white text-slate-700 placeholder:text-slate-400"}`}
                   disabled={packs.length === 0}
                 />
               </div>
               <div className="flex items-center gap-2">
+                {totalOverrideCount > 0 && (
+                  <details className="group relative">
+                    <summary className="cursor-pointer list-none flex items-center gap-1 hover:text-foreground">
+                      <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-600"}`}>🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
+                      {atlasRegionOverrideCount > 0 && (
+                        <span className="text-[10px]">({textureOverrideCount} texture, {atlasRegionOverrideCount} atlas)</span>
+                      )}
+                      <span className="inline-block transition-transform group-open:rotate-180">⌄</span>
+                    </summary>
+                    <div className={`absolute right-0 top-full z-[100] mt-1 max-h-36 w-[400px] overflow-y-auto rounded-lg border p-3 pb-4 shadow-xl ${darkMode ? "border-slate-600 bg-slate-800" : "border-slate-200 bg-white"}`}>
+                      {Object.entries(textureOverrides).map(([path, packId]) => (
+                        <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className={`block w-full rounded px-4 py-2 text-left hover:bg-slate-700 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+                          <span className="block truncate">{path.split("/").pop()}</span>
+                          <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Texture override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
+                        </button>
+                      ))}
+                      {Object.entries(atlasRegionOverrides).flatMap(([path, regions]) => Object.entries(regions).map(([regionId, packId]) => ({ path, regionId, packId }))).map(({ path, regionId, packId }) => (
+                        <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className={`block w-full rounded px-4 py-2 text-left hover:bg-slate-700 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+                          <span className="block truncate">{path.split("/").pop()} · {regionId}</span>
+                          <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Atlas override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </details>
+                )}
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${darkMode ? "text-slate-300 hover:text-slate-100 hover:bg-slate-700" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}
                 >
                   {sidebarOpen ? "☰" : "☷"}
                 </button>
@@ -3017,14 +3061,14 @@ export default function App() {
                   <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
                     MC
                   </div>
-                  <h2 className="text-xl font-semibold text-slate-700 mb-2">No packs loaded</h2>
-                  <p className="text-slate-500">Upload resource pack ZIP files to get started with texture editing and merging.</p>
+                  <h2 className={`text-xl font-semibold mb-2 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>No packs loaded</h2>
+                  <p className={darkMode ? "text-slate-400" : "text-slate-500"}>Upload resource pack ZIP files to get started with texture editing and merging.</p>
                 </div>
               </div>
             ) : (
               <>
                 {!globalSearch && packs.length > 1 && (
-                  <div className="mb-4 text-sm text-slate-500">
+                  <div className={`mb-4 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
                     Click preview to pick pack • Click name for folder default
                   </div>
                 )}
