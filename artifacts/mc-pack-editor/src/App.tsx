@@ -3103,12 +3103,13 @@ export default function App() {
           <div className="flex-1 overflow-y-auto p-6">
             {packs.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
-                <div className="text-center max-w-md">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
-                    MC
-                  </div>
-                  <h2 className={`text-xl font-semibold mb-2 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>No packs loaded</h2>
-                  <p className={darkMode ? "text-slate-400" : "text-slate-500"}>Upload resource pack ZIP files to get started with texture editing and merging.</p>
+                <div className={`text-center max-w-lg rounded-2xl border-2 px-10 py-12 ${darkMode ? "border-slate-700 bg-slate-800/50" : "border-slate-200 bg-white/60"}`}>
+                  <h1 className={`text-3xl font-bold mb-4 tracking-tight ${darkMode ? "text-slate-100" : "text-slate-800"}`}>
+                    MCTextureLab
+                  </h1>
+                  <p className={`text-sm leading-relaxed ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    Upload one or more resource pack ZIP files above to compare textures, set default sources per folder, override individual textures, and export a merged pack.
+                  </p>
                 </div>
               </div>
             ) : (
