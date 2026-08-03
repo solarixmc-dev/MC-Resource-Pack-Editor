@@ -2234,18 +2234,25 @@ function TextureEditorModal({
       loadImageDataFromBuffer(buffer, texturePath)
         .then((next) => {
           if (!cancelled) {
-            setImageData(next);
-            setHasChanges(false);
-            setEditHistory({ entries: [next], index: 0 });
-            // For atlas textures, select the first region; for regular textures, select "whole"
-            if (atlasDef && atlasDef.regions.length > 0) {
-              setActiveRegionId(atlasDef.regions[0].id);
-            } else {
-              setActiveRegionId("whole");
+            try {
+              setImageData(next);
+              setHasChanges(false);
+              setEditHistory({ entries: [next], index: 0 });
+              // For atlas textures, select the first region; for regular textures, select "whole"
+              const def = getAtlasDefinition(texturePath);
+              if (def && def.regions.length > 0) {
+                setActiveRegionId(def.regions[0].id);
+              } else {
+                setActiveRegionId("whole");
+              }
+            } catch (error) {
+              console.error('Error setting image data:', error);
+              if (!cancelled) setIsLoading(false);
             }
           }
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Error loading image data:', error);
           if (!cancelled) setIsLoading(false);
         })
         .finally(() => {
@@ -2266,36 +2273,56 @@ function TextureEditorModal({
     if (!frame || !imageData) return;
 
     const updateScale = () => {
-      // The frame has 12px padding on each side; exclude it from the fit size.
-      const availableWidth = Math.max(1, frame.clientWidth - 24);
-      const availableHeight = Math.max(1, frame.clientHeight - 24);
-      
-      // For atlas textures (icons.png, widgets.png), ensure they fit within the frame
-      // by using the smaller scale factor to prevent cutting off edges
-      const fitScale = Math.floor(Math.min(
-        availableWidth / imageData.width,
-        availableHeight / imageData.height,
-      ));
-      
-      // Ensure minimum scale of 1 and use the calculated fit scale
-      // This ensures the entire texture is visible
-      setCanvasScale(Math.max(1, fitScale));
+      try {
+        // The frame has 12px padding on each side; exclude it from the fit size.
+        const availableWidth = Math.max(1, frame.clientWidth - 24);
+        const availableHeight = Math.max(1, frame.clientHeight - 24);
+        
+        // For atlas textures (icons.png, widgets.png), ensure they fit within the frame
+        // by using the smaller scale factor to prevent cutting off edges
+        const fitScale = Math.floor(Math.min(
+          availableWidth / imageData.width,
+          availableHeight / imageData.height,
+        ));
+        
+        // Ensure minimum scale of 1 and use the calculated fit scale
+        // This ensures the entire texture is visible
+        setCanvasScale(Math.max(1, fitScale));
+      } catch (error) {
+        console.error('Error updating canvas scale:', error);
+      }
     };
 
     updateScale();
     const observer = new ResizeObserver(updateScale);
     observer.observe(frame);
-    return () => observer.disconnect();
+    return () => {
+      try {
+        observer.disconnect();
+      } catch (error) {
+        console.error('Error disconnecting resize observer:', error);
+      }
+    };
   }, [imageData?.width, imageData?.height]);
 
   const selectedRegion = useMemo(() => {
     if (!atlasDef) return undefined;
-    return atlasDef.regions.find((region) => region.id === activeRegionId);
+    try {
+      return atlasDef.regions.find((region) => region.id === activeRegionId);
+    } catch (error) {
+      console.error('Error finding region:', error);
+      return undefined;
+    }
   }, [activeRegionId, atlasDef]);
 
   const rectRegion = useMemo<RectRegion | undefined>(() => {
     if (!selectedRegion) return undefined;
-    return { x: selectedRegion.x, y: selectedRegion.y, width: selectedRegion.w, height: selectedRegion.h };
+    try {
+      return { x: selectedRegion.x, y: selectedRegion.y, width: selectedRegion.w, height: selectedRegion.h };
+    } catch (error) {
+      console.error('Error creating rect region:', error);
+      return undefined;
+    }
   }, [selectedRegion]);
 
   const applyImageChange = useCallback((next: ImageData) => {
@@ -2351,35 +2378,39 @@ function TextureEditorModal({
   };
 
   const handleCanvasPointer = (e: PointerEvent<HTMLCanvasElement>) => {
-    if (!imageData) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const scaleX = imageData.width / rect.width;
-    const scaleY = imageData.height / rect.height;
-    const px = Math.floor((e.clientX - rect.left) * scaleX);
-    const py = Math.floor((e.clientY - rect.top) * scaleY);
-    if (px < 0 || py < 0 || px >= imageData.width || py >= imageData.height) return;
+    try {
+      if (!imageData) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const scaleX = imageData.width / rect.width;
+      const scaleY = imageData.height / rect.height;
+      const px = Math.floor((e.clientX - rect.left) * scaleX);
+      const py = Math.floor((e.clientY - rect.top) * scaleY);
+      if (px < 0 || py < 0 || px >= imageData.width || py >= imageData.height) return;
 
-    if (tool === "eyedropper") {
-      const colorValue = pickColorAt(imageData, px, py);
-      setColor(colorValue);
-      setTool("pencil");
-      return;
-    }
-
-    if (e.type === "pointerdown") {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    }
-
-    if (e.type === "pointerdown" || (e.type === "pointermove" && e.buttons === 1)) {
-      let next = imageData;
-      if (tool === "pencil" || tool === "eraser") {
-        // For atlas textures, only allow editing the selected region
-        if (isAtlasTexture && !selectedRegion) return;
-        next = applyBrush(imageData, px, py, color, brushSize, tool === "eraser" ? "eraser" : "pencil", isAtlasTexture ? rectRegion : undefined);
+      if (tool === "eyedropper") {
+        const colorValue = pickColorAt(imageData, px, py);
+        setColor(colorValue);
+        setTool("pencil");
+        return;
       }
-      if (next !== imageData) {
-        applyImageChange(next);
+
+      if (e.type === "pointerdown") {
+        e.currentTarget.setPointerCapture(e.pointerId);
       }
+
+      if (e.type === "pointerdown" || (e.type === "pointermove" && e.buttons === 1)) {
+        let next = imageData;
+        if (tool === "pencil" || tool === "eraser") {
+          // For atlas textures, only allow editing the selected region
+          if (isAtlasTexture && !selectedRegion) return;
+          next = applyBrush(imageData, px, py, color, brushSize, tool === "eraser" ? "eraser" : "pencil", isAtlasTexture ? rectRegion : undefined);
+        }
+        if (next !== imageData) {
+          applyImageChange(next);
+        }
+      }
+    } catch (error) {
+      console.error('Error in canvas pointer handler:', error);
     }
   };
 
@@ -2432,7 +2463,17 @@ function TextureEditorModal({
                 <p className="text-xs text-muted-foreground">{isTextFile ? "Edit the text content directly. Changes are saved back to the selected pack on export." : "Paint directly into the texture. The edit is saved back to the selected pack on export."}</p>
               </div>
               {!isTextFile && atlasDef && (
-                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
+                <select 
+                  value={activeRegionId} 
+                  onChange={(e) => {
+                    try {
+                      setActiveRegionId(e.target.value);
+                    } catch (error) {
+                      console.error('Error changing region:', error);
+                    }
+                  }} 
+                  className="rounded border border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground"
+                >
                   {regionOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
                 </select>
               )}
