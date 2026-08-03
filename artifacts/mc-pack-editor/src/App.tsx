@@ -2171,7 +2171,6 @@ function TextureEditorModal({
   darkMode: boolean;
 }) {
   const isTextFile = /\.(json|mcmeta|txt|lang)$/i.test(texturePath);
-  const isAtlasTexture = atlasDef !== undefined;
   
   const [tool, setTool] = useState<EditorTool>("pencil");
   const [color, setColor] = useState("#22c55e");
@@ -2192,6 +2191,8 @@ function TextureEditorModal({
   const [canvasScale, setCanvasScale] = useState(1);
 
   const atlasDef = useMemo(() => getAtlasDefinition(texturePath), [texturePath]);
+  const isAtlasTexture = atlasDef !== undefined;
+  
   const regionOptions = useMemo(() => {
     if (!atlasDef) return [];
     // For atlas textures, only show regions, not "whole texture" option
