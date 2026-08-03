@@ -2170,6 +2170,7 @@ function TextureEditorModal({
   onClose: () => void;
   darkMode: boolean;
 }) {
+  console.log('TextureEditorModal mounted for:', texturePath, displayName);
   const isTextFile = /\.(json|mcmeta|txt|lang)$/i.test(texturePath);
   
   const [tool, setTool] = useState<EditorTool>("pencil");
@@ -2215,9 +2216,14 @@ function TextureEditorModal({
     let cancelled = false;
     setRenderError(null);
     
+    console.log('Loading texture:', texturePath, 'activePackId:', activePackId);
     const pack = packs.find((entry) => entry.id === activePackId) ?? packs.find((entry) => entry.files.has(texturePath)) ?? null;
+    console.log('Found pack:', pack);
     const buffer = pack?.files.get(texturePath);
+    console.log('Buffer:', buffer ? buffer.byteLength + ' bytes' : 'null');
+    
     if (!buffer) {
+      console.error('Texture not found in any pack');
       setIsLoading(false);
       setRenderError("Texture not found in any pack");
       return;
@@ -2235,8 +2241,10 @@ function TextureEditorModal({
       setIsLoading(false);
     } else {
       // Handle image files
+      console.log('Loading image data...');
       loadImageDataFromBuffer(buffer, texturePath)
         .then((next) => {
+          console.log('Image data loaded:', next);
           if (!cancelled) {
             try {
               setImageData(next);
@@ -2244,6 +2252,7 @@ function TextureEditorModal({
               setEditHistory({ entries: [next], index: 0 });
               // For atlas textures, select the first region; for regular textures, select "whole"
               const def = getAtlasDefinition(texturePath);
+              console.log('Atlas definition:', def);
               if (def && def.regions.length > 0) {
                 setActiveRegionId(def.regions[0].id);
               } else {
@@ -2961,6 +2970,7 @@ export default function App() {
   }, []);
 
   const handleOpenTextureEditor = useCallback((path: string, displayName: string, folder: string) => {
+    console.log('Opening texture editor for:', path, displayName, folder);
     try {
       const selectedPack = packs.find((pack) => {
         const overridePackId = textureOverrides[path];
@@ -2970,6 +2980,7 @@ export default function App() {
         return pack.files.has(path);
       }) ?? packs.find((pack) => pack.files.has(path)) ?? null;
 
+      console.log('Selected pack:', selectedPack);
       setEditingTexture({ path, displayName, folder, packId: selectedPack?.id ?? null });
     } catch (error) {
       console.error('Error opening texture editor:', error);
