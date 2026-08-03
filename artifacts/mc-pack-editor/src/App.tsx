@@ -950,7 +950,7 @@ function TextureCard({
           </div>
         </button>
         <button
-          className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${darkMode ? "text-slate-400 hover:bg-slate-600 hover:text-slate-200" : "text-slate-400 hover:bg-slate-200 hover:text-slate-600"}`}
+          className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${darkMode ? "bg-slate-800 text-slate-400 hover:bg-slate-600 hover:text-slate-200" : "bg-white text-slate-400 hover:bg-slate-200 hover:text-slate-600"}`}
           onClick={(e) => { e.stopPropagation(); onEditTexture?.(texturePath, displayName, folder); }}
           title="Edit texture"
           aria-label={`Edit ${displayName}`}
@@ -2969,20 +2969,37 @@ export default function App() {
               <div className="relative" ref={settingsMenuRef}>
                 <button
                   onClick={() => setSettingsMenuOpen(!settingsMenuOpen)}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 text-slate-300 hover:bg-slate-600" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? "text-slate-300 hover:text-slate-100" : "text-slate-600 hover:text-slate-700"}`}
                   title="Settings"
                 >
                   ⚙️
                 </button>
                 {settingsMenuOpen && (
-                  <div className={`absolute top-full left-0 mt-2 w-48 rounded-lg shadow-xl border z-50 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
-                    <div className="p-2">
-                      <button
-                        onClick={() => { setSettingsMenuOpen(false); setSettingsOpen(true); }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${darkMode ? "text-slate-300 hover:bg-slate-700" : "text-slate-700 hover:bg-slate-100"}`}
-                      >
-                        ⚙️ Settings
-                      </button>
+                  <div className={`absolute top-full left-0 mt-2 w-64 rounded-lg shadow-xl border z-50 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
+                    <div className="p-3">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className={`text-sm font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Settings</span>
+                        <button onClick={() => setSettingsMenuOpen(false)} className={`text-lg leading-none ${darkMode ? "text-slate-400 hover:text-slate-100" : "text-slate-400 hover:text-slate-700"}`}>✕</button>
+                      </div>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>{darkMode ? "Dark mode" : "Light mode"}</span>
+                          <button
+                            onClick={() => setDarkMode(!darkMode)}
+                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${darkMode ? "bg-blue-500" : "bg-slate-200"}`}
+                          >
+                            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${darkMode ? "right-0.5" : "left-0.5"}`} />
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Textures per row</span>
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => setTexturesPerRow(Math.max(1, texturesPerRow - 1))} className={`w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}>−</button>
+                            <span className={`w-6 text-center text-sm ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{texturesPerRow}</span>
+                            <button onClick={() => setTexturesPerRow(Math.min(12, texturesPerRow + 1))} className={`w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}>+</button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
