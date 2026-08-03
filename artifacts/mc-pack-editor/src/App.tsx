@@ -861,7 +861,7 @@ function TextureCard({
 }) {
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const pack = packs.find((p) => p.id === effectivePackId) ?? uniquePacksWithFile[0];
+    const pack = packs.find((p) => p.id === effectivePackId) ?? packsWithFile[0];
     const buf = pack?.files.get(texturePath);
     if (!buf) return;
     const url = arrayBufferToDataURL(buf, texturePath);
@@ -877,49 +877,7 @@ function TextureCard({
   const folderPackId = folderSources[folder] ?? null;
   const effectivePackId = overridePackId ?? folderPackId;
   const packsWithFile = packs.filter((p) => p.files.has(texturePath));
-  
-  // Filter out duplicate textures (identical texture data)
-  const uniquePacksWithFile = useMemo(() => {
-    // Skip duplicate detection for problematic files (icons.png, widgets.png can cause issues)
-    if (texturePath.includes('icons.png') || texturePath.includes('widgets.png')) {
-      return packsWithFile;
-    }
-    
-    try {
-      const seenBuffers = new Set<string>();
-      const uniquePacks = [];
-      
-      for (const pack of packsWithFile) {
-        const buffer = pack.files.get(texturePath);
-        if (!buffer) continue;
-        
-        // Skip very large files for performance
-        if (buffer.byteLength > 1000000) {
-          uniquePacks.push(pack);
-          continue;
-        }
-        
-        // Create a simple hash of the buffer content
-        const bufferView = new Uint8Array(buffer);
-        let hash = '';
-        const sampleSize = Math.min(bufferView.length, 50); // Reduced sample size for performance
-        for (let i = 0; i < sampleSize; i++) {
-          hash += bufferView[i].toString(16).padStart(2, '0');
-        }
-        
-        if (!seenBuffers.has(hash)) {
-          seenBuffers.add(hash);
-          uniquePacks.push(pack);
-        }
-      }
-      
-      return uniquePacks;
-    } catch (error) {
-      console.error('Error filtering duplicate textures:', error);
-      return packsWithFile;
-    }
-  }, [packsWithFile, texturePath]);
-  if (!uniquePacksWithFile.length) return null;
+  if (!packsWithFile.length) return null;
 
   const isImg = isImagePath(texturePath);
   const isAtlas = !!getAtlasDefinition(texturePath);
@@ -929,31 +887,31 @@ function TextureCard({
       {/* Texture previews row */}
       {isImg && (
         <div
-          className={`flex border-b ${darkMode ? "border-slate-700" : "border-slate-100"} ${uniquePacksWithFile.length === 1 ? "" : darkMode ? "divide-x divide-slate-700" : "divide-x divide-slate-100"}`}
+          className={`flex border-b ${darkMode ? "border-slate-700" : "border-slate-100"} ${packsWithFile.length === 1 ? "" : darkMode ? "divide-x divide-slate-700" : "divide-x divide-slate-100"}`}
         >
-          {uniquePacksWithFile.map((pack) => {
+          {packsWithFile.map((pack) => {
             const buf = pack.files.get(texturePath)!;
             const isSelected =
               effectivePackId === pack.id ||
-              (!effectivePackId && pack === uniquePacksWithFile[0]);
+              (!effectivePackId && pack === packsWithFile[0]);
             return (
               <button
                 key={pack.id}
                 className={`flex-1 flex items-center justify-center p-2 checkered min-h-[80px] relative transition-all ${
-                  uniquePacksWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
-                } ${isSelected && uniquePacksWithFile.length > 1 ? "ring-2 ring-inset ring-blue-500" : ""}`}
+                  packsWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
+                } ${isSelected && packsWithFile.length > 1 ? "ring-2 ring-inset ring-blue-500" : ""}`}
                 onClick={() => {
-                  if (uniquePacksWithFile.length <= 1) return;
+                  if (packsWithFile.length <= 1) return;
                   if (overridePackId === pack.id) {
                     onOverride(texturePath, null);
                   } else {
                     onOverride(texturePath, pack.id);
                   }
                 }}
-                title={uniquePacksWithFile.length > 1 ? `Use from: ${pack.name}` : pack.name}
+                title={packsWithFile.length > 1 ? `Use from: ${pack.name}` : pack.name}
               >
                 <CroppedTexturePreview buffer={buf} path={texturePath} alt={displayName} />
-                {uniquePacksWithFile.length > 1 && (
+                {packsWithFile.length > 1 && (
                   <span
                     className="absolute bottom-1 right-1 w-2 h-2 rounded-full"
                     style={{ background: pack.color }}
@@ -1018,7 +976,7 @@ function TextureCard({
         >
           <span className="text-[10px] leading-none">{isRemoved ? "✕" : "✓"}</span>
         </button>
-        {uniquePacksWithFile.length > 1 && (
+        {packsWithFile.length > 1 && (
           <div className="flex gap-1 flex-wrap">
             <button
               className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-blue-100 text-blue-600 font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
@@ -1026,7 +984,7 @@ function TextureCard({
             >
             auto
           </button>
-            {uniquePacksWithFile.map((p) => (
+            {packsWithFile.map((p) => (
               <button
                 key={p.id}
                 className={`text-xs px-1.5 py-0.5 rounded transition-colors truncate max-w-[60px] ${overridePackId === p.id ? "font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
@@ -1596,7 +1554,7 @@ function TextureLightbox({
                         >
                           auto
                         </button>
-                        {uniquePacksWithFile.map((p) => (
+                        {packsWithFile.map((p) => (
                           <button
                             key={p.id}
                             className={`text-xs px-2 py-0.5 rounded transition-colors max-w-[80px] truncate ${regionPackId === p.id ? "font-semibold" : (darkMode ? "text-slate-400 hover:bg-slate-700" : "text-slate-500 hover:bg-slate-100")}`}
@@ -1628,7 +1586,7 @@ function TextureLightbox({
               >
                 auto
               </button>
-              {uniquePacksWithFile.map((p) => (
+              {packsWithFile.map((p) => (
                 <button
                   key={p.id}
                   className={`text-xs px-2 py-0.5 rounded transition-colors max-w-[80px] truncate ${overridePackId === p.id ? "font-semibold" : "text-muted-foreground hover:bg-accent"}`}
@@ -2159,7 +2117,6 @@ function TextureEditorModal({
   activePackId,
   onSave,
   onClose,
-  darkMode,
 }: {
   texturePath: string;
   displayName: string;
@@ -2168,7 +2125,6 @@ function TextureEditorModal({
   activePackId: string | null;
   onSave: (path: string, packId: string | null, buffer: ArrayBuffer) => void;
   onClose: () => void;
-  darkMode: boolean;
 }) {
   const isTextFile = /\.(json|mcmeta|txt|lang)$/i.test(texturePath);
   
@@ -2186,14 +2142,11 @@ function TextureEditorModal({
   const [activeRegionId, setActiveRegionId] = useState<string>("whole");
   const [hasChanges, setHasChanges] = useState(false);
   const [editHistory, setEditHistory] = useState<{ entries: ImageData[]; index: number }>({ entries: [], index: -1 });
-  const [renderError, setRenderError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasFrameRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
 
   const atlasDef = useMemo(() => getAtlasDefinition(texturePath), [texturePath]);
-  const isAtlasTexture = atlasDef !== undefined;
-  
   const regionOptions = useMemo(() => {
     if (!atlasDef) return [];
     return [{ id: "whole", label: "Whole texture" }, ...atlasDef.regions.map((region) => ({ id: region.id, label: region.label }))];
@@ -2212,14 +2165,10 @@ function TextureEditorModal({
 
   useEffect(() => {
     let cancelled = false;
-    setRenderError(null);
-    
     const pack = packs.find((entry) => entry.id === activePackId) ?? packs.find((entry) => entry.files.has(texturePath)) ?? null;
     const buffer = pack?.files.get(texturePath);
-    
     if (!buffer) {
       setIsLoading(false);
-      setRenderError("Texture not found in any pack");
       return;
     }
     setIsLoading(true);
@@ -2238,26 +2187,14 @@ function TextureEditorModal({
       loadImageDataFromBuffer(buffer, texturePath)
         .then((next) => {
           if (!cancelled) {
-            try {
-              setImageData(next);
-              setHasChanges(false);
-              setEditHistory({ entries: [next], index: 0 });
-              setActiveRegionId("whole");
-            } catch (error) {
-              console.error('Error setting image data:', error);
-              if (!cancelled) {
-                setRenderError(error instanceof Error ? error.message : "Failed to load texture");
-                setIsLoading(false);
-              }
-            }
+            setImageData(next);
+            setHasChanges(false);
+            setEditHistory({ entries: [next], index: 0 });
+            setActiveRegionId("whole");
           }
         })
-        .catch((error) => {
-          console.error('Error loading image data:', error);
-          if (!cancelled) {
-            setRenderError(error instanceof Error ? error.message : "Failed to load texture");
-            setIsLoading(false);
-          }
+        .catch(() => {
+          if (!cancelled) setIsLoading(false);
         })
         .finally(() => {
           if (!cancelled) setIsLoading(false);
@@ -2277,56 +2214,30 @@ function TextureEditorModal({
     if (!frame || !imageData) return;
 
     const updateScale = () => {
-      try {
-        // The frame has 12px padding on each side; exclude it from the fit size.
-        const availableWidth = Math.max(1, frame.clientWidth - 24);
-        const availableHeight = Math.max(1, frame.clientHeight - 24);
-        
-        // For atlas textures (icons.png, widgets.png), ensure they fit within the frame
-        // by using the smaller scale factor to prevent cutting off edges
-        const fitScale = Math.floor(Math.min(
-          availableWidth / imageData.width,
-          availableHeight / imageData.height,
-        ));
-        
-        // Ensure minimum scale of 1 and use the calculated fit scale
-        // This ensures the entire texture is visible
-        setCanvasScale(Math.max(1, fitScale));
-      } catch (error) {
-        console.error('Error updating canvas scale:', error);
-      }
+      // The frame has 12px padding on each side; exclude it from the fit size.
+      const availableWidth = Math.max(1, frame.clientWidth - 24);
+      const availableHeight = Math.max(1, frame.clientHeight - 24);
+      const fitScale = Math.floor(Math.min(
+        availableWidth / imageData.width,
+        availableHeight / imageData.height,
+      ));
+      setCanvasScale(Math.max(1, fitScale));
     };
 
     updateScale();
     const observer = new ResizeObserver(updateScale);
     observer.observe(frame);
-    return () => {
-      try {
-        observer.disconnect();
-      } catch (error) {
-        console.error('Error disconnecting resize observer:', error);
-      }
-    };
+    return () => observer.disconnect();
   }, [imageData?.width, imageData?.height]);
 
   const selectedRegion = useMemo(() => {
     if (!atlasDef || activeRegionId === "whole") return undefined;
-    try {
-      return atlasDef.regions.find((region) => region.id === activeRegionId);
-    } catch (error) {
-      console.error('Error finding region:', error);
-      return undefined;
-    }
+    return atlasDef.regions.find((region) => region.id === activeRegionId);
   }, [activeRegionId, atlasDef]);
 
   const rectRegion = useMemo<RectRegion | undefined>(() => {
     if (!selectedRegion) return undefined;
-    try {
-      return { x: selectedRegion.x, y: selectedRegion.y, width: selectedRegion.w, height: selectedRegion.h };
-    } catch (error) {
-      console.error('Error creating rect region:', error);
-      return undefined;
-    }
+    return { x: selectedRegion.x, y: selectedRegion.y, width: selectedRegion.w, height: selectedRegion.h };
   }, [selectedRegion]);
 
   const applyImageChange = useCallback((next: ImageData) => {
@@ -2382,37 +2293,33 @@ function TextureEditorModal({
   };
 
   const handleCanvasPointer = (e: PointerEvent<HTMLCanvasElement>) => {
-    try {
-      if (!imageData) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const scaleX = imageData.width / rect.width;
-      const scaleY = imageData.height / rect.height;
-      const px = Math.floor((e.clientX - rect.left) * scaleX);
-      const py = Math.floor((e.clientY - rect.top) * scaleY);
-      if (px < 0 || py < 0 || px >= imageData.width || py >= imageData.height) return;
+    if (!imageData) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const scaleX = imageData.width / rect.width;
+    const scaleY = imageData.height / rect.height;
+    const px = Math.floor((e.clientX - rect.left) * scaleX);
+    const py = Math.floor((e.clientY - rect.top) * scaleY);
+    if (px < 0 || py < 0 || px >= imageData.width || py >= imageData.height) return;
 
-      if (tool === "eyedropper") {
-        const colorValue = pickColorAt(imageData, px, py);
-        setColor(colorValue);
-        setTool("pencil");
-        return;
-      }
+    if (tool === "eyedropper") {
+      const colorValue = pickColorAt(imageData, px, py);
+      setColor(colorValue);
+      setTool("pencil");
+      return;
+    }
 
-      if (e.type === "pointerdown") {
-        e.currentTarget.setPointerCapture(e.pointerId);
-      }
+    if (e.type === "pointerdown") {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
 
-      if (e.type === "pointerdown" || (e.type === "pointermove" && e.buttons === 1)) {
-        let next = imageData;
-        if (tool === "pencil" || tool === "eraser") {
-          next = applyBrush(imageData, px, py, color, brushSize, tool === "eraser" ? "eraser" : "pencil", rectRegion);
-        }
-        if (next !== imageData) {
-          applyImageChange(next);
-        }
+    if (e.type === "pointerdown" || (e.type === "pointermove" && e.buttons === 1)) {
+      let next = imageData;
+      if (tool === "pencil" || tool === "eraser") {
+        next = applyBrush(imageData, px, py, color, brushSize, tool === "eraser" ? "eraser" : "pencil", rectRegion);
       }
-    } catch (error) {
-      console.error('Error in canvas pointer handler:', error);
+      if (next !== imageData) {
+        applyImageChange(next);
+      }
     }
   };
 
@@ -2437,16 +2344,8 @@ function TextureEditorModal({
   const canEdit = !isLoading && (isTextFile ? textContent !== "" : imageData);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black p-4" onClick={onClose}>
-      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-border bg-white dark:bg-slate-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        {renderError ? (
-          <div className="flex flex-1 flex-col items-center justify-center p-6">
-            <h3 className="text-lg font-semibold text-foreground">Error Loading Texture</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{renderError}</p>
-            <button onClick={onClose} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">Close</button>
-          </div>
-        ) : (
-          <>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-border bg-background/95 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Texture editor</p>
@@ -2465,31 +2364,21 @@ function TextureEditorModal({
         </div>
 
         <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="min-w-0 rounded-[24px] border border-border bg-white dark:bg-slate-800 p-3">
+          <div className="min-w-0 rounded-[24px] border border-border bg-card/70 p-3">
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">{isTextFile ? "Text Editor" : "Canvas"}</p>
                 <p className="text-xs text-muted-foreground">{isTextFile ? "Edit the text content directly. Changes are saved back to the selected pack on export." : "Paint directly into the texture. The edit is saved back to the selected pack on export."}</p>
               </div>
               {!isTextFile && atlasDef && (
-                <select 
-                  value={activeRegionId} 
-                  onChange={(e) => {
-                    try {
-                      setActiveRegionId(e.target.value);
-                    } catch (error) {
-                      console.error('Error changing region:', error);
-                    }
-                  }} 
-                  className="rounded border border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground"
-                >
+                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm text-foreground">
                   {regionOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
                 </select>
               )}
             </div>
             <div
               ref={canvasFrameRef}
-              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border border-border bg-white dark:bg-slate-800 p-3"
+              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border border-border bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)] p-3"
             >
               {isLoading ? (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading {isTextFile ? "text" : "texture"}…</div>
@@ -2500,7 +2389,7 @@ function TextureEditorModal({
                     setTextContent(e.target.value);
                     setHasChanges(true);
                   }}
-                  className="w-full h-full rounded-lg border border-border bg-white dark:bg-slate-700 p-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+                  className="w-full h-full rounded-lg border border-border bg-background p-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none"
                   spellCheck={false}
                 />
               ) : canEdit ? (
@@ -2542,7 +2431,7 @@ function TextureEditorModal({
           </div>
 
           {!isTextFile && (
-            <div className="w-full rounded-lg border border-border bg-white dark:bg-slate-800 p-4">
+            <div className="w-full rounded-lg border border-border bg-card p-4">
               <p className="text-sm font-semibold text-foreground">Tools</p>
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {[
@@ -2550,26 +2439,26 @@ function TextureEditorModal({
                   { id: "eraser", label: "Eraser" },
                   { id: "eyedropper", label: "Eyedropper" },
                 ].map((item) => (
-                  <button key={item.id} className={`rounded-lg border px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/10 text-primary" : "border-border bg-white dark:bg-slate-700 text-foreground hover:bg-slate-100 dark:hover:bg-slate-600"}`} onClick={() => setTool(item.id as EditorTool)}>
+                  <button key={item.id} className={`rounded-lg border px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-foreground hover:bg-accent"}`} onClick={() => setTool(item.id as EditorTool)}>
                     {item.label}
                   </button>
                 ))}
               </div>
 
-            <section className="mt-4 rounded-lg border border-border bg-white dark:bg-slate-800 p-3">
+            <section className="mt-4 rounded-lg border border-border bg-card p-3">
               <div className="flex items-center justify-between gap-2">
                 <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Color</label>
                 <div className="flex overflow-hidden rounded-lg border border-border text-[11px] font-semibold uppercase tracking-[0.14em]">
                   <button
                     type="button"
-                    className={`px-2.5 py-1 transition-colors ${colorInputMode === "hex" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}
+                    className={`px-2.5 py-1 transition-colors ${colorInputMode === "hex" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}
                     onClick={() => setColorInputMode("hex")}
                   >
                     Hex
                   </button>
                   <button
                     type="button"
-                    className={`border-l border-border px-2.5 py-1 transition-colors ${colorInputMode === "rgb" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}
+                    className={`border-l border-border px-2.5 py-1 transition-colors ${colorInputMode === "rgb" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}
                     onClick={() => setColorInputMode("rgb")}
                   >
                     RGB
@@ -2588,7 +2477,7 @@ function TextureEditorModal({
                       onBlur={() => setHexInput(color.toUpperCase())}
                       maxLength={7}
                       spellCheck={false}
-                      className="mt-1 w-full rounded border border-border bg-white dark:bg-slate-700 px-2 py-1.5 font-mono text-sm text-foreground"
+                      className="mt-1 w-full rounded border border-border bg-background px-2 py-1.5 font-mono text-sm text-foreground"
                       aria-label="Hex color code"
                     />
                   </label>
@@ -2607,7 +2496,7 @@ function TextureEditorModal({
                           className="rgb-channel-slider w-full"
                           style={{ background: rgbChannelGradient(index, rgbColor) }}
                         />
-                        <span className="rounded bg-white dark:bg-slate-700 px-1.5 py-1 text-right font-mono text-foreground">{rgbColor[index]}</span>
+                        <span className="rounded bg-background px-1.5 py-1 text-right font-mono text-foreground">{rgbColor[index]}</span>
                       </label>
                     ))}
                   </div>
@@ -2621,14 +2510,14 @@ function TextureEditorModal({
               <p className="mt-1 text-xs text-muted-foreground">Current size: {brushSize}px</p>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-border bg-white dark:bg-slate-800 p-3">
+            <div className="mt-4 rounded-2xl border border-border bg-background/70 p-3">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Recolor</label>
               <div className="mt-2 grid grid-cols-2 overflow-hidden rounded-lg border border-border text-xs font-medium">
-                <button type="button" onClick={() => setRecolorScope("selection")} disabled={!selectedRegion} className={`px-2 py-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${recolorScope === "selection" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Highlighted selection</button>
-                <button type="button" onClick={() => setRecolorScope("whole")} className={`border-l border-border px-2 py-1.5 transition-colors ${recolorScope === "whole" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Entire texture</button>
+                <button type="button" onClick={() => setRecolorScope("selection")} disabled={!selectedRegion} className={`px-2 py-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${recolorScope === "selection" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}>Highlighted selection</button>
+                <button type="button" onClick={() => setRecolorScope("whole")} className={`border-l border-border px-2 py-1.5 transition-colors ${recolorScope === "whole" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}>Entire texture</button>
               </div>
               {recolorScope === "selection" && !selectedRegion && <p className="mt-2 text-xs text-amber-500">Choose an atlas region above, or select Entire texture.</p>}
-              <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
+              <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-border bg-background px-2 py-1 text-sm text-foreground">
                 <option value="tint">Tint</option>
                 <option value="hue-shift">Hue shift</option>
                 <option value="colorize">Colorize</option>
@@ -2642,7 +2531,7 @@ function TextureEditorModal({
               </button>
             </div>
 
-            <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-white dark:bg-slate-800 px-3 py-2 text-sm text-muted-foreground">
+            <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-muted-foreground">
               <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
               <span>{selectedRegion ? `Target: ${selectedRegion.label}` : "Target: whole texture"}</span>
             </div>
@@ -2655,14 +2544,14 @@ function TextureEditorModal({
           )}
 
           {isTextFile && (
-            <div className="w-full rounded-[24px] border border-border bg-white dark:bg-slate-800 p-4">
+            <div className="w-full rounded-[24px] border border-border bg-card/70 p-4">
               <p className="text-sm font-semibold text-foreground">Text File Info</p>
               <div className="mt-3 text-xs text-muted-foreground">
                 <p>This is a text file that can be edited directly in the editor above.</p>
                 <p className="mt-2">Changes will be saved back to the selected pack on export.</p>
               </div>
 
-              <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-white dark:bg-slate-800 px-3 py-2 text-sm text-muted-foreground">
+              <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-muted-foreground">
                 <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
               </div>
 
@@ -2673,8 +2562,6 @@ function TextureEditorModal({
             </div>
           )}
         </div>
-          </>
-        )}
       </div>
     </div>
   );
@@ -3088,7 +2975,7 @@ export default function App() {
                   ⚙️
                 </button>
                 {settingsMenuOpen && (
-                  <div className={`absolute top-full left-0 mt-2 w-80 rounded-lg shadow-xl border z-50 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
+                  <div className={`absolute top-full left-0 mt-2 w-64 rounded-lg shadow-xl border z-50 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
                     <div className="p-3">
                       <div className="flex items-center justify-between mb-3">
                         <span className={`text-sm font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Settings</span>
@@ -3111,38 +2998,6 @@ export default function App() {
                             <span className={`w-6 text-center text-sm ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{texturesPerRow}</span>
                             <button onClick={() => setTexturesPerRow(Math.min(12, texturesPerRow + 1))} className={`w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}>+</button>
                           </div>
-                        </div>
-                        <div className={`border-t ${darkMode ? "border-slate-700" : "border-slate-200"} pt-3`}>
-                          <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Upload defaults</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Copy from top pack</span>
-                          <button
-                            onClick={() => setUploadDefaults((prev) => ({ ...prev, copyFromTopPack: !prev.copyFromTopPack }))}
-                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${uploadDefaults.copyFromTopPack ? "bg-blue-500" : "bg-slate-200"}`}
-                          >
-                            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${uploadDefaults.copyFromTopPack ? "right-0.5" : "left-0.5"}`} />
-                          </button>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <label className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Default pack name</label>
-                          <input
-                            type="text"
-                            value={uploadDefaults.name}
-                            onChange={(e) => setUploadDefaults((prev) => ({ ...prev, name: e.target.value }))}
-                            className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
-                            placeholder="My Resource Pack"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <label className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Default description</label>
-                          <input
-                            type="text"
-                            value={uploadDefaults.description}
-                            onChange={(e) => setUploadDefaults((prev) => ({ ...prev, description: e.target.value }))}
-                            className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
-                            placeholder="A Minecraft resource pack"
-                          />
                         </div>
                       </div>
                     </div>
@@ -3380,7 +3235,6 @@ export default function App() {
             setEditingTexture(null);
           }}
           onClose={() => setEditingTexture(null)}
-          darkMode={darkMode}
         />
       )}
 
