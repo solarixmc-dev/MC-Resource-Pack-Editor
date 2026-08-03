@@ -2186,6 +2186,7 @@ function TextureEditorModal({
   const [activeRegionId, setActiveRegionId] = useState<string>("whole");
   const [hasChanges, setHasChanges] = useState(false);
   const [editHistory, setEditHistory] = useState<{ entries: ImageData[]; index: number }>({ entries: [], index: -1 });
+  const [renderError, setRenderError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasFrameRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
@@ -2212,10 +2213,13 @@ function TextureEditorModal({
 
   useEffect(() => {
     let cancelled = false;
+    setRenderError(null);
+    
     const pack = packs.find((entry) => entry.id === activePackId) ?? packs.find((entry) => entry.files.has(texturePath)) ?? null;
     const buffer = pack?.files.get(texturePath);
     if (!buffer) {
       setIsLoading(false);
+      setRenderError("Texture not found in any pack");
       return;
     }
     setIsLoading(true);
@@ -2247,13 +2251,19 @@ function TextureEditorModal({
               }
             } catch (error) {
               console.error('Error setting image data:', error);
-              if (!cancelled) setIsLoading(false);
+              if (!cancelled) {
+                setRenderError(error instanceof Error ? error.message : "Failed to load texture");
+                setIsLoading(false);
+              }
             }
           }
         })
         .catch((error) => {
           console.error('Error loading image data:', error);
-          if (!cancelled) setIsLoading(false);
+          if (!cancelled) {
+            setRenderError(error instanceof Error ? error.message : "Failed to load texture");
+            setIsLoading(false);
+          }
         })
         .finally(() => {
           if (!cancelled) setIsLoading(false);
@@ -2438,6 +2448,14 @@ function TextureEditorModal({
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black p-4" onClick={onClose}>
       <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-border bg-white dark:bg-slate-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        {renderError ? (
+          <div className="flex flex-1 flex-col items-center justify-center p-6">
+            <h3 className="text-lg font-semibold text-foreground">Error Loading Texture</h3>
+            <p className="mt-2 text-sm text-muted-foreground">{renderError}</p>
+            <button onClick={onClose} className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">Close</button>
+          </div>
+        ) : (
+          <>
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Texture editor</p>
@@ -2645,7 +2663,7 @@ function TextureEditorModal({
           )}
 
           {isTextFile && (
-            <div className="w-full rounded-[24px] border border-border bg-card/70 p-4">
+            <div className="w-full rounded-[24px] border border-border bg-white dark:bg-slate-800 p-4">
               <p className="text-sm font-semibold text-foreground">Text File Info</p>
               <div className="mt-3 text-xs text-muted-foreground">
                 <p>This is a text file that can be edited directly in the editor above.</p>
@@ -2663,6 +2681,8 @@ function TextureEditorModal({
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -2941,15 +2961,20 @@ export default function App() {
   }, []);
 
   const handleOpenTextureEditor = useCallback((path: string, displayName: string, folder: string) => {
-    const selectedPack = packs.find((pack) => {
-      const overridePackId = textureOverrides[path];
-      if (overridePackId) return pack.id === overridePackId;
-      const folderPackId = folderSources[folder];
-      if (folderPackId) return pack.id === folderPackId;
-      return pack.files.has(path);
-    }) ?? packs.find((pack) => pack.files.has(path)) ?? null;
+    try {
+      const selectedPack = packs.find((pack) => {
+        const overridePackId = textureOverrides[path];
+        if (overridePackId) return pack.id === overridePackId;
+        const folderPackId = folderSources[folder];
+        if (folderPackId) return pack.id === folderPackId;
+        return pack.files.has(path);
+      }) ?? packs.find((pack) => pack.files.has(path)) ?? null;
 
-    setEditingTexture({ path, displayName, folder, packId: selectedPack?.id ?? null });
+      setEditingTexture({ path, displayName, folder, packId: selectedPack?.id ?? null });
+    } catch (error) {
+      console.error('Error opening texture editor:', error);
+      alert('Failed to open texture editor. See console for details.');
+    }
   }, [packs, textureOverrides, folderSources]);
 
   const handleExport = useCallback(async () => {
