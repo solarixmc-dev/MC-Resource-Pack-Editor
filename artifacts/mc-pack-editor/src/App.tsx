@@ -2171,6 +2171,7 @@ function TextureEditorModal({
   darkMode: boolean;
 }) {
   const isTextFile = /\.(json|mcmeta|txt|lang)$/i.test(texturePath);
+  const isAtlasTexture = atlasDef !== undefined;
   
   const [tool, setTool] = useState<EditorTool>("pencil");
   const [color, setColor] = useState("#22c55e");
@@ -2179,7 +2180,7 @@ function TextureEditorModal({
   const [colorInputMode, setColorInputMode] = useState<"hex" | "rgb">("hex");
   const [recolorMode, setRecolorMode] = useState<RecolorMode>("tint");
   const [recolorIntensity, setRecolorIntensity] = useState(0.6);
-  const [recolorScope, setRecolorScope] = useState<"selection" | "whole">("selection");
+  const [recolorScope, setRecolorScope] = useState<"selection" | "whole">("whole");
   const [imageData, setImageData] = useState<ImageData | null>(null);
   const [textContent, setTextContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -2193,7 +2194,8 @@ function TextureEditorModal({
   const atlasDef = useMemo(() => getAtlasDefinition(texturePath), [texturePath]);
   const regionOptions = useMemo(() => {
     if (!atlasDef) return [];
-    return [{ id: "whole", label: "Whole texture" }, ...atlasDef.regions.map((region) => ({ id: region.id, label: region.label }))];
+    // For atlas textures, only show regions, not "whole texture" option
+    return atlasDef.regions.map((region) => ({ id: region.id, label: region.label }));
   }, [atlasDef]);
 
   const drawImage = useCallback(() => {
@@ -2234,7 +2236,12 @@ function TextureEditorModal({
             setImageData(next);
             setHasChanges(false);
             setEditHistory({ entries: [next], index: 0 });
-            setActiveRegionId("whole");
+            // For atlas textures, select the first region; for regular textures, select "whole"
+            if (atlasDef && atlasDef.regions.length > 0) {
+              setActiveRegionId(atlasDef.regions[0].id);
+            } else {
+              setActiveRegionId("whole");
+            }
           }
         })
         .catch(() => {
@@ -2261,10 +2268,16 @@ function TextureEditorModal({
       // The frame has 12px padding on each side; exclude it from the fit size.
       const availableWidth = Math.max(1, frame.clientWidth - 24);
       const availableHeight = Math.max(1, frame.clientHeight - 24);
+      
+      // For atlas textures (icons.png, widgets.png), ensure they fit within the frame
+      // by using the smaller scale factor to prevent cutting off edges
       const fitScale = Math.floor(Math.min(
         availableWidth / imageData.width,
         availableHeight / imageData.height,
       ));
+      
+      // Ensure minimum scale of 1 and use the calculated fit scale
+      // This ensures the entire texture is visible
       setCanvasScale(Math.max(1, fitScale));
     };
 
@@ -2275,7 +2288,7 @@ function TextureEditorModal({
   }, [imageData?.width, imageData?.height]);
 
   const selectedRegion = useMemo(() => {
-    if (!atlasDef || activeRegionId === "whole") return undefined;
+    if (!atlasDef) return undefined;
     return atlasDef.regions.find((region) => region.id === activeRegionId);
   }, [activeRegionId, atlasDef]);
 
@@ -2359,7 +2372,9 @@ function TextureEditorModal({
     if (e.type === "pointerdown" || (e.type === "pointermove" && e.buttons === 1)) {
       let next = imageData;
       if (tool === "pencil" || tool === "eraser") {
-        next = applyBrush(imageData, px, py, color, brushSize, tool === "eraser" ? "eraser" : "pencil", rectRegion);
+        // For atlas textures, only allow editing the selected region
+        if (isAtlasTexture && !selectedRegion) return;
+        next = applyBrush(imageData, px, py, color, brushSize, tool === "eraser" ? "eraser" : "pencil", isAtlasTexture ? rectRegion : undefined);
       }
       if (next !== imageData) {
         applyImageChange(next);
@@ -2369,8 +2384,9 @@ function TextureEditorModal({
 
   const handleApplyRecolor = () => {
     if (!imageData) return;
-    if (recolorScope === "selection" && !rectRegion) return;
-    applyImageChange(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }, recolorScope === "selection" ? rectRegion : undefined));
+    // For atlas textures, recolor the selected region; for regular textures, recolor whole texture
+    const targetRegion = isAtlasTexture ? rectRegion : undefined;
+    applyImageChange(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }, targetRegion));
   };
 
   const handleSave = async () => {
@@ -2422,7 +2438,7 @@ function TextureEditorModal({
             </div>
             <div
               ref={canvasFrameRef}
-              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border border-border bg-white dark:bg-slate-800 p-3"
+              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-hidden rounded-2xl border border-border bg-white dark:bg-slate-800 p-3"
             >
               {isLoading ? (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading {isTextFile ? "text" : "texture"}…</div>
@@ -2556,11 +2572,9 @@ function TextureEditorModal({
 
             <div className="mt-4 rounded-2xl border border-border bg-white dark:bg-slate-800 p-3">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Recolor</label>
-              <div className="mt-2 grid grid-cols-2 overflow-hidden rounded-lg border border-border text-xs font-medium">
-                <button type="button" onClick={() => setRecolorScope("selection")} disabled={!selectedRegion} className={`px-2 py-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${recolorScope === "selection" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Highlighted selection</button>
-                <button type="button" onClick={() => setRecolorScope("whole")} className={`border-l border-border px-2 py-1.5 transition-colors ${recolorScope === "whole" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Entire texture</button>
+              <div className="mt-2 grid grid-cols-1 overflow-hidden rounded-lg border border-border text-xs font-medium">
+                <button type="button" onClick={() => setRecolorScope("whole")} className={`px-2 py-1.5 transition-colors ${recolorScope === "whole" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Entire texture</button>
               </div>
-              {recolorScope === "selection" && !selectedRegion && <p className="mt-2 text-xs text-amber-500">Choose an atlas region above, or select Entire texture.</p>}
               <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
                 <option value="tint">Tint</option>
                 <option value="hue-shift">Hue shift</option>
@@ -2570,14 +2584,15 @@ function TextureEditorModal({
               </select>
               <input type="range" min="0" max="1" step="0.01" value={recolorIntensity} onChange={(e) => setRecolorIntensity(Number(e.target.value))} className="mt-3 w-full" />
               <p className="mt-1 text-xs text-muted-foreground">Intensity: {recolorIntensity.toFixed(2)}</p>
-              <button disabled={recolorScope === "selection" && !selectedRegion} className="mt-3 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={handleApplyRecolor}>
-                Apply recolor to {recolorScope === "selection" && selectedRegion ? selectedRegion.label : "entire texture"}
+              <button disabled={isAtlasTexture && !selectedRegion} className="mt-3 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={handleApplyRecolor}>
+                Apply recolor
               </button>
+              {isAtlasTexture && !selectedRegion && <p className="mt-2 text-xs text-amber-500">Select a region above to recolor</p>}
             </div>
 
             <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-white dark:bg-slate-800 px-3 py-2 text-sm text-muted-foreground">
               <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
-              <span>{selectedRegion ? `Target: ${selectedRegion.label}` : "Target: whole texture"}</span>
+              <span>Target: {isAtlasTexture && selectedRegion ? selectedRegion.label : "entire texture"}</span>
             </div>
 
             <div className="mt-4 flex gap-2">
