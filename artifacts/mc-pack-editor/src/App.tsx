@@ -2170,7 +2170,6 @@ function TextureEditorModal({
   onClose: () => void;
   darkMode: boolean;
 }) {
-  console.log('TextureEditorModal mounted for:', texturePath, displayName);
   const isTextFile = /\.(json|mcmeta|txt|lang)$/i.test(texturePath);
   
   const [tool, setTool] = useState<EditorTool>("pencil");
@@ -2180,7 +2179,7 @@ function TextureEditorModal({
   const [colorInputMode, setColorInputMode] = useState<"hex" | "rgb">("hex");
   const [recolorMode, setRecolorMode] = useState<RecolorMode>("tint");
   const [recolorIntensity, setRecolorIntensity] = useState(0.6);
-  const [recolorScope, setRecolorScope] = useState<"selection" | "whole">("whole");
+  const [recolorScope, setRecolorScope] = useState<"selection" | "whole">("selection");
   const [imageData, setImageData] = useState<ImageData | null>(null);
   const [textContent, setTextContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -2197,8 +2196,7 @@ function TextureEditorModal({
   
   const regionOptions = useMemo(() => {
     if (!atlasDef) return [];
-    // For atlas textures, only show regions, not "whole texture" option
-    return atlasDef.regions.map((region) => ({ id: region.id, label: region.label }));
+    return [{ id: "whole", label: "Whole texture" }, ...atlasDef.regions.map((region) => ({ id: region.id, label: region.label }))];
   }, [atlasDef]);
 
   const drawImage = useCallback(() => {
@@ -2216,14 +2214,10 @@ function TextureEditorModal({
     let cancelled = false;
     setRenderError(null);
     
-    console.log('Loading texture:', texturePath, 'activePackId:', activePackId);
     const pack = packs.find((entry) => entry.id === activePackId) ?? packs.find((entry) => entry.files.has(texturePath)) ?? null;
-    console.log('Found pack:', pack);
     const buffer = pack?.files.get(texturePath);
-    console.log('Buffer:', buffer ? buffer.byteLength + ' bytes' : 'null');
     
     if (!buffer) {
-      console.error('Texture not found in any pack');
       setIsLoading(false);
       setRenderError("Texture not found in any pack");
       return;
@@ -2241,23 +2235,14 @@ function TextureEditorModal({
       setIsLoading(false);
     } else {
       // Handle image files
-      console.log('Loading image data...');
       loadImageDataFromBuffer(buffer, texturePath)
         .then((next) => {
-          console.log('Image data loaded:', next);
           if (!cancelled) {
             try {
               setImageData(next);
               setHasChanges(false);
               setEditHistory({ entries: [next], index: 0 });
-              // For atlas textures, select the first region; for regular textures, select "whole"
-              const def = getAtlasDefinition(texturePath);
-              console.log('Atlas definition:', def);
-              if (def && def.regions.length > 0) {
-                setActiveRegionId(def.regions[0].id);
-              } else {
-                setActiveRegionId("whole");
-              }
+              setActiveRegionId("whole");
             } catch (error) {
               console.error('Error setting image data:', error);
               if (!cancelled) {
@@ -2325,7 +2310,7 @@ function TextureEditorModal({
   }, [imageData?.width, imageData?.height]);
 
   const selectedRegion = useMemo(() => {
-    if (!atlasDef) return undefined;
+    if (!atlasDef || activeRegionId === "whole") return undefined;
     try {
       return atlasDef.regions.find((region) => region.id === activeRegionId);
     } catch (error) {
@@ -2420,9 +2405,7 @@ function TextureEditorModal({
       if (e.type === "pointerdown" || (e.type === "pointermove" && e.buttons === 1)) {
         let next = imageData;
         if (tool === "pencil" || tool === "eraser") {
-          // For atlas textures, only allow editing the selected region
-          if (isAtlasTexture && !selectedRegion) return;
-          next = applyBrush(imageData, px, py, color, brushSize, tool === "eraser" ? "eraser" : "pencil", isAtlasTexture ? rectRegion : undefined);
+          next = applyBrush(imageData, px, py, color, brushSize, tool === "eraser" ? "eraser" : "pencil", rectRegion);
         }
         if (next !== imageData) {
           applyImageChange(next);
@@ -2435,9 +2418,8 @@ function TextureEditorModal({
 
   const handleApplyRecolor = () => {
     if (!imageData) return;
-    // For atlas textures, recolor the selected region; for regular textures, recolor whole texture
-    const targetRegion = isAtlasTexture ? rectRegion : undefined;
-    applyImageChange(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }, targetRegion));
+    if (recolorScope === "selection" && !rectRegion) return;
+    applyImageChange(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }, recolorScope === "selection" ? rectRegion : undefined));
   };
 
   const handleSave = async () => {
@@ -2507,7 +2489,7 @@ function TextureEditorModal({
             </div>
             <div
               ref={canvasFrameRef}
-              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-hidden rounded-2xl border border-border bg-white dark:bg-slate-800 p-3"
+              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border border-border bg-white dark:bg-slate-800 p-3"
             >
               {isLoading ? (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading {isTextFile ? "text" : "texture"}…</div>
@@ -2641,9 +2623,11 @@ function TextureEditorModal({
 
             <div className="mt-4 rounded-2xl border border-border bg-white dark:bg-slate-800 p-3">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Recolor</label>
-              <div className="mt-2 grid grid-cols-1 overflow-hidden rounded-lg border border-border text-xs font-medium">
-                <button type="button" onClick={() => setRecolorScope("whole")} className={`px-2 py-1.5 transition-colors ${recolorScope === "whole" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Entire texture</button>
+              <div className="mt-2 grid grid-cols-2 overflow-hidden rounded-lg border border-border text-xs font-medium">
+                <button type="button" onClick={() => setRecolorScope("selection")} disabled={!selectedRegion} className={`px-2 py-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${recolorScope === "selection" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Highlighted selection</button>
+                <button type="button" onClick={() => setRecolorScope("whole")} className={`border-l border-border px-2 py-1.5 transition-colors ${recolorScope === "whole" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Entire texture</button>
               </div>
+              {recolorScope === "selection" && !selectedRegion && <p className="mt-2 text-xs text-amber-500">Choose an atlas region above, or select Entire texture.</p>}
               <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
                 <option value="tint">Tint</option>
                 <option value="hue-shift">Hue shift</option>
@@ -2653,15 +2637,14 @@ function TextureEditorModal({
               </select>
               <input type="range" min="0" max="1" step="0.01" value={recolorIntensity} onChange={(e) => setRecolorIntensity(Number(e.target.value))} className="mt-3 w-full" />
               <p className="mt-1 text-xs text-muted-foreground">Intensity: {recolorIntensity.toFixed(2)}</p>
-              <button disabled={isAtlasTexture && !selectedRegion} className="mt-3 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={handleApplyRecolor}>
-                Apply recolor
+              <button disabled={recolorScope === "selection" && !selectedRegion} className="mt-3 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={handleApplyRecolor}>
+                Apply recolor to {recolorScope === "selection" && selectedRegion ? selectedRegion.label : "entire texture"}
               </button>
-              {isAtlasTexture && !selectedRegion && <p className="mt-2 text-xs text-amber-500">Select a region above to recolor</p>}
             </div>
 
             <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-white dark:bg-slate-800 px-3 py-2 text-sm text-muted-foreground">
               <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
-              <span>Target: {isAtlasTexture && selectedRegion ? selectedRegion.label : "entire texture"}</span>
+              <span>{selectedRegion ? `Target: ${selectedRegion.label}` : "Target: whole texture"}</span>
             </div>
 
             <div className="mt-4 flex gap-2">
@@ -2970,22 +2953,15 @@ export default function App() {
   }, []);
 
   const handleOpenTextureEditor = useCallback((path: string, displayName: string, folder: string) => {
-    console.log('Opening texture editor for:', path, displayName, folder);
-    try {
-      const selectedPack = packs.find((pack) => {
-        const overridePackId = textureOverrides[path];
-        if (overridePackId) return pack.id === overridePackId;
-        const folderPackId = folderSources[folder];
-        if (folderPackId) return pack.id === folderPackId;
-        return pack.files.has(path);
-      }) ?? packs.find((pack) => pack.files.has(path)) ?? null;
+    const selectedPack = packs.find((pack) => {
+      const overridePackId = textureOverrides[path];
+      if (overridePackId) return pack.id === overridePackId;
+      const folderPackId = folderSources[folder];
+      if (folderPackId) return pack.id === folderPackId;
+      return pack.files.has(path);
+    }) ?? packs.find((pack) => pack.files.has(path)) ?? null;
 
-      console.log('Selected pack:', selectedPack);
-      setEditingTexture({ path, displayName, folder, packId: selectedPack?.id ?? null });
-    } catch (error) {
-      console.error('Error opening texture editor:', error);
-      alert('Failed to open texture editor. See console for details.');
-    }
+    setEditingTexture({ path, displayName, folder, packId: selectedPack?.id ?? null });
   }, [packs, textureOverrides, folderSources]);
 
   const handleExport = useCallback(async () => {
