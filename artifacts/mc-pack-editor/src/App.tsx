@@ -880,27 +880,44 @@ function TextureCard({
   
   // Filter out duplicate textures (identical texture data)
   const uniquePacksWithFile = useMemo(() => {
-    const seenBuffers = new Set<string>();
-    const uniquePacks = [];
-    
-    for (const pack of packsWithFile) {
-      const buffer = pack.files.get(texturePath);
-      if (!buffer) continue;
-      
-      // Create a simple hash of the buffer content
-      const bufferView = new Uint8Array(buffer);
-      let hash = '';
-      for (let i = 0; i < Math.min(bufferView.length, 100); i++) {
-        hash += bufferView[i].toString(16).padStart(2, '0');
-      }
-      
-      if (!seenBuffers.has(hash)) {
-        seenBuffers.add(hash);
-        uniquePacks.push(pack);
-      }
+    // Skip duplicate detection for problematic files (icons.png, widgets.png can cause issues)
+    if (texturePath.includes('icons.png') || texturePath.includes('widgets.png')) {
+      return packsWithFile;
     }
     
-    return uniquePacks;
+    try {
+      const seenBuffers = new Set<string>();
+      const uniquePacks = [];
+      
+      for (const pack of packsWithFile) {
+        const buffer = pack.files.get(texturePath);
+        if (!buffer) continue;
+        
+        // Skip very large files for performance
+        if (buffer.byteLength > 1000000) {
+          uniquePacks.push(pack);
+          continue;
+        }
+        
+        // Create a simple hash of the buffer content
+        const bufferView = new Uint8Array(buffer);
+        let hash = '';
+        const sampleSize = Math.min(bufferView.length, 50); // Reduced sample size for performance
+        for (let i = 0; i < sampleSize; i++) {
+          hash += bufferView[i].toString(16).padStart(2, '0');
+        }
+        
+        if (!seenBuffers.has(hash)) {
+          seenBuffers.add(hash);
+          uniquePacks.push(pack);
+        }
+      }
+      
+      return uniquePacks;
+    } catch (error) {
+      console.error('Error filtering duplicate textures:', error);
+      return packsWithFile;
+    }
   }, [packsWithFile, texturePath]);
   if (!uniquePacksWithFile.length) return null;
 
@@ -2142,6 +2159,7 @@ function TextureEditorModal({
   activePackId,
   onSave,
   onClose,
+  darkMode,
 }: {
   texturePath: string;
   displayName: string;
@@ -2150,6 +2168,7 @@ function TextureEditorModal({
   activePackId: string | null;
   onSave: (path: string, packId: string | null, buffer: ArrayBuffer) => void;
   onClose: () => void;
+  darkMode: boolean;
 }) {
   const isTextFile = /\.(json|mcmeta|txt|lang)$/i.test(texturePath);
   
@@ -2369,8 +2388,8 @@ function TextureEditorModal({
   const canEdit = !isLoading && (isTextFile ? textContent !== "" : imageData);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-border bg-background shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black p-4" onClick={onClose}>
+      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-border bg-white dark:bg-slate-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Texture editor</p>
@@ -2389,21 +2408,21 @@ function TextureEditorModal({
         </div>
 
         <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="min-w-0 rounded-[24px] border border-border bg-card p-3">
+          <div className="min-w-0 rounded-[24px] border border-border bg-white dark:bg-slate-800 p-3">
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">{isTextFile ? "Text Editor" : "Canvas"}</p>
                 <p className="text-xs text-muted-foreground">{isTextFile ? "Edit the text content directly. Changes are saved back to the selected pack on export." : "Paint directly into the texture. The edit is saved back to the selected pack on export."}</p>
               </div>
               {!isTextFile && atlasDef && (
-                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-sm text-foreground">
+                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
                   {regionOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
                 </select>
               )}
             </div>
             <div
               ref={canvasFrameRef}
-              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border border-border bg-card p-3"
+              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border border-border bg-white dark:bg-slate-800 p-3"
             >
               {isLoading ? (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading {isTextFile ? "text" : "texture"}…</div>
@@ -2414,7 +2433,7 @@ function TextureEditorModal({
                     setTextContent(e.target.value);
                     setHasChanges(true);
                   }}
-                  className="w-full h-full rounded-lg border border-border bg-background p-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+                  className="w-full h-full rounded-lg border border-border bg-white dark:bg-slate-700 p-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none"
                   spellCheck={false}
                 />
               ) : canEdit ? (
@@ -2456,7 +2475,7 @@ function TextureEditorModal({
           </div>
 
           {!isTextFile && (
-            <div className="w-full rounded-lg border border-border bg-card p-4">
+            <div className="w-full rounded-lg border border-border bg-white dark:bg-slate-800 p-4">
               <p className="text-sm font-semibold text-foreground">Tools</p>
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {[
@@ -2464,26 +2483,26 @@ function TextureEditorModal({
                   { id: "eraser", label: "Eraser" },
                   { id: "eyedropper", label: "Eyedropper" },
                 ].map((item) => (
-                  <button key={item.id} className={`rounded-lg border px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-foreground hover:bg-accent"}`} onClick={() => setTool(item.id as EditorTool)}>
+                  <button key={item.id} className={`rounded-lg border px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/10 text-primary" : "border-border bg-white dark:bg-slate-700 text-foreground hover:bg-slate-100 dark:hover:bg-slate-600"}`} onClick={() => setTool(item.id as EditorTool)}>
                     {item.label}
                   </button>
                 ))}
               </div>
 
-            <section className="mt-4 rounded-lg border border-border bg-card p-3">
+            <section className="mt-4 rounded-lg border border-border bg-white dark:bg-slate-800 p-3">
               <div className="flex items-center justify-between gap-2">
                 <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Color</label>
                 <div className="flex overflow-hidden rounded-lg border border-border text-[11px] font-semibold uppercase tracking-[0.14em]">
                   <button
                     type="button"
-                    className={`px-2.5 py-1 transition-colors ${colorInputMode === "hex" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                    className={`px-2.5 py-1 transition-colors ${colorInputMode === "hex" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}
                     onClick={() => setColorInputMode("hex")}
                   >
                     Hex
                   </button>
                   <button
                     type="button"
-                    className={`border-l border-border px-2.5 py-1 transition-colors ${colorInputMode === "rgb" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                    className={`border-l border-border px-2.5 py-1 transition-colors ${colorInputMode === "rgb" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}
                     onClick={() => setColorInputMode("rgb")}
                   >
                     RGB
@@ -2502,7 +2521,7 @@ function TextureEditorModal({
                       onBlur={() => setHexInput(color.toUpperCase())}
                       maxLength={7}
                       spellCheck={false}
-                      className="mt-1 w-full rounded border border-border bg-background px-2 py-1.5 font-mono text-sm text-foreground"
+                      className="mt-1 w-full rounded border border-border bg-white dark:bg-slate-700 px-2 py-1.5 font-mono text-sm text-foreground"
                       aria-label="Hex color code"
                     />
                   </label>
@@ -2521,7 +2540,7 @@ function TextureEditorModal({
                           className="rgb-channel-slider w-full"
                           style={{ background: rgbChannelGradient(index, rgbColor) }}
                         />
-                        <span className="rounded bg-background px-1.5 py-1 text-right font-mono text-foreground">{rgbColor[index]}</span>
+                        <span className="rounded bg-white dark:bg-slate-700 px-1.5 py-1 text-right font-mono text-foreground">{rgbColor[index]}</span>
                       </label>
                     ))}
                   </div>
@@ -2535,14 +2554,14 @@ function TextureEditorModal({
               <p className="mt-1 text-xs text-muted-foreground">Current size: {brushSize}px</p>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-border bg-background/70 p-3">
+            <div className="mt-4 rounded-2xl border border-border bg-white dark:bg-slate-800 p-3">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Recolor</label>
               <div className="mt-2 grid grid-cols-2 overflow-hidden rounded-lg border border-border text-xs font-medium">
-                <button type="button" onClick={() => setRecolorScope("selection")} disabled={!selectedRegion} className={`px-2 py-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${recolorScope === "selection" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}>Highlighted selection</button>
-                <button type="button" onClick={() => setRecolorScope("whole")} className={`border-l border-border px-2 py-1.5 transition-colors ${recolorScope === "whole" ? "bg-primary/15 text-primary" : "bg-background text-muted-foreground hover:text-foreground"}`}>Entire texture</button>
+                <button type="button" onClick={() => setRecolorScope("selection")} disabled={!selectedRegion} className={`px-2 py-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${recolorScope === "selection" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Highlighted selection</button>
+                <button type="button" onClick={() => setRecolorScope("whole")} className={`border-l border-border px-2 py-1.5 transition-colors ${recolorScope === "whole" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Entire texture</button>
               </div>
               {recolorScope === "selection" && !selectedRegion && <p className="mt-2 text-xs text-amber-500">Choose an atlas region above, or select Entire texture.</p>}
-              <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-border bg-background px-2 py-1 text-sm text-foreground">
+              <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
                 <option value="tint">Tint</option>
                 <option value="hue-shift">Hue shift</option>
                 <option value="colorize">Colorize</option>
@@ -2556,7 +2575,7 @@ function TextureEditorModal({
               </button>
             </div>
 
-            <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-muted-foreground">
+            <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-white dark:bg-slate-800 px-3 py-2 text-sm text-muted-foreground">
               <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
               <span>{selectedRegion ? `Target: ${selectedRegion.label}` : "Target: whole texture"}</span>
             </div>
@@ -2576,7 +2595,7 @@ function TextureEditorModal({
                 <p className="mt-2">Changes will be saved back to the selected pack on export.</p>
               </div>
 
-              <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm text-muted-foreground">
+              <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-white dark:bg-slate-800 px-3 py-2 text-sm text-muted-foreground">
                 <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
               </div>
 
@@ -3292,6 +3311,7 @@ export default function App() {
             setEditingTexture(null);
           }}
           onClose={() => setEditingTexture(null)}
+          darkMode={darkMode}
         />
       )}
 
