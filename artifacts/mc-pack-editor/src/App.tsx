@@ -861,7 +861,7 @@ function TextureCard({
 }) {
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const pack = packs.find((p) => p.id === effectivePackId) ?? packsWithFile[0];
+    const pack = packs.find((p) => p.id === effectivePackId) ?? uniquePacksWithFile[0];
     const buf = pack?.files.get(texturePath);
     if (!buf) return;
     const url = arrayBufferToDataURL(buf, texturePath);
@@ -877,7 +877,32 @@ function TextureCard({
   const folderPackId = folderSources[folder] ?? null;
   const effectivePackId = overridePackId ?? folderPackId;
   const packsWithFile = packs.filter((p) => p.files.has(texturePath));
-  if (!packsWithFile.length) return null;
+  
+  // Filter out duplicate textures (identical texture data)
+  const uniquePacksWithFile = useMemo(() => {
+    const seenBuffers = new Set<string>();
+    const uniquePacks = [];
+    
+    for (const pack of packsWithFile) {
+      const buffer = pack.files.get(texturePath);
+      if (!buffer) continue;
+      
+      // Create a simple hash of the buffer content
+      const bufferView = new Uint8Array(buffer);
+      let hash = '';
+      for (let i = 0; i < Math.min(bufferView.length, 100); i++) {
+        hash += bufferView[i].toString(16).padStart(2, '0');
+      }
+      
+      if (!seenBuffers.has(hash)) {
+        seenBuffers.add(hash);
+        uniquePacks.push(pack);
+      }
+    }
+    
+    return uniquePacks;
+  }, [packsWithFile, texturePath]);
+  if (!uniquePacksWithFile.length) return null;
 
   const isImg = isImagePath(texturePath);
   const isAtlas = !!getAtlasDefinition(texturePath);
@@ -887,31 +912,31 @@ function TextureCard({
       {/* Texture previews row */}
       {isImg && (
         <div
-          className={`flex border-b ${darkMode ? "border-slate-700" : "border-slate-100"} ${packsWithFile.length === 1 ? "" : darkMode ? "divide-x divide-slate-700" : "divide-x divide-slate-100"}`}
+          className={`flex border-b ${darkMode ? "border-slate-700" : "border-slate-100"} ${uniquePacksWithFile.length === 1 ? "" : darkMode ? "divide-x divide-slate-700" : "divide-x divide-slate-100"}`}
         >
-          {packsWithFile.map((pack) => {
+          {uniquePacksWithFile.map((pack) => {
             const buf = pack.files.get(texturePath)!;
             const isSelected =
               effectivePackId === pack.id ||
-              (!effectivePackId && pack === packsWithFile[0]);
+              (!effectivePackId && pack === uniquePacksWithFile[0]);
             return (
               <button
                 key={pack.id}
                 className={`flex-1 flex items-center justify-center p-2 checkered min-h-[80px] relative transition-all ${
-                  packsWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
-                } ${isSelected && packsWithFile.length > 1 ? "ring-2 ring-inset ring-blue-500" : ""}`}
+                  uniquePacksWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
+                } ${isSelected && uniquePacksWithFile.length > 1 ? "ring-2 ring-inset ring-blue-500" : ""}`}
                 onClick={() => {
-                  if (packsWithFile.length <= 1) return;
+                  if (uniquePacksWithFile.length <= 1) return;
                   if (overridePackId === pack.id) {
                     onOverride(texturePath, null);
                   } else {
                     onOverride(texturePath, pack.id);
                   }
                 }}
-                title={packsWithFile.length > 1 ? `Use from: ${pack.name}` : pack.name}
+                title={uniquePacksWithFile.length > 1 ? `Use from: ${pack.name}` : pack.name}
               >
                 <CroppedTexturePreview buffer={buf} path={texturePath} alt={displayName} />
-                {packsWithFile.length > 1 && (
+                {uniquePacksWithFile.length > 1 && (
                   <span
                     className="absolute bottom-1 right-1 w-2 h-2 rounded-full"
                     style={{ background: pack.color }}
@@ -976,7 +1001,7 @@ function TextureCard({
         >
           <span className="text-[10px] leading-none">{isRemoved ? "✕" : "✓"}</span>
         </button>
-        {packsWithFile.length > 1 && (
+        {uniquePacksWithFile.length > 1 && (
           <div className="flex gap-1 flex-wrap">
             <button
               className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-blue-100 text-blue-600 font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
@@ -984,7 +1009,7 @@ function TextureCard({
             >
             auto
           </button>
-            {packsWithFile.map((p) => (
+            {uniquePacksWithFile.map((p) => (
               <button
                 key={p.id}
                 className={`text-xs px-1.5 py-0.5 rounded transition-colors truncate max-w-[60px] ${overridePackId === p.id ? "font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
@@ -1554,7 +1579,7 @@ function TextureLightbox({
                         >
                           auto
                         </button>
-                        {packsWithFile.map((p) => (
+                        {uniquePacksWithFile.map((p) => (
                           <button
                             key={p.id}
                             className={`text-xs px-2 py-0.5 rounded transition-colors max-w-[80px] truncate ${regionPackId === p.id ? "font-semibold" : (darkMode ? "text-slate-400 hover:bg-slate-700" : "text-slate-500 hover:bg-slate-100")}`}
@@ -1586,7 +1611,7 @@ function TextureLightbox({
               >
                 auto
               </button>
-              {packsWithFile.map((p) => (
+              {uniquePacksWithFile.map((p) => (
                 <button
                   key={p.id}
                   className={`text-xs px-2 py-0.5 rounded transition-colors max-w-[80px] truncate ${overridePackId === p.id ? "font-semibold" : "text-muted-foreground hover:bg-accent"}`}
@@ -2345,7 +2370,7 @@ function TextureEditorModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-border bg-background/95 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-border bg-background shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Texture editor</p>
@@ -2364,7 +2389,7 @@ function TextureEditorModal({
         </div>
 
         <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="min-w-0 rounded-[24px] border border-border bg-card/70 p-3">
+          <div className="min-w-0 rounded-[24px] border border-border bg-card p-3">
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">{isTextFile ? "Text Editor" : "Canvas"}</p>
@@ -2378,7 +2403,7 @@ function TextureEditorModal({
             </div>
             <div
               ref={canvasFrameRef}
-              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border border-border bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)] p-3"
+              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border border-border bg-card p-3"
             >
               {isLoading ? (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading {isTextFile ? "text" : "texture"}…</div>
@@ -2975,7 +3000,7 @@ export default function App() {
                   ⚙️
                 </button>
                 {settingsMenuOpen && (
-                  <div className={`absolute top-full left-0 mt-2 w-64 rounded-lg shadow-xl border z-50 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
+                  <div className={`absolute top-full left-0 mt-2 w-80 rounded-lg shadow-xl border z-50 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
                     <div className="p-3">
                       <div className="flex items-center justify-between mb-3">
                         <span className={`text-sm font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Settings</span>
@@ -2998,6 +3023,38 @@ export default function App() {
                             <span className={`w-6 text-center text-sm ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{texturesPerRow}</span>
                             <button onClick={() => setTexturesPerRow(Math.min(12, texturesPerRow + 1))} className={`w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}>+</button>
                           </div>
+                        </div>
+                        <div className={`border-t ${darkMode ? "border-slate-700" : "border-slate-200"} pt-3`}>
+                          <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Upload defaults</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Copy from top pack</span>
+                          <button
+                            onClick={() => setUploadDefaults((prev) => ({ ...prev, copyFromTopPack: !prev.copyFromTopPack }))}
+                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${uploadDefaults.copyFromTopPack ? "bg-blue-500" : "bg-slate-200"}`}
+                          >
+                            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${uploadDefaults.copyFromTopPack ? "right-0.5" : "left-0.5"}`} />
+                          </button>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Default pack name</label>
+                          <input
+                            type="text"
+                            value={uploadDefaults.name}
+                            onChange={(e) => setUploadDefaults((prev) => ({ ...prev, name: e.target.value }))}
+                            className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+                            placeholder="My Resource Pack"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Default description</label>
+                          <input
+                            type="text"
+                            value={uploadDefaults.description}
+                            onChange={(e) => setUploadDefaults((prev) => ({ ...prev, description: e.target.value }))}
+                            className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+                            placeholder="A Minecraft resource pack"
+                          />
                         </div>
                       </div>
                     </div>
