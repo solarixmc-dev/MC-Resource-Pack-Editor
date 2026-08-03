@@ -883,7 +883,7 @@ function TextureCard({
   const isAtlas = !!getAtlasDefinition(texturePath);
 
   return (
-    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-lg border transition-all ${isRemoved ? "border-red-300 bg-red-50 opacity-70" : `${darkMode ? "border-slate-700 bg-slate-800 hover:border-blue-400" : "border-slate-200 bg-white hover:border-blue-300"} shadow-sm`}`}>
+    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-lg border transition-all ${isRemoved ? (darkMode ? "border-red-500 bg-red-950/30 opacity-70" : "border-red-300 bg-red-50 opacity-70") : `${darkMode ? "border-slate-700 bg-slate-800 hover:border-blue-400" : "border-slate-200 bg-white hover:border-blue-300"} shadow-sm`}`}>
       {/* Texture previews row */}
       {isImg && (
         <div
@@ -969,7 +969,7 @@ function TextureCard({
 
       <div className="flex items-center justify-between gap-2 px-2 pb-2 pt-1">
         <button
-          className={`flex h-5 w-5 items-center justify-center rounded-full border transition-colors ${isRemoved ? "border-red-300 bg-red-50 text-red-500 hover:bg-red-100" : "border-green-300 bg-green-50 text-green-600 hover:bg-green-100"}`}
+          className={`flex h-5 w-5 items-center justify-center rounded-full border transition-colors ${isRemoved ? (darkMode ? "border-red-500 bg-red-950/30 text-red-400 hover:bg-red-950/50" : "border-red-300 bg-red-50 text-red-500 hover:bg-red-100") : (darkMode ? "border-green-500 bg-green-950/30 text-green-400 hover:bg-green-950/50" : "border-green-300 bg-green-50 text-green-600 hover:bg-green-100")}`}
           onClick={(e) => { e.stopPropagation(); onToggleRemove(texturePath); }}
           title={isRemoved ? "Re-include this file in export" : "Remove this file from export"}
           aria-label={isRemoved ? "Re-include this file in export" : "Remove this file from export"}
@@ -978,10 +978,10 @@ function TextureCard({
         </button>
         {packsWithFile.length > 1 && (
           <div className="flex gap-1 flex-wrap">
-          <button
-            className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-blue-100 text-blue-600 font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
-            onClick={() => onOverride(texturePath, null)}
-          >
+            <button
+              className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-blue-100 text-blue-600 font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
+              onClick={() => onOverride(texturePath, null)}
+            >
             auto
           </button>
             {packsWithFile.map((p) => (
@@ -2594,6 +2594,19 @@ export default function App() {
   });
   const layoutMode: LayoutMode = "modern";
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+  const settingsMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close settings menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (settingsMenuRef.current && !settingsMenuRef.current.contains(event.target as Node)) {
+        setSettingsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [editingTexture, setEditingTexture] = useState<{ path: string; displayName: string; folder: string; packId: string | null } | null>(null);
   const [analysis, setAnalysis] = useState<PackAnalysis | null>(null);
@@ -2953,8 +2966,26 @@ export default function App() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
-                MC
+              <div className="relative" ref={settingsMenuRef}>
+                <button
+                  onClick={() => setSettingsMenuOpen(!settingsMenuOpen)}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 text-slate-300 hover:bg-slate-600" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                  title="Settings"
+                >
+                  ⚙️
+                </button>
+                {settingsMenuOpen && (
+                  <div className={`absolute top-full left-0 mt-2 w-48 rounded-lg shadow-xl border z-50 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
+                    <div className="p-2">
+                      <button
+                        onClick={() => { setSettingsMenuOpen(false); setSettingsOpen(true); }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${darkMode ? "text-slate-300 hover:bg-slate-700" : "text-slate-700 hover:bg-slate-100"}`}
+                      >
+                        ⚙️ Settings
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
               <span className={`font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Resource Pack Editor</span>
               <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? "bg-slate-700 text-slate-300" : "bg-slate-100 text-slate-500"}`}>1.8</span>
@@ -2988,13 +3019,6 @@ export default function App() {
                 </button>
               </>
             )}
-            <button
-              onClick={() => setSettingsOpen((v) => !v)}
-              className={`p-2 rounded-lg transition-colors ${darkMode ? "text-slate-400 hover:text-slate-100 hover:bg-slate-700" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
-              title="Settings"
-            >
-              ⚙️
-            </button>
           </div>
         </div>
       </nav>
@@ -3015,7 +3039,7 @@ export default function App() {
                   <h2 className={`text-sm font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Pack Order</h2>
                   <button
                     onClick={clearAllPacks}
-                    className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                    className={`text-xs px-2 py-1 rounded transition-colors ${darkMode ? "text-red-400 hover:text-red-300 hover:bg-red-950/30" : "text-red-500 hover:text-red-700 hover:bg-red-50"}`}
                   >
                     Clear all
                   </button>
