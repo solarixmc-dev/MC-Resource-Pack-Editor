@@ -388,10 +388,54 @@ function DropZone({ onLoad, darkMode }: { onLoad: (packs: Pack[]) => void; darkM
         <p className={`text-sm animate-pulse ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Loading packs…</p>
       ) : (
         <>
-          <p className={`text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Drop resource pack ZIPs here</p>
-          <p className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>or click to browse — multiple packs supported</p>
+          <p className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-600"}`}>Drop ZIP files here</p>
+          <p className={`text-xs ${darkMode ? "text-slate-500" : "text-slate-400"}`}>or click to browse</p>
         </>
       )}
+    </div>
+  );
+}
+
+// ─── Texture Import Zone ───────────────────────────────────────────────────
+
+function TextureImportZone({ onImport, darkMode }: { onImport: (file: File) => void; darkMode: boolean }) {
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = useCallback(
+    async (file: File) => {
+      if (!file.name.toLowerCase().endsWith('.png')) return;
+      onImport(file);
+    },
+    [onImport]
+  );
+
+  return (
+    <div
+      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) handleFile(files[0]);
+      }}
+      onClick={() => inputRef.current?.click()}
+      className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors
+        ${dragging ? "border-green-500 bg-green-500/10" : darkMode ? "border-slate-600 hover:border-green-400 hover:bg-slate-700" : "border-slate-300 hover:border-green-400 hover:bg-slate-50"}`}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".png"
+        className="hidden"
+        onChange={(e) => e.target.files && handleFile(e.target.files[0])}
+      />
+      <svg className={`w-8 h-8 ${darkMode ? "text-slate-400" : "text-slate-500"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" />
+      </svg>
+      <p className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-600"}`}>Drop PNG texture here</p>
+      <p className={`text-xs ${darkMode ? "text-slate-500" : "text-slate-400"}`}>or click to browse</p>
     </div>
   );
 }
@@ -2924,6 +2968,26 @@ export default function App() {
     setPacks((prev) => prev.map((p) => (p.id === id ? { ...p, color } : p)));
   }, []);
 
+  const handleTextureImport = useCallback(async (file: File) => {
+    if (!file.name.toLowerCase().endsWith('.png')) return;
+    
+    const arrayBuffer = await file.arrayBuffer();
+    const dataUrl = arrayBufferToDataURL(arrayBuffer, file.name);
+    
+    // Create a simple pack with just this texture
+    const newPack: Pack = {
+      id: `imported-${Date.now()}`,
+      name: file.name.replace('.png', ''),
+      color: '#3b82f6',
+      files: new Map([[
+        `assets/minecraft/textures/${file.name}`,
+        arrayBuffer
+      ]])
+    };
+    
+    setPacks((prev) => [newPack, ...prev]);
+  }, []);
+
   const handleVisibilityToggle = useCallback((id: string) => {
     setPackVisibility((prev) => ({ ...prev, [id]: prev[id] === false ? true : false }));
   }, []);
@@ -3081,6 +3145,11 @@ export default function App() {
             <DropZone onLoad={handlePacksLoaded} darkMode={darkMode} />
           </div>
           
+          <div className={`p-4 border-b ${darkMode ? "border-slate-700" : "border-slate-100"}`}>
+            <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Import Texture</h2>
+            <TextureImportZone onImport={handleTextureImport} darkMode={darkMode} />
+          </div>
+          
           {packs.length > 0 && (
             <>
               <div className={`p-4 border-b ${darkMode ? "border-slate-700" : "border-slate-100"}`}>
@@ -3181,7 +3250,7 @@ export default function App() {
                     MCTextureLab
                   </h1>
                   <p className={`text-sm leading-relaxed ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-                    Upload one or more resource pack ZIP files above to compare textures, set default sources per folder, override individual textures, and export a merged pack.
+                    Upload resource pack ZIP files above, or import individual PNG textures to create custom packs.
                   </p>
                 </div>
               </div>
