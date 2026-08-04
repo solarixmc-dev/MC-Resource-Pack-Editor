@@ -861,7 +861,7 @@ function TextureCard({
 }) {
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const pack = packs.find((p) => p.id === effectivePackId) ?? uniquePacksWithFile[0];
+    const pack = packs.find((p) => p.id === effectivePackId) ?? packsWithFile[0];
     const buf = pack?.files.get(texturePath);
     if (!buf) return;
     const url = arrayBufferToDataURL(buf, texturePath);
@@ -877,38 +877,7 @@ function TextureCard({
   const folderPackId = folderSources[folder] ?? null;
   const effectivePackId = overridePackId ?? folderPackId;
   const packsWithFile = packs.filter((p) => p.files.has(texturePath));
-  
-  // Filter out duplicate textures (identical texture data), but skip for icons.png and widgets.png
-  const uniquePacksWithFile = useMemoOriginal(() => {
-    // Skip duplicate detection for problematic files (icons.png, widgets.png can cause issues)
-    if (texturePath.includes('icons.png') || texturePath.includes('widgets.png')) {
-      return packsWithFile;
-    }
-    
-    const seenBuffers = new Set<string>();
-    const uniquePacks = [];
-    
-    for (const pack of packsWithFile) {
-      const buffer = pack.files.get(texturePath);
-      if (!buffer) continue;
-      
-      // Create a simple hash of the buffer content
-      const bufferView = new Uint8Array(buffer);
-      let hash = '';
-      for (let i = 0; i < Math.min(bufferView.length, 100); i++) {
-        hash += bufferView[i].toString(16).padStart(2, '0');
-      }
-      
-      if (!seenBuffers.has(hash)) {
-        seenBuffers.add(hash);
-        uniquePacks.push(pack);
-      }
-    }
-    
-    return uniquePacks;
-  }, [packsWithFile, texturePath]);
-  
-  if (!uniquePacksWithFile.length) return null;
+  if (!packsWithFile.length) return null;
 
   const isImg = isImagePath(texturePath);
   const isAtlas = !!getAtlasDefinition(texturePath);
@@ -918,31 +887,31 @@ function TextureCard({
       {/* Texture previews row */}
       {isImg && (
         <div
-          className={`flex border-b ${darkMode ? "border-slate-700" : "border-slate-100"} ${uniquePacksWithFile.length === 1 ? "" : darkMode ? "divide-x divide-slate-700" : "divide-x divide-slate-100"}`}
+          className={`flex border-b ${darkMode ? "border-slate-700" : "border-slate-100"} ${packsWithFile.length === 1 ? "" : darkMode ? "divide-x divide-slate-700" : "divide-x divide-slate-100"}`}
         >
-          {uniquePacksWithFile.map((pack) => {
+          {packsWithFile.map((pack) => {
             const buf = pack.files.get(texturePath)!;
             const isSelected =
               effectivePackId === pack.id ||
-              (!effectivePackId && pack === uniquePacksWithFile[0]);
+              (!effectivePackId && pack === packsWithFile[0]);
             return (
               <button
                 key={pack.id}
                 className={`flex-1 flex items-center justify-center p-2 checkered min-h-[80px] relative transition-all ${
-                  uniquePacksWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
-                } ${isSelected && uniquePacksWithFile.length > 1 ? "ring-2 ring-inset ring-blue-500" : ""}`}
+                  packsWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
+                } ${isSelected && packsWithFile.length > 1 ? "ring-2 ring-inset ring-blue-500" : ""}`}
                 onClick={() => {
-                  if (uniquePacksWithFile.length <= 1) return;
+                  if (packsWithFile.length <= 1) return;
                   if (overridePackId === pack.id) {
                     onOverride(texturePath, null);
                   } else {
                     onOverride(texturePath, pack.id);
                   }
                 }}
-                title={uniquePacksWithFile.length > 1 ? `Use from: ${pack.name}` : pack.name}
+                title={packsWithFile.length > 1 ? `Use from: ${pack.name}` : pack.name}
               >
                 <CroppedTexturePreview buffer={buf} path={texturePath} alt={displayName} />
-                {uniquePacksWithFile.length > 1 && (
+                {packsWithFile.length > 1 && (
                   <span
                     className="absolute bottom-1 right-1 w-2 h-2 rounded-full"
                     style={{ background: pack.color }}
@@ -1007,7 +976,7 @@ function TextureCard({
         >
           <span className="text-[10px] leading-none">{isRemoved ? "✕" : "✓"}</span>
         </button>
-        {uniquePacksWithFile.length > 1 && (
+        {packsWithFile.length > 1 && (
           <div className="flex gap-1 flex-wrap">
             <button
               className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-blue-100 text-blue-600 font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
@@ -1015,7 +984,7 @@ function TextureCard({
             >
             auto
           </button>
-            {uniquePacksWithFile.map((p) => (
+            {packsWithFile.map((p) => (
               <button
                 key={p.id}
                 className={`text-xs px-1.5 py-0.5 rounded transition-colors truncate max-w-[60px] ${overridePackId === p.id ? "font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
@@ -1258,7 +1227,7 @@ function AtlasPreviewStrip({
       el.removeEventListener("scroll", updateScrollButtons);
       observer.disconnect();
     };
-  }, [composedPreviewUrl, uniquePacksWithFile.length, updateScrollButtons]);
+  }, [composedPreviewUrl, packsWithFile.length, updateScrollButtons]);
 
   const scrollStrip = (direction: "left" | "right") => {
     stripRef.current?.scrollBy({ left: direction === "left" ? -220 : 220, behavior: "smooth" });
@@ -1290,16 +1259,16 @@ function AtlasPreviewStrip({
         ref={stripRef}
         className={`flex items-start gap-3 overflow-x-hidden scroll-smooth ${canScrollLeft ? "pl-9" : ""} ${canScrollRight ? "pr-9" : ""}`}
       >
-        {uniquePacksWithFile.map((pack) => {
+        {packsWithFile.map((pack) => {
           const buf = pack.files.get(texturePath)!;
-          const isSelected = effectivePackId === pack.id || (!effectivePackId && pack === uniquePacksWithFile[0]);
+          const isSelected = effectivePackId === pack.id || (!effectivePackId && pack === packsWithFile[0]);
           return (
             <div key={pack.id} className="flex w-[184px] flex-shrink-0 flex-col items-center gap-2">
               <button
                 type="button"
-                className={`checkered rounded-lg p-3 border-2 transition-all ${isSelected ? "border-primary" : "border-transparent hover:border-border"} ${uniquePacksWithFile.length > 1 ? "cursor-pointer" : "cursor-default"}`}
+                className={`checkered rounded-lg p-3 border-2 transition-all ${isSelected ? "border-primary" : "border-transparent hover:border-border"} ${packsWithFile.length > 1 ? "cursor-pointer" : "cursor-default"}`}
                 onClick={() => {
-                  if (uniquePacksWithFile.length <= 1) return;
+                  if (packsWithFile.length <= 1) return;
                   onOverride(texturePath, overridePackId === pack.id ? null : pack.id);
                 }}
                 title={pack.name}
@@ -1374,37 +1343,6 @@ function TextureLightbox({
   darkMode: boolean;
 }) {
   const packsWithFile = packs.filter((p) => p.files.has(texturePath));
-  
-  // Filter out duplicate textures (identical texture data), but skip for icons.png and widgets.png
-  const uniquePacksWithFile = useMemo(() => {
-    // Skip duplicate detection for problematic files (icons.png, widgets.png can cause issues)
-    if (texturePath.includes('icons.png') || texturePath.includes('widgets.png')) {
-      return packsWithFile;
-    }
-    
-    const seenBuffers = new Set<string>();
-    const uniquePacks = [];
-    
-    for (const pack of packsWithFile) {
-      const buffer = pack.files.get(texturePath);
-      if (!buffer) continue;
-      
-      // Create a simple hash of the buffer content
-      const bufferView = new Uint8Array(buffer);
-      let hash = '';
-      for (let i = 0; i < Math.min(bufferView.length, 100); i++) {
-        hash += bufferView[i].toString(16).padStart(2, '0');
-      }
-      
-      if (!seenBuffers.has(hash)) {
-        seenBuffers.add(hash);
-        uniquePacks.push(pack);
-      }
-    }
-    
-    return uniquePacks;
-  }, [packsWithFile, texturePath]);
-  
   const overridePackId = textureOverrides[texturePath];
   const folderPackId = folderSources[folder];
   const effectivePackId = overridePackId ?? folderPackId;
@@ -1422,12 +1360,12 @@ function TextureLightbox({
     [regionOverrides]
   );
   const packFileKey = useMemo(
-    () => uniquePacksWithFile.map((p) => p.id).join("|"),
-    [uniquePacksWithFile]
+    () => packsWithFile.map((p) => p.id).join("|"),
+    [packsWithFile]
   );
 
   useEffect(() => {
-    if (!atlasDef || uniquePacksWithFile.length === 0) {
+    if (!atlasDef || packsWithFile.length === 0) {
       setRegionPreviewUrls({});
       setComposedPreviewUrl(null);
       return;
@@ -1535,7 +1473,7 @@ function TextureLightbox({
             />
 
           {/* Atlas region editor */}
-          {atlasDef && uniquePacksWithFile.length > 0 && (
+          {atlasDef && packsWithFile.length > 0 && (
             <div className={`flex-shrink-0 rounded-lg border ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
               <div className={`px-3 py-2 border-b ${darkMode ? "bg-slate-900/50 border-slate-700" : "bg-slate-50 border-slate-200"}`}>
                 <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
@@ -1572,7 +1510,7 @@ function TextureLightbox({
               <div className={darkMode ? "divide-y divide-slate-700" : "divide-y divide-slate-200"}>
                 {atlasDef.regions.filter(region => !region.mapsTo).map((region) => {
                   const regionPackId = regionOverrides[region.id];
-                  const regionOverridePack = uniquePacksWithFile.find(p => p.id === regionPackId);
+                  const regionOverridePack = packsWithFile.find(p => p.id === regionPackId);
                   const isPreviewedRegion = previewRegion?.id === region.id;
                   const mappedRegions = atlasDef.regions.filter(r => r.mapsTo === region.id);
                   return (
@@ -1616,7 +1554,7 @@ function TextureLightbox({
                         >
                           auto
                         </button>
-                        {uniquePacksWithFile.map((p) => (
+                        {packsWithFile.map((p) => (
                           <button
                             key={p.id}
                             className={`text-xs px-2 py-0.5 rounded transition-colors max-w-[80px] truncate ${regionPackId === p.id ? "font-semibold" : (darkMode ? "text-slate-400 hover:bg-slate-700" : "text-slate-500 hover:bg-slate-100")}`}
@@ -1648,7 +1586,7 @@ function TextureLightbox({
               >
                 auto
               </button>
-              {uniquePacksWithFile.map((p) => (
+              {packsWithFile.map((p) => (
                 <button
                   key={p.id}
                   className={`text-xs px-2 py-0.5 rounded transition-colors max-w-[80px] truncate ${overridePackId === p.id ? "font-semibold" : "text-muted-foreground hover:bg-accent"}`}
