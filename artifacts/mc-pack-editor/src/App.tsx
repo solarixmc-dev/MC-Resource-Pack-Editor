@@ -421,7 +421,7 @@ function TextureImportZone({ onImport, darkMode }: { onImport: (file: File) => v
         if (files.length > 0) handleFile(files[0]);
       }}
       onClick={() => inputRef.current?.click()}
-      className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors
+      className={`flex items-center justify-center gap-2 border-2 border-dashed rounded-lg p-2 cursor-pointer transition-colors
         ${dragging ? "border-green-500 bg-green-500/10" : darkMode ? "border-slate-600 hover:border-green-400 hover:bg-slate-700" : "border-slate-300 hover:border-green-400 hover:bg-slate-50"}`}
     >
       <input
@@ -431,11 +431,10 @@ function TextureImportZone({ onImport, darkMode }: { onImport: (file: File) => v
         className="hidden"
         onChange={(e) => e.target.files && handleFile(e.target.files[0])}
       />
-      <svg className={`w-8 h-8 ${darkMode ? "text-slate-400" : "text-slate-500"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+      <svg className={`w-5 h-5 ${darkMode ? "text-slate-400" : "text-slate-500"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" />
       </svg>
-      <p className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-600"}`}>Drop PNG texture here</p>
-      <p className={`text-xs ${darkMode ? "text-slate-500" : "text-slate-400"}`}>or click to browse</p>
+      <p className={`text-xs ${darkMode ? "text-slate-300" : "text-slate-600"}`}>Import PNG texture</p>
     </div>
   );
 }
@@ -3146,7 +3145,6 @@ export default function App() {
           </div>
           
           <div className={`p-4 border-b ${darkMode ? "border-slate-700" : "border-slate-100"}`}>
-            <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Import Texture</h2>
             <TextureImportZone onImport={handleTextureImport} darkMode={darkMode} />
           </div>
           
