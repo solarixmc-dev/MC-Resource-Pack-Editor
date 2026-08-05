@@ -1639,7 +1639,7 @@ function TextureLightbox({
           )}
 
           {/* Whole-file pack selector for non-atlas or as fallback */}
-          {uniquePacksWithFile.length > 1 && (
+          {packsWithFile.length > 1 && (
             <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
               <span className="text-xs text-muted-foreground">Whole file:</span>
               <button
