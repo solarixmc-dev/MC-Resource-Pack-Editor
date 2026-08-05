@@ -2352,7 +2352,10 @@ function TextureEditorModal({
 
     window.addEventListener("keydown", handleKeyboardShortcut);
     return () => window.removeEventListener("keydown", handleKeyboardShortcut);
-  }, [redoEdit, undoEdit]);
+  }, []);
+
+  const canUndo = editHistory.index > 0;
+  const canRedo = editHistory.index < editHistory.entries.length - 1;
 
   const rgbColor = useMemo(() => hexToRgbColor(color), [color]);
   const updateRgbColor = (channel: number, value: number) => {
@@ -2423,8 +2426,8 @@ function TextureEditorModal({
           <div className="flex items-center gap-2">
             {!isTextFile && (
               <>
-                <button type="button" className="rounded-lg border-2 border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={undoEdit} disabled={editHistory.index <= 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
-                <button type="button" className="rounded-lg border-2 border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={redoEdit} disabled={editHistory.index >= editHistory.entries.length - 1} title="Redo (Ctrl/Cmd+Y)" aria-label="Redo">↷</button>
+                <button type="button" className="rounded-lg border-2 border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={undoEdit} disabled={!canUndo} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
+                <button type="button" className="rounded-lg border-2 border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={redoEdit} disabled={!canRedo} title="Redo (Ctrl/Cmd+Y)" aria-label="Redo">↷</button>
               </>
             )}
             <button onClick={onClose} className="rounded-full border-2 border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
@@ -2503,16 +2506,16 @@ function TextureEditorModal({
               <p className="text-sm font-semibold text-foreground">Tools</p>
               <div className="flex gap-2">
                 {[
-                  { id: "pencil", label: "Brush", icon: "🖌️" },
-                  { id: "eraser", label: "Eraser", icon: "🧽" },
-                  { id: "eyedropper", label: "Eyedropper", icon: "💧" },
+                  { id: "pencil", label: "Brush", icon: <svg className="w-5 h-5 grayscale" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z" /><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /></svg> },
+                  { id: "eraser", label: "Eraser", icon: <svg className="w-5 h-5 grayscale" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 20H7L3 16C2 15 2 13 3 12L13 2L22 11L20 20Z" /></svg> },
+                  { id: "eyedropper", label: "Eyedropper", icon: <svg className="w-5 h-5 grayscale" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M19 12l-7-7-3 3 7 7 3-3z" /><path d="M22 19l-2 2-3-3 2-2 3 3z" /><path d="M2 22l7-7" /></svg> },
                 ].map((item) => (
                   <button 
                     key={item.id} 
-                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-3 text-sm transition-all ${tool === item.id ? "border-slate-400 bg-slate-200 text-black dark:border-slate-600 dark:bg-slate-800 dark:text-white" : "border-border bg-background text-black dark:text-white hover:bg-accent"}`} 
+                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-3 text-sm transition-all ${tool === item.id ? "border-slate-400 bg-slate-200 text-black dark:border-slate-600 dark:bg-slate-800 dark:text-white" : "border-border bg-background text-black dark:text-gray-100 hover:bg-accent"}`} 
                     onClick={() => setTool(item.id as EditorTool)}
                   >
-                    <span className="text-lg grayscale">{item.icon}</span>
+                    <span className="text-lg flex items-center justify-center">{item.icon}</span>
                     <span className="text-xs font-medium">{item.label}</span>
                   </button>
                 ))}
