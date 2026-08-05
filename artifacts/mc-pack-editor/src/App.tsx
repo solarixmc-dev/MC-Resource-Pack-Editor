@@ -2512,13 +2512,13 @@ function TextureEditorModal({
               <p className="text-sm font-semibold text-foreground">Tools</p>
               <div className="flex gap-2">
                 {[
-                  { id: "pencil", label: "Brush", icon: <svg className="w-5 h-5 grayscale" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z" /><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /></svg> },
-                  { id: "eraser", label: "Eraser", icon: <svg className="w-5 h-5 grayscale" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 20H7L3 16C2 15 2 13 3 12L13 2L22 11L20 20Z" /></svg> },
-                  { id: "eyedropper", label: "Eyedropper", icon: <svg className="w-5 h-5 grayscale" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M19 12l-7-7-3 3 7 7 3-3z" /><path d="M22 19l-2 2-3-3 2-2 3 3z" /><path d="M2 22l7-7" /></svg> },
+                  { id: "pencil", label: "Brush", icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z" /><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /><path d="M2 2l7.586 7.586" /><circle cx="11" cy="11" r="2" /></svg> },
+                  { id: "eraser", label: "Eraser", icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M20 20H7L3 16C2 15 2 13 3 12L13 2L22 11L20 20Z" /><path d="M17 17L7 7" /><path d="M3 16L2 17" /><path d="M20 20L21 21" /></svg> },
+                  { id: "eyedropper", label: "Eyedropper", icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M19 12l-7-7-3 3 7 7 3-3z" /><path d="M22 19l-2 2-3-3 2-2 3 3z" /><path d="M2 22l7-7" /><path d="M9 5l3 3" /><circle cx="16" cy="8" r="2" /></svg> },
                 ].map((item) => (
                   <button 
                     key={item.id} 
-                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-3 text-sm transition-all ${tool === item.id ? "border-slate-400 bg-slate-200 text-black dark:border-slate-600 dark:bg-slate-800 dark:text-white" : "border-border bg-background text-black dark:text-gray-100 hover:bg-accent"}`} 
+                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-3 text-sm transition-all ${tool === item.id ? "border-slate-400 bg-slate-200 text-black dark:border-slate-600 dark:bg-slate-800 dark:text-white" : "border-border bg-background text-gray-700 dark:text-gray-200 hover:bg-accent"}`} 
                     onClick={() => setTool(item.id as EditorTool)}
                   >
                     <span className="text-lg flex items-center justify-center">{item.icon}</span>
