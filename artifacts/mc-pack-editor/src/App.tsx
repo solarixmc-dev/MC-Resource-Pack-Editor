@@ -946,7 +946,7 @@ function TextureCard({
   const isAtlas = !!getAtlasDefinition(texturePath);
 
   return (
-    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-lg border transition-all ${isRemoved ? (darkMode ? "border-red-500 bg-red-950/30 opacity-70" : "border-red-300 bg-red-50 opacity-70") : `${darkMode ? "border-slate-700 bg-slate-800 hover:border-blue-400" : "border-slate-200 bg-white hover:border-blue-300"} shadow-sm`}`}>
+    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-lg border transition-all min-w-0 ${isRemoved ? (darkMode ? "border-red-500 bg-red-950/30 opacity-70" : "border-red-300 bg-red-50 opacity-70") : `${darkMode ? "border-slate-700 bg-slate-800 hover:border-blue-400" : "border-slate-200 bg-white hover:border-blue-300"} shadow-sm`}`}>
       {/* Texture previews row */}
       {isImg && (
         <div
@@ -1116,7 +1116,7 @@ function TextureGrid({
   }
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex flex-col gap-4 h-full min-w-0">
       <div className="flex items-center gap-3">
         <input
           type="search"
@@ -1130,7 +1130,7 @@ function TextureGrid({
         </span>
       </div>
 
-      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+      <div className="grid gap-2 min-w-0" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
         {filtered.map((path) => {
           const parts = path.split("/");
           const displayName = parts[parts.length - 1];
@@ -1212,11 +1212,11 @@ function SearchAllResults({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 min-w-0">
       <p className="text-xs text-muted-foreground">
         {filtered.length} result{filtered.length !== 1 ? "s" : ""} across all folders
       </p>
-      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+      <div className="grid gap-2 min-w-0" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
         {filtered.map((path) => {
           const parts = path.split("/");
           const displayName = parts[parts.length - 1];
@@ -3479,7 +3479,7 @@ export default function App() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-auto p-6">
             {packs.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
                 <div className={`text-center max-w-lg rounded-2xl border-2 px-10 py-12 ${darkMode ? "border-slate-700 bg-slate-800/50" : "border-slate-200 bg-white/60"}`}>
@@ -3632,14 +3632,20 @@ export default function App() {
           onClose={() => setFileViewerPack(null)}
           onDeleteFile={(filePath) => {
             if (confirm(`Delete ${filePath} from ${fileViewerPack.name}?`)) {
-              setPacks(prev => prev.map(pack => {
-                if (pack.id === fileViewerPack.id) {
-                  const newFiles = new Map(pack.files);
-                  newFiles.delete(filePath);
-                  return { ...pack, files: newFiles };
-                }
-                return pack;
-              }));
+              setPacks(prev => {
+                const updated = prev.map(pack => {
+                  if (pack.id === fileViewerPack.id) {
+                    const newFiles = new Map(pack.files);
+                    newFiles.delete(filePath);
+                    const updatedPack = { ...pack, files: newFiles };
+                    // Update the file viewer pack immediately to reflect deletion
+                    setTimeout(() => setFileViewerPack(updatedPack), 0);
+                    return updatedPack;
+                  }
+                  return pack;
+                });
+                return updated;
+              });
             }
           }}
           darkMode={darkMode}
