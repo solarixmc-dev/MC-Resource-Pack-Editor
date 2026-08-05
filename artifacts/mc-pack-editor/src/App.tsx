@@ -2211,6 +2211,10 @@ function TextureEditorModal({
   const [activeRegionId, setActiveRegionId] = useState<string>("whole");
   const [hasChanges, setHasChanges] = useState(false);
   const [editHistory, setEditHistory] = useState<{ entries: ImageData[]; index: number }>({ entries: [], index: -1 });
+  const editHistoryRef = useRef(editHistory);
+  useEffect(() => {
+    editHistoryRef.current = editHistory;
+  }, [editHistory]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasFrameRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
@@ -2319,20 +2323,22 @@ function TextureEditorModal({
   }, []);
 
   const undoEdit = useCallback(() => {
-    if (editHistory.index <= 0) return;
-    const index = editHistory.index - 1;
-    setImageData(editHistory.entries[index]);
+    const current = editHistoryRef.current;
+    if (current.index <= 0) return;
+    const index = current.index - 1;
+    setImageData(current.entries[index]);
     setEditHistory((previous) => ({ ...previous, index }));
     setHasChanges(index > 0);
-  }, [editHistory]);
+  }, []);
 
   const redoEdit = useCallback(() => {
-    if (editHistory.index >= editHistory.entries.length - 1) return;
-    const index = editHistory.index + 1;
-    setImageData(editHistory.entries[index]);
+    const current = editHistoryRef.current;
+    if (current.index >= current.entries.length - 1) return;
+    const index = current.index + 1;
+    setImageData(current.entries[index]);
     setEditHistory((previous) => ({ ...previous, index }));
     setHasChanges(true);
-  }, [editHistory]);
+  }, []);
 
   useEffect(() => {
     const handleKeyboardShortcut = (event: KeyboardEvent) => {
@@ -2352,7 +2358,7 @@ function TextureEditorModal({
 
     window.addEventListener("keydown", handleKeyboardShortcut);
     return () => window.removeEventListener("keydown", handleKeyboardShortcut);
-  }, []);
+  }, [undoEdit, redoEdit]);
 
   const canUndo = editHistory.index > 0;
   const canRedo = editHistory.index < editHistory.entries.length - 1;
