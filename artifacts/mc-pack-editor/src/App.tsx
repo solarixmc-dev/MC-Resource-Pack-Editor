@@ -1994,47 +1994,49 @@ function AnalyzePackModal({
   analysis,
   isAnalyzing,
   onClose,
+  darkMode,
 }: {
   analysis: PackAnalysis | null;
   isAnalyzing: boolean;
   onClose: () => void;
+  darkMode: boolean;
 }) {
-  const cardBase = "rounded-lg border border-slate-200 bg-white p-3 shadow-sm";
+  const cardBase = `rounded-lg border p-3 shadow-sm ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`;
   const toneClasses: Record<string, string> = {
-    info: "border-sky-500/30 bg-sky-500/10 text-sky-700",
-    warning: "border-amber-500/30 bg-amber-500/10 text-amber-700",
-    error: "border-rose-500/30 bg-rose-500/10 text-rose-700",
+    info: `border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300`,
+    warning: `border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300`,
+    error: `border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300`,
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-lg border border-slate-200 bg-white p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className={`max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-lg border p-5 shadow-2xl ${darkMode ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Pack analysis</p>
-            <h3 className="text-xl font-semibold text-slate-700">Resource pack health overview</h3>
+            <p className={`text-xs font-semibold uppercase tracking-[0.24em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Pack analysis</p>
+            <h3 className={`text-xl font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Resource pack overview</h3>
           </div>
-          <button onClick={onClose} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-sm text-slate-500 hover:text-slate-700">✕</button>
+          <button onClick={onClose} className={`rounded-full border px-2.5 py-1 text-sm ${darkMode ? "border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200" : "border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-700"}`}>✕</button>
         </div>
 
         {isAnalyzing || !analysis ? (
-          <div className="mt-6 flex min-h-[220px] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50">
+          <div className={`mt-6 flex min-h-[220px] items-center justify-center rounded-lg border border-dashed ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-300 bg-slate-50"}`}>
             <div className="text-center">
-              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-2xl text-emerald-600">✨</div>
-              <p className="text-sm font-medium text-slate-700">Scanning the current pack locally…</p>
-              <p className="mt-1 text-sm text-slate-500">Using the current uploaded ZIP data and atlas definitions.</p>
+              <div className={`mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full text-2xl ${darkMode ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-500/10 text-emerald-600"}`}>✨</div>
+              <p className={`text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Scanning the current pack locally…</p>
+              <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Using the current uploaded ZIP data and atlas definitions.</p>
             </div>
           </div>
         ) : (
           <div className="mt-6 space-y-4">
-            <div className={`rounded-lg border p-4 ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "border-emerald-500/30 bg-emerald-500/10" : "border-amber-500/30 bg-amber-500/10"}`}>
+            <div className={`rounded-lg border p-4 ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "border-emerald-500/30 bg-emerald-500/10" : "border-amber-500/30 bg-amber-500/10"} ${darkMode ? "" : ""}`}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-700">{analysis.packNames.join(", ") || "Loaded pack"}</p>
-                  <p className="mt-1 text-sm text-slate-500">{analysis.overallSummary}</p>
+                  <p className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{analysis.packNames.join(", ") || "Loaded pack"}</p>
+                  <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>{analysis.overallSummary}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "bg-emerald-500/20 text-emerald-700" : "bg-amber-500/20 text-amber-700"}`}>
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/20 text-amber-700 dark:text-amber-300"}`}>
                     {analysis.issues.filter(i => i.severity === "warning").length === 0 ? "1.8.9 compatible" : "Needs review"}
                   </span>
                 </div>
@@ -2043,107 +2045,38 @@ function AnalyzePackModal({
 
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <div className={cardBase}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">File size</p>
-                <p className="mt-2 text-xl font-semibold text-slate-700">{analysis.totalSizeLabel}</p>
-                <p className="mt-1 text-sm text-slate-500">{analysis.totalFiles} files inspected</p>
+                <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>File size</p>
+                <p className={`mt-2 text-xl font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>{analysis.totalSizeLabel}</p>
+                <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>{analysis.totalFiles} files inspected</p>
               </div>
               <div className={cardBase}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Base texture resolution</p>
-                <p className="mt-2 text-xl font-semibold text-slate-700">{analysis.baseTextureResolution}</p>
-                <p className="mt-1 text-sm text-slate-500">{analysis.mixedResolutions ? "Mixed resolutions detected" : "Consistent texture size"}</p>
+                <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Base texture resolution</p>
+                <p className={`mt-2 text-xl font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>{analysis.baseTextureResolution}</p>
+                <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>{analysis.mixedResolutions ? "Mixed resolutions detected" : "Consistent texture size"}</p>
               </div>
               <div className={cardBase}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Modified textures</p>
-                <p className="mt-2 text-xl font-semibold text-slate-700">{analysis.modifiedTextureCount}</p>
-                <p className="mt-1 text-sm text-slate-500">Unique textures reviewed</p>
-                {analysis.texturesByFolder.size > 0 && (
-                  <div className="mt-3">
-                    <select className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
-                      <option value="">All textures ({analysis.modifiedTextureCount})</option>
-                      {Array.from(analysis.texturesByFolder.entries())
-                        .sort(([a], [b]) => a.localeCompare(b))
-                        .map(([folder, textures]) => (
-                          <option key={folder} value={folder}>
-                            {folder} ({textures.length})
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="grid gap-3 lg:grid-cols-2">
-              <div className={cardBase}>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-foreground">Highlights</p>
-                  <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">{analysis.issues.length} note{analysis.issues.length === 1 ? "" : "s"}</span>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {analysis.issues.length ? analysis.issues.map((issue) => (
-                    <span key={issue.label} className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${toneClasses[issue.severity]}`}>
-                      {issue.label}
-                    </span>
-                  )) : <span className="text-sm text-muted-foreground">No major issues detected.</span>}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-3 lg:grid-cols-2">
-              <div className={cardBase}>
-                <p className="text-sm font-semibold text-foreground">Missing textures</p>
-                {analysis.missingTextures.length ? (
-                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                    {analysis.missingTextures.map((entry) => <li key={entry} className="truncate">• {entry}</li>)}
-                  </ul>
-                ) : <p className="mt-3 text-sm text-muted-foreground">No missing core textures detected.</p>}
+                <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Total textures</p>
+                <p className={`mt-2 text-xl font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>{analysis.modifiedTextureCount}</p>
+                <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Unique textures in pack</p>
               </div>
               <div className={cardBase}>
-                <p className="text-sm font-semibold text-foreground">Duplicate textures</p>
-                {analysis.duplicateTextures.length ? (
-                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                    {analysis.duplicateTextures.map((entry) => <li key={entry} className="truncate">• {entry}</li>)}
-                  </ul>
-                ) : <p className="mt-3 text-sm text-muted-foreground">No duplicate texture entries detected.</p>}
-              </div>
-            </div>
-
-            <div className="grid gap-3 lg:grid-cols-2">
-              <div className={cardBase}>
-                <p className="text-sm font-semibold text-foreground">Animated textures</p>
-                {analysis.animatedTextures.length ? (
-                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                    {analysis.animatedTextures.map((entry) => <li key={entry} className="truncate">• {entry}</li>)}
-                  </ul>
-                ) : <p className="mt-3 text-sm text-muted-foreground">No animated texture metadata detected.</p>}
-              </div>
-              <div className={cardBase}>
-                <p className="text-sm font-semibold text-foreground">Invalid animations</p>
-                {analysis.invalidAnimations.length ? (
-                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                    {analysis.invalidAnimations.map((entry) => <li key={entry} className="truncate">• {entry}</li>)}
-                  </ul>
-                ) : <p className="mt-3 text-sm text-muted-foreground">Animation metadata looks structurally fine.</p>}
+                <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Missing textures</p>
+                <p className={`mt-2 text-xl font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>{analysis.missingTextures.length}</p>
+                <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Core textures not found</p>
               </div>
             </div>
 
             <div className={cardBase}>
-              <p className="text-sm font-semibold text-foreground">Atlas analysis</p>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                {analysis.atlasAnalysis.map((entry) => (
-                  <div key={entry.label} className="rounded-xl border border-border/70 bg-background/70 p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-foreground">{entry.label}</p>
-                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${entry.present ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/15 text-amber-700 dark:text-amber-300"}`}>
-                        {entry.present ? "present" : "needs check"}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">Required regions: {entry.requiredRegions.join(", ")}</p>
-                    {!entry.present && entry.missingRegions.length > 0 && (
-                      <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">Missing: {entry.missingRegions.join(", ")}</p>
-                    )}
-                  </div>
-                ))}
+              <div className="flex items-center justify-between">
+                <p className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Issues detected</p>
+                <span className={`rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold ${darkMode ? "text-slate-400" : "text-slate-500"}`}>{analysis.issues.length} note{analysis.issues.length === 1 ? "" : "s"}</span>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {analysis.issues.length ? analysis.issues.map((issue) => (
+                  <span key={issue.label} className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${toneClasses[issue.severity]}`}>
+                    {issue.label}
+                  </span>
+                )) : <span className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>No major issues detected.</span>}
               </div>
             </div>
           </div>
@@ -3630,6 +3563,7 @@ export default function App() {
           analysis={analysis}
           isAnalyzing={analyzing}
           onClose={() => setAnalysisOpen(false)}
+          darkMode={darkMode}
         />
       )}
 
