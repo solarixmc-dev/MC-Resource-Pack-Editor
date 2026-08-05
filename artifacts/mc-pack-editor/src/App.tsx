@@ -1954,6 +1954,14 @@ function SettingsModal({
               placeholder="A Minecraft resource pack"
             />
           </div>
+
+          {/* Save button */}
+          <button
+            onClick={onClose}
+            className={`mt-2 w-full py-2.5 rounded-lg text-sm font-semibold transition-colors ${darkMode ? "bg-blue-500 hover:bg-blue-600 text-white shadow-lg" : "bg-blue-500 hover:bg-blue-600 text-white shadow-lg"}`}
+          >
+            Save Settings
+          </button>
         </div>
       </div>
     </div>
@@ -2178,7 +2186,6 @@ function TextureEditorModal({
   const [colorInputMode, setColorInputMode] = useState<"hex" | "rgb">("hex");
   const [recolorMode, setRecolorMode] = useState<RecolorMode>("tint");
   const [recolorIntensity, setRecolorIntensity] = useState(0.6);
-  const [recolorScope, setRecolorScope] = useState<"selection" | "whole">("selection");
   const [imageData, setImageData] = useState<ImageData | null>(null);
   const [textContent, setTextContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -2368,8 +2375,7 @@ function TextureEditorModal({
 
   const handleApplyRecolor = () => {
     if (!imageData) return;
-    if (recolorScope === "selection" && !rectRegion) return;
-    applyImageChange(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }, recolorScope === "selection" ? rectRegion : undefined));
+    applyImageChange(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }));
   };
 
   const handleSave = async () => {
@@ -2388,7 +2394,7 @@ function TextureEditorModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-border bg-white dark:bg-slate-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-border bg-white dark:bg-slate-950 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Texture editor</p>
@@ -2398,30 +2404,30 @@ function TextureEditorModal({
           <div className="flex items-center gap-2">
             {!isTextFile && (
               <>
-                <button type="button" className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={undoEdit} disabled={editHistory.index <= 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
-                <button type="button" className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={redoEdit} disabled={editHistory.index >= editHistory.entries.length - 1} title="Redo (Ctrl/Cmd+Y)" aria-label="Redo">↷</button>
+                <button type="button" className="rounded-lg border-2 border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={undoEdit} disabled={editHistory.index <= 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
+                <button type="button" className="rounded-lg border-2 border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={redoEdit} disabled={editHistory.index >= editHistory.entries.length - 1} title="Redo (Ctrl/Cmd+Y)" aria-label="Redo">↷</button>
               </>
             )}
-            <button onClick={onClose} className="rounded-full border border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
+            <button onClick={onClose} className="rounded-full border-2 border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
           </div>
         </div>
 
         <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="min-w-0 rounded-[24px] border border-border bg-white dark:bg-slate-800 p-3">
+          <div className="min-w-0 rounded-[24px] border-2 border-border bg-white dark:bg-slate-900 p-3">
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">{isTextFile ? "Text Editor" : "Canvas"}</p>
                 <p className="text-xs text-muted-foreground">{isTextFile ? "Edit the text content directly. Changes are saved back to the selected pack on export." : "Paint directly into the texture. The edit is saved back to the selected pack on export."}</p>
               </div>
               {!isTextFile && atlasDef && (
-                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
+                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border-2 border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
                   {regionOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
                 </select>
               )}
             </div>
             <div
               ref={canvasFrameRef}
-              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border border-border bg-white dark:bg-slate-800 p-3"
+              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border-2 border-border bg-white dark:bg-slate-900 p-3"
             >
               {isLoading ? (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading {isTextFile ? "text" : "texture"}…</div>
@@ -2432,11 +2438,11 @@ function TextureEditorModal({
                     setTextContent(e.target.value);
                     setHasChanges(true);
                   }}
-                  className="w-full h-full rounded-lg border border-border bg-white dark:bg-slate-700 p-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+                  className="w-full h-full rounded-lg border-2 border-border bg-white dark:bg-slate-700 p-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none"
                   spellCheck={false}
                 />
               ) : canEdit ? (
-                <div className="checkered relative inline-block rounded-lg border border-border p-1 shadow-inner">
+                <div className="checkered relative inline-block rounded-lg border-2 border-border p-1 shadow-inner">
                   <canvas
                     ref={canvasRef}
                     className="mx-auto block"
@@ -2454,7 +2460,7 @@ function TextureEditorModal({
                     }}
                     onPointerUp={(e) => e.currentTarget.releasePointerCapture(e.pointerId)}
                   />
-                  {selectedRegion && recolorScope === "selection" && (
+                  {selectedRegion && (
                     <div
                       className="pointer-events-none absolute border-2 border-amber-400 bg-amber-300/20 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
                       style={{
@@ -2463,7 +2469,7 @@ function TextureEditorModal({
                         width: `${selectedRegion.w * canvasScale}px`,
                         height: `${selectedRegion.h * canvasScale}px`,
                       }}
-                      title="Recolor target"
+                      title="Atlas region"
                     />
                   )}
                 </div>
@@ -2474,7 +2480,7 @@ function TextureEditorModal({
           </div>
 
           {!isTextFile && (
-            <div className="w-full rounded-lg border border-border bg-white dark:bg-slate-800 p-4">
+            <div className="w-full rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-4">
               <p className="text-sm font-semibold text-foreground">Tools</p>
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {[
@@ -2482,16 +2488,16 @@ function TextureEditorModal({
                   { id: "eraser", label: "Eraser" },
                   { id: "eyedropper", label: "Eyedropper" },
                 ].map((item) => (
-                  <button key={item.id} className={`rounded-lg border px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-foreground hover:bg-accent"}`} onClick={() => setTool(item.id as EditorTool)}>
+                  <button key={item.id} className={`rounded-lg border-2 px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-foreground hover:bg-accent"}`} onClick={() => setTool(item.id as EditorTool)}>
                     {item.label}
                   </button>
                 ))}
               </div>
 
-            <section className="mt-4 rounded-lg border border-border bg-white dark:bg-slate-800 p-3">
+            <section className="mt-4 rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-3">
               <div className="flex items-center justify-between gap-2">
                 <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Color</label>
-                <div className="flex overflow-hidden rounded-lg border border-border text-[11px] font-semibold uppercase tracking-[0.14em]">
+                <div className="flex overflow-hidden rounded-lg border-2 border-border text-[11px] font-semibold uppercase tracking-[0.14em]">
                   <button
                     type="button"
                     className={`px-2.5 py-1 transition-colors ${colorInputMode === "hex" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}
@@ -2501,7 +2507,7 @@ function TextureEditorModal({
                   </button>
                   <button
                     type="button"
-                    className={`border-l border-border px-2.5 py-1 transition-colors ${colorInputMode === "rgb" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}
+                    className={`border-l-2 border-border px-2.5 py-1 transition-colors ${colorInputMode === "rgb" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}
                     onClick={() => setColorInputMode("rgb")}
                   >
                     RGB
@@ -2509,7 +2515,7 @@ function TextureEditorModal({
                 </div>
               </div>
               <div className="mt-2 flex items-center gap-3">
-                <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-12 w-14 cursor-pointer rounded border border-border bg-transparent p-1" aria-label="Color picker" />
+                <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-12 w-14 cursor-pointer rounded border-2 border-border bg-transparent p-1" aria-label="Color picker" />
                 {colorInputMode === "hex" ? (
                   <label className="flex-1 text-xs font-medium text-muted-foreground">
                     Hex code
@@ -2520,7 +2526,7 @@ function TextureEditorModal({
                       onBlur={() => setHexInput(color.toUpperCase())}
                       maxLength={7}
                       spellCheck={false}
-                      className="mt-1 w-full rounded border border-border bg-white dark:bg-slate-700 px-2 py-1.5 font-mono text-sm text-foreground"
+                      className="mt-1 w-full rounded border-2 border-border bg-white dark:bg-slate-700 px-2 py-1.5 font-mono text-sm text-foreground"
                       aria-label="Hex color code"
                     />
                   </label>
@@ -2547,20 +2553,15 @@ function TextureEditorModal({
               </div>
             </section>
 
-            <div className="mt-4">
+            <div className="mt-4 rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-3">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Brush size</label>
               <input type="range" min="1" max="24" value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="mt-2 w-full" />
               <p className="mt-1 text-xs text-muted-foreground">Current size: {brushSize}px</p>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-border bg-white dark:bg-slate-800 p-3">
+            <div className="mt-4 rounded-2xl border-2 border-border bg-white dark:bg-slate-900 p-3">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Recolor</label>
-              <div className="mt-2 grid grid-cols-2 overflow-hidden rounded-lg border border-border text-xs font-medium">
-                <button type="button" onClick={() => setRecolorScope("selection")} disabled={!selectedRegion} className={`px-2 py-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${recolorScope === "selection" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Highlighted selection</button>
-                <button type="button" onClick={() => setRecolorScope("whole")} className={`border-l border-border px-2 py-1.5 transition-colors ${recolorScope === "whole" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}>Entire texture</button>
-              </div>
-              {recolorScope === "selection" && !selectedRegion && <p className="mt-2 text-xs text-amber-500">Choose an atlas region above, or select Entire texture.</p>}
-              <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
+              <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border-2 border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
                 <option value="tint">Tint</option>
                 <option value="hue-shift">Hue shift</option>
                 <option value="colorize">Colorize</option>
@@ -2569,32 +2570,32 @@ function TextureEditorModal({
               </select>
               <input type="range" min="0" max="1" step="0.01" value={recolorIntensity} onChange={(e) => setRecolorIntensity(Number(e.target.value))} className="mt-3 w-full" />
               <p className="mt-1 text-xs text-muted-foreground">Intensity: {recolorIntensity.toFixed(2)}</p>
-              <button disabled={recolorScope === "selection" && !selectedRegion} className="mt-3 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={handleApplyRecolor}>
-                Apply recolor to {recolorScope === "selection" && selectedRegion ? selectedRegion.label : "entire texture"}
+              <button className="mt-3 rounded-xl border-2 border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent" onClick={handleApplyRecolor}>
+                Apply recolor to entire texture
               </button>
             </div>
 
-            <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-white dark:bg-slate-800 px-3 py-2 text-sm text-muted-foreground">
+            <div className="mt-4 flex items-center justify-between rounded-2xl border-2 border-border bg-white dark:bg-slate-900 px-3 py-2 text-sm text-muted-foreground">
               <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
               <span>{selectedRegion ? `Target: ${selectedRegion.label}` : "Target: whole texture"}</span>
             </div>
 
             <div className="mt-4 flex gap-2">
-              <button className="flex-1 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-accent" onClick={onClose}>Cancel</button>
+              <button className="flex-1 rounded-xl border-2 border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-accent" onClick={onClose}>Cancel</button>
               <button className="flex-1 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90" onClick={handleSave}>Save</button>
             </div>
           </div>
           )}
 
           {isTextFile && (
-            <div className="w-full rounded-[24px] border border-border bg-white dark:bg-slate-800 p-4">
+            <div className="w-full rounded-[24px] border-2 border-border bg-white dark:bg-slate-900 p-4">
               <p className="text-sm font-semibold text-foreground">Text File Info</p>
               <div className="mt-3 text-xs text-muted-foreground">
                 <p>This is a text file that can be edited directly in the editor above.</p>
                 <p className="mt-2">Changes will be saved back to the selected pack on export.</p>
               </div>
 
-              <div className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-white dark:bg-slate-800 px-3 py-2 text-sm text-muted-foreground">
+              <div className="mt-4 flex items-center justify-between rounded-2xl border-2 border-border bg-white dark:bg-slate-900 px-3 py-2 text-sm text-muted-foreground">
                 <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
               </div>
 
