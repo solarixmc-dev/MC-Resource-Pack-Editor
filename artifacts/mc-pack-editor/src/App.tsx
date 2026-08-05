@@ -2174,10 +2174,9 @@ function rgbToHexColor(red: number, green: number, blue: number): string {
 }
 
 function rgbChannelGradient(channel: number, rgb: [number, number, number]): string {
-  const [r, g, b] = rgb;
-  if (channel === 0) return `linear-gradient(to right, rgb(0, ${g}, ${b}), rgb(255, ${g}, ${b}))`;
-  if (channel === 1) return `linear-gradient(to right, rgb(${r}, 0, ${b}), rgb(${r}, 255, ${b}))`;
-  return `linear-gradient(to right, rgb(${r}, ${g}, 0), rgb(${r}, ${g}, 255))`;
+  if (channel === 0) return `linear-gradient(to right, rgb(0, 0, 0), rgb(255, 0, 0))`;
+  if (channel === 1) return `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 255, 0))`;
+  return `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 0, 255))`;
 }
 
 function TextureEditorModal({
@@ -2510,10 +2509,10 @@ function TextureEditorModal({
                 ].map((item) => (
                   <button 
                     key={item.id} 
-                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-3 text-sm transition-all ${tool === item.id ? "border-primary bg-primary/20 text-primary ring-2 ring-primary/30" : "border-border bg-background text-foreground hover:bg-accent"}`} 
+                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-3 text-sm transition-all ${tool === item.id ? "border-slate-400 bg-slate-200 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200" : "border-border bg-background text-slate-600 dark:text-slate-400 hover:bg-accent"}`} 
                     onClick={() => setTool(item.id as EditorTool)}
                   >
-                    <span className="text-lg">{item.icon}</span>
+                    <span className="text-lg grayscale opacity-70">{item.icon}</span>
                     <span className="text-xs font-medium">{item.label}</span>
                   </button>
                 ))}
@@ -3363,7 +3362,7 @@ export default function App() {
                 <button
                   onClick={handleExport}
                   disabled={exporting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors disabled:opacity-50"
+                  className="px-6 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-2xl transition-colors disabled:opacity-50"
                 >
                   {exporting ? "Exporting…" : "Export"}
                 </button>
