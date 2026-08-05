@@ -30,6 +30,9 @@ export function getTextureFolder(path: string): string {
   // Normalize: strip leading slash
   const p = path.replace(/^\//, "");
 
+  // Skip system files
+  if (p.match(/^\./) || p.includes('.ds_store') || p.includes('Thumbs.db')) return "other";
+
   // assets/minecraft/models/block/... -> models
   const modelMatch = p.match(/assets\/\w+\/models\/([^/]+)\//);
   if (modelMatch) return "models";
@@ -45,12 +48,12 @@ export function getTextureFolder(path: string): string {
 
   const knownTextureFolders = new Set(MC_FOLDERS.map((folder) => folder.key));
   const folderMap: Record<string, string> = {
-    sky: "environment",
-    skies: "environment",
-    clouds: "environment",
-    end_sky: "environment",
-    moon: "environment",
-    sun: "environment",
+    sky: "sky",
+    skies: "sky",
+    clouds: "sky",
+    end_sky: "sky",
+    moon: "sky",
+    sun: "sky",
     particle: "particle",
     particles: "particle",
     entity: "entity",
@@ -98,6 +101,8 @@ export function getTextureFolder(path: string): string {
   if (directTextureMatch) {
     const filename = directTextureMatch[1].toLowerCase();
     if (folderMap[filename]) return folderMap[filename];
+    // Check for sky-related filenames
+    if (filename.includes('sky') || filename.includes('sun') || filename.includes('moon') || filename.includes('cloud')) return "sky";
     return "environment";
   }
 
