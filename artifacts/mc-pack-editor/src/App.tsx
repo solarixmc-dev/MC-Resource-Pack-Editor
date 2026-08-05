@@ -2509,10 +2509,10 @@ function TextureEditorModal({
                 ].map((item) => (
                   <button 
                     key={item.id} 
-                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-3 text-sm transition-all ${tool === item.id ? "border-slate-400 bg-slate-200 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white" : "border-border bg-background text-slate-600 dark:text-slate-400 hover:bg-accent"}`} 
+                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-3 text-sm transition-all ${tool === item.id ? "border-slate-400 bg-slate-200 text-black dark:border-slate-600 dark:bg-slate-800 dark:text-white" : "border-border bg-background text-black dark:text-white hover:bg-accent"}`} 
                     onClick={() => setTool(item.id as EditorTool)}
                   >
-                    <span className="text-lg text-slate-400 dark:text-slate-300">{item.icon}</span>
+                    <span className="text-lg grayscale">{item.icon}</span>
                     <span className="text-xs font-medium">{item.label}</span>
                   </button>
                 ))}
