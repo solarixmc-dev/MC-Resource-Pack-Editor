@@ -848,33 +848,25 @@ function FolderSidebar({
 // ─── Texture Card ──────────────────────────────────────────────────────────────
 
 function CroppedTexturePreview({ buffer, path, alt, size = TEXTURE_THUMBNAIL_SIZE }: { buffer: ArrayBuffer; path: string; alt: string; size?: number }) {
-  const sourceUrl = useMemo(() => {
-    console.log('Creating source URL for:', path, 'Buffer size:', buffer.byteLength);
-    return arrayBufferToDataURL(buffer, path);
-  }, [buffer, path]);
+  const sourceUrl = useMemo(() => arrayBufferToDataURL(buffer, path), [buffer, path]);
   const [previewUrl, setPreviewUrl] = useState(sourceUrl);
 
   useEffect(() => {
     let cancelled = false;
     
-    console.log('CroppedTexturePreview for:', path, 'Buffer size:', buffer.byteLength);
-    
     // Skip cropping for atlas textures that cause blank screen issues
     const isAtlasTexture = path.toLowerCase().includes('icons.png') || path.toLowerCase().includes('widgets.png');
     
     if (isAtlasTexture) {
-      console.log('Skipping cropping for atlas texture:', path);
       setPreviewUrl(sourceUrl);
       return;
     }
     
     createCroppedTexturePreviewDataUrl(buffer, path, size)
       .then((url) => {
-        console.log('Cropped preview created for:', path);
         if (!cancelled) setPreviewUrl(url);
       })
-      .catch((error) => {
-        console.error('Failed to create cropped preview for:', path, error);
+      .catch(() => {
         if (!cancelled) setPreviewUrl(sourceUrl);
       });
     return () => { cancelled = true; };
@@ -886,8 +878,6 @@ function CroppedTexturePreview({ buffer, path, alt, size = TEXTURE_THUMBNAIL_SIZ
       alt={alt}
       className="texture-preview"
       style={{ width: size, height: size, imageRendering: "pixelated" }}
-      onLoad={() => console.log('Image loaded successfully:', path)}
-      onError={(e) => console.error('Image failed to load:', path, e)}
     />
   );
 }
@@ -2253,10 +2243,8 @@ function TextureEditorModal({
       setIsLoading(false);
     } else {
       // Handle image files
-      console.log('Loading image:', texturePath, 'Buffer size:', buffer.byteLength);
       loadImageDataFromBuffer(buffer, texturePath)
         .then((next) => {
-          console.log('Image loaded successfully:', texturePath, 'Dimensions:', next.width, 'x', next.height);
           if (!cancelled) {
             setImageData(next);
             setHasChanges(false);
@@ -2264,8 +2252,7 @@ function TextureEditorModal({
             setActiveRegionId("whole");
           }
         })
-        .catch((error) => {
-          console.error('Failed to load image:', texturePath, error);
+        .catch(() => {
           if (!cancelled) setIsLoading(false);
         })
         .finally(() => {
@@ -2502,21 +2489,26 @@ function TextureEditorModal({
           </div>
 
           {!isTextFile && (
-            <div className="w-full rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-4">
+            <div className="w-full rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-4 space-y-4">
               <p className="text-sm font-semibold text-foreground">Tools</p>
-              <div className="mt-3 grid grid-cols-3 gap-2">
+              <div className="flex gap-2">
                 {[
-                  { id: "pencil", label: "Brush" },
-                  { id: "eraser", label: "Eraser" },
-                  { id: "eyedropper", label: "Eyedropper" },
+                  { id: "pencil", label: "Brush", icon: "🖌️" },
+                  { id: "eraser", label: "Eraser", icon: "🧹" },
+                  { id: "eyedropper", label: "Eyedropper", icon: "💧" },
                 ].map((item) => (
-                  <button key={item.id} className={`rounded-lg border-2 px-3 py-2 text-sm transition-colors ${tool === item.id ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-foreground hover:bg-accent"}`} onClick={() => setTool(item.id as EditorTool)}>
-                    {item.label}
+                  <button 
+                    key={item.id} 
+                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-3 text-sm transition-all ${tool === item.id ? "border-primary bg-primary/20 text-primary ring-2 ring-primary/30" : "border-border bg-background text-foreground hover:bg-accent"}`} 
+                    onClick={() => setTool(item.id as EditorTool)}
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <span className="text-xs font-medium">{item.label}</span>
                   </button>
                 ))}
               </div>
 
-            <section className="mt-4 rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-3">
+            <section className="rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-3">
               <div className="flex items-center justify-between gap-2">
                 <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Color</label>
                 <div className="flex overflow-hidden rounded-lg border-2 border-border text-[11px] font-semibold uppercase tracking-[0.14em]">
@@ -2575,13 +2567,13 @@ function TextureEditorModal({
               </div>
             </section>
 
-            <div className="mt-4 rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-3">
+            <div className="rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-3">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Brush size</label>
               <input type="range" min="1" max="24" value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="mt-2 w-full" />
               <p className="mt-1 text-xs text-muted-foreground">Current size: {brushSize}px</p>
             </div>
 
-            <div className="mt-4 rounded-2xl border-2 border-border bg-white dark:bg-slate-900 p-3">
+            <div className="rounded-2xl border-2 border-border bg-white dark:bg-slate-900 p-3">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Recolor</label>
               <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border-2 border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
                 <option value="tint">Tint</option>
