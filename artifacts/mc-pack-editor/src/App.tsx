@@ -848,16 +848,33 @@ function FolderSidebar({
 // ─── Texture Card ──────────────────────────────────────────────────────────────
 
 function CroppedTexturePreview({ buffer, path, alt, size = TEXTURE_THUMBNAIL_SIZE }: { buffer: ArrayBuffer; path: string; alt: string; size?: number }) {
-  const sourceUrl = useMemo(() => arrayBufferToDataURL(buffer, path), [buffer, path]);
+  const sourceUrl = useMemo(() => {
+    console.log('Creating source URL for:', path, 'Buffer size:', buffer.byteLength);
+    return arrayBufferToDataURL(buffer, path);
+  }, [buffer, path]);
   const [previewUrl, setPreviewUrl] = useState(sourceUrl);
 
   useEffect(() => {
     let cancelled = false;
+    
+    console.log('CroppedTexturePreview for:', path, 'Buffer size:', buffer.byteLength);
+    
+    // Skip cropping for atlas textures that cause blank screen issues
+    const isAtlasTexture = path.toLowerCase().includes('icons.png') || path.toLowerCase().includes('widgets.png');
+    
+    if (isAtlasTexture) {
+      console.log('Skipping cropping for atlas texture:', path);
+      setPreviewUrl(sourceUrl);
+      return;
+    }
+    
     createCroppedTexturePreviewDataUrl(buffer, path, size)
       .then((url) => {
+        console.log('Cropped preview created for:', path);
         if (!cancelled) setPreviewUrl(url);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Failed to create cropped preview for:', path, error);
         if (!cancelled) setPreviewUrl(sourceUrl);
       });
     return () => { cancelled = true; };
@@ -869,6 +886,8 @@ function CroppedTexturePreview({ buffer, path, alt, size = TEXTURE_THUMBNAIL_SIZ
       alt={alt}
       className="texture-preview"
       style={{ width: size, height: size, imageRendering: "pixelated" }}
+      onLoad={() => console.log('Image loaded successfully:', path)}
+      onError={(e) => console.error('Image failed to load:', path, e)}
     />
   );
 }
@@ -2234,8 +2253,10 @@ function TextureEditorModal({
       setIsLoading(false);
     } else {
       // Handle image files
+      console.log('Loading image:', texturePath, 'Buffer size:', buffer.byteLength);
       loadImageDataFromBuffer(buffer, texturePath)
         .then((next) => {
+          console.log('Image loaded successfully:', texturePath, 'Dimensions:', next.width, 'x', next.height);
           if (!cancelled) {
             setImageData(next);
             setHasChanges(false);
@@ -2243,7 +2264,8 @@ function TextureEditorModal({
             setActiveRegionId("whole");
           }
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Failed to load image:', texturePath, error);
           if (!cancelled) setIsLoading(false);
         })
         .finally(() => {
