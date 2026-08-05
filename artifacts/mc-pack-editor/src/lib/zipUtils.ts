@@ -50,10 +50,24 @@ export function getTextureFolder(path: string): string {
   const folderMap: Record<string, string> = {
     sky: "sky",
     skies: "sky",
+    sky_box: "sky",
+    sky0: "sky",
+    sky1: "sky",
+    sky2: "sky",
+    sky3: "sky",
+    sky4: "sky",
+    sky5: "sky",
     clouds: "sky",
+    cloud: "sky",
     end_sky: "sky",
+    end_sky0: "sky",
     moon: "sky",
+    moon_phases: "sky",
     sun: "sky",
+    sunrise: "sky",
+    sunset: "sky",
+    day: "sky",
+    night: "sky",
     particle: "particle",
     particles: "particle",
     entity: "entity",
@@ -101,8 +115,8 @@ export function getTextureFolder(path: string): string {
   if (directTextureMatch) {
     const filename = directTextureMatch[1].toLowerCase();
     if (folderMap[filename]) return folderMap[filename];
-    // Check for sky-related filenames
-    if (filename.includes('sky') || filename.includes('sun') || filename.includes('moon') || filename.includes('cloud')) return "sky";
+    // Check for sky-related filenames with more patterns
+    if (filename.includes('sky') || filename.includes('sun') || filename.includes('moon') || filename.includes('cloud') || filename.includes('day') || filename.includes('night')) return "sky";
     return "environment";
   }
 
