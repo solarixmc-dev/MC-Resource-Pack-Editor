@@ -29,9 +29,17 @@ export async function loadPackFromFile(file: File): Promise<Pack> {
 export function getTextureFolder(path: string): string {
   // Normalize: strip leading slash
   const p = path.replace(/^\//, "");
-
-  // Skip system files
-  if (p.match(/^\./) || p.includes('.ds_store') || p.includes('Thumbs.db')) return "other";
+  
+  // Skip system files - use case-insensitive matching and more patterns
+  const lowerPath = p.toLowerCase();
+  if (lowerPath.match(/^\./) || 
+      lowerPath.includes('.ds_store') || 
+      lowerPath.includes('thumbs.db') ||
+      lowerPath.includes('.git') ||
+      lowerPath.includes('.svn') ||
+      lowerPath.includes('__macosx')) {
+    return "system"; // Use a special folder for system files
+  }
 
   // assets/minecraft/models/block/... -> models
   const modelMatch = p.match(/assets\/\w+\/models\/([^/]+)\//);
@@ -46,28 +54,20 @@ export function getTextureFolder(path: string): string {
   // assets/minecraft/blockstates/... -> blockstates
   if (p.match(/assets\/\w+\/blockstates\//)) return "blockstates";
 
+  // Check for sky-related paths anywhere in the path
+  if (lowerPath.includes('sky') || 
+      lowerPath.includes('sun') || 
+      lowerPath.includes('moon') || 
+      lowerPath.includes('cloud') ||
+      lowerPath.includes('sunrise') ||
+      lowerPath.includes('sunset') ||
+      lowerPath.includes('day') ||
+      lowerPath.includes('night')) {
+    return "sky";
+  }
+
   const knownTextureFolders = new Set(MC_FOLDERS.map((folder) => folder.key));
   const folderMap: Record<string, string> = {
-    sky: "sky",
-    skies: "sky",
-    sky_box: "sky",
-    sky0: "sky",
-    sky1: "sky",
-    sky2: "sky",
-    sky3: "sky",
-    sky4: "sky",
-    sky5: "sky",
-    clouds: "sky",
-    cloud: "sky",
-    end_sky: "sky",
-    end_sky0: "sky",
-    moon: "sky",
-    moon_phases: "sky",
-    sun: "sky",
-    sunrise: "sky",
-    sunset: "sky",
-    day: "sky",
-    night: "sky",
     particle: "particle",
     particles: "particle",
     entity: "entity",
@@ -115,8 +115,7 @@ export function getTextureFolder(path: string): string {
   if (directTextureMatch) {
     const filename = directTextureMatch[1].toLowerCase();
     if (folderMap[filename]) return folderMap[filename];
-    // Check for sky-related filenames with more patterns
-    if (filename.includes('sky') || filename.includes('sun') || filename.includes('moon') || filename.includes('cloud') || filename.includes('day') || filename.includes('night')) return "sky";
+    // Sky detection is now handled at the top of the function
     return "environment";
   }
 
@@ -129,6 +128,9 @@ export function getTexturesForFolder(pack: Pack, folder: string): TextureEntry[]
   pack.files.forEach((_, path) => {
     const f = getTextureFolder(path);
     if (f !== folder) return;
+
+    // Skip system files
+    if (f === "system") return;
 
     // Only include image files and text/json for non-texture folders
     const isImage = /\.(png|jpg|jpeg|gif|tga)$/i.test(path);
@@ -153,7 +155,7 @@ export function getAllFoldersInPacks(packs: Pack[]): Set<string> {
   for (const pack of packs) {
     pack.files.forEach((_, path) => {
       const f = getTextureFolder(path);
-      if (f !== "other") folders.add(f);
+      if (f !== "other" && f !== "system") folders.add(f);
     });
   }
   return folders;
@@ -162,8 +164,11 @@ export function getAllFoldersInPacks(packs: Pack[]): Set<string> {
 export function getAllTexturePathsInFolder(packs: Pack[], folder: string): string[] {
   const paths = new Set<string>();
   for (const pack of packs) {
-    getTexturesForFolder(pack, folder).forEach((e) => {
-      paths.add(e.path);
+    pack.files.forEach((_, path) => {
+      const f = getTextureFolder(path);
+      if (f === folder) {
+        paths.add(path);
+      }
     });
   }
   return Array.from(paths).sort();
