@@ -175,6 +175,7 @@ function PackOrderPanel({
   onVisibilityToggle,
   onViewFiles,
   darkMode,
+  stripColorCodes,
 }: {
   packs: Pack[];
   onReorder: (newOrder: Pack[]) => void;
@@ -183,6 +184,7 @@ function PackOrderPanel({
   onVisibilityToggle: (id: string) => void;
   onViewFiles: (id: string) => void;
   darkMode: boolean;
+  stripColorCodes: (name: string) => string;
 }) {
   const [open, setOpen] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -232,14 +234,12 @@ function PackOrderPanel({
     setOverIndex(null);
   };
 
-  const PRIORITY_LABELS = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
-
   return (
     <div ref={containerRef} className="relative flex flex-col min-w-0">
       {/* Trigger button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer select-none ${darkMode ? "border-slate-600 bg-slate-700 hover:bg-slate-600 text-slate-200" : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700"}`}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer select-none glass ${darkMode ? "glass-dark" : ""}`}
       >
         <span className="text-base">⇅</span>
         <span>Pack Priority</span>
@@ -252,12 +252,12 @@ function PackOrderPanel({
             />
           ))}
         </div>
-        <span className={`text-xs ml-auto ${darkMode ? "text-slate-400" : "text-slate-500"}`}>{open ? "▲" : "▼"}</span>
+        <span className={`text-xs ml-auto`}>{open ? "▲" : "▼"}</span>
       </button>
 
       {/* Dropdown panel */}
       {open && (
-        <div className={`absolute top-full left-0 z-50 mt-1 w-72 border rounded-lg shadow-lg overflow-hidden ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
+        <div className={`absolute top-full left-0 z-50 mt-1 w-60 border rounded-lg shadow-lg overflow-hidden ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
           <div className={`px-3 py-2 border-b flex items-center justify-between ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
             <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
               Auto priority order
@@ -287,26 +287,13 @@ function PackOrderPanel({
                   {/* Drag handle */}
                   <span className={`text-base leading-none flex-shrink-0 ${darkMode ? "text-slate-500" : "text-slate-400"}`}>⋮⋮</span>
 
-                  {/* Priority badge */}
-                  <span
-                    className="text-xs font-bold w-7 text-center flex-shrink-0 rounded py-0.5"
-                    style={{ background: pack.color + "22", color: pack.color }}
-                  >
-                    {PRIORITY_LABELS[i] ?? `${i + 1}th`}
-                  </span>
-
                   {/* Color dot (static) */}
                   <span
                     className="w-3.5 h-3.5 rounded-full flex-shrink-0 border border-white/20"
                     style={{ background: pack.color }}
                   />
                   <span className={`text-sm font-medium flex-1 truncate ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
-                    {pack.name}
-                  </span>
-
-                  {/* File count */}
-                  <span className={`text-xs flex-shrink-0 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-                    {pack.files.size.toLocaleString()} files
+                    {stripColorCodes(pack.name)}
                   </span>
 
                   {/* Visibility toggle */}
@@ -722,24 +709,24 @@ function PackSettings({
         >
           <div className="absolute inset-0 bg-black/50" />
           <div
-            className={`relative z-10 w-full max-w-md rounded-xl border shadow-2xl ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}
+            className={`relative z-10 w-full max-w-md rounded-xl border shadow-2xl ${darkMode ? "glass-extra-dark" : "glass-extra"}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className={`flex items-center justify-between px-4 py-3 border-b ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
+            <div className={`flex items-center justify-between px-4 py-3 border-b`}>
               <div className="flex flex-col">
-                <span className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-800"}`}>Minecraft Format Codes</span>
-                <span className={`text-xs ${darkMode ? "text-blue-400" : "text-blue-600"}`}>Inserting into {activeField === "name" ? "Name" : "Description"}</span>
+                <span className={`text-sm font-semibold`}>Minecraft Format Codes</span>
+                <span className={`text-xs text-blue-400`}>Inserting into {activeField === "name" ? "Name" : "Description"}</span>
               </div>
               <button
                 onClick={() => setColorCodesOpen(false)}
-                className={`p-1.5 rounded-lg transition-colors ${darkMode ? "text-slate-400 hover:text-slate-200 hover:bg-slate-700" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
+                className={`p-1.5 rounded-lg transition-colors hover:bg-white/10`}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
               </button>
             </div>
             <div className="p-4 flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Colors</span>
+                <span className={`text-xs font-semibold uppercase tracking-wider`}>Colors</span>
                 <div className="flex flex-wrap gap-1.5">
                   {MC_COLORS.map(({ code, color, label }) => (
                     <button
@@ -758,13 +745,13 @@ function PackSettings({
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Formatting</span>
+                <span className={`text-xs font-semibold uppercase tracking-wider`}>Formatting</span>
                 <div className="flex flex-wrap gap-1.5">
                   {MC_FORMATS.map(({ code, label, title, style }) => (
                     <button
                       key={code}
                       onMouseDown={(e) => { e.preventDefault(); insertCode(code); }}
-                      className={`px-3 h-8 rounded-lg text-sm transition-colors flex-shrink-0 border ${darkMode ? "bg-slate-700 hover:bg-slate-600 text-slate-200 border-slate-600" : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"}`}
+                      className={`px-3 h-8 rounded-lg text-sm transition-colors flex-shrink-0 border hover:bg-white/10`}
                       style={style}
                       title={title}
                     >
@@ -791,6 +778,7 @@ function FolderSidebar({
   onFolderSource,
   layoutMode,
   darkMode,
+  stripColorCodes,
 }: {
   packs: Pack[];
   selectedFolder: string;
@@ -799,6 +787,7 @@ function FolderSidebar({
   onFolderSource: (folder: string, packId: string | null) => void;
   layoutMode: LayoutMode;
   darkMode: boolean;
+  stripColorCodes: (name: string) => string;
 }) {
   const availableFolders = useMemo(() => getAllFoldersInPacks(packs), [packs]);
 
@@ -813,19 +802,19 @@ function FolderSidebar({
     const active = selectedFolder === key;
 
     return (
-      <div key={key} className={`group rounded-lg border transition-all ${active ? "border-blue-400 bg-blue-500/10" : `${darkMode ? "border-slate-700 hover:border-slate-600 hover:bg-slate-700" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`} ${darkMode ? "bg-slate-800" : "bg-white"}`}>
+      <div key={key} className={`group border transition-all glass ${darkMode ? "glass-dark" : ""} ${active ? "border-blue-400 bg-blue-500/20" : "hover:bg-white/10"} mb-2`}>
         <button
-          className="w-full flex items-center px-3 py-2.5 text-sm text-left rounded-lg"
+          className="w-full flex items-center px-3 py-2.5 text-sm text-left"
           onClick={() => onSelect(key)}
         >
-          <span className={`flex-1 font-medium leading-snug ${active ? "text-blue-500" : darkMode ? "text-slate-200" : "text-slate-700"}`}>
+          <span className={`flex-1 font-medium leading-snug ${active ? "text-blue-400" : ""}`}>
             {label}
           </span>
         </button>
         {packs.length > 1 && (
           <div className="px-3 pb-2 flex items-center gap-1 flex-wrap">
             <button
-              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-blue-100 text-blue-600 font-semibold" : darkMode ? "text-slate-400 hover:text-slate-200 hover:bg-slate-700" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
+              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-blue-500/30 text-blue-300 font-semibold" : "hover:bg-white/10"}`}
               onClick={(e) => { e.stopPropagation(); onFolderSource(key, null); }}
               title="Use highest-priority pack for each file"
             >
@@ -834,12 +823,12 @@ function FolderSidebar({
             {packs.map((p) => (
               <button
                 key={p.id}
-                className={`text-xs px-2 py-0.5 rounded transition-colors ${sourcePackId === p.id ? "font-semibold" : darkMode ? "text-slate-400 hover:text-slate-200 hover:bg-slate-700" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
-                style={sourcePackId === p.id ? { background: p.color + "33", color: p.color } : {}}
+                className={`text-xs px-2 py-0.5 rounded transition-colors ${sourcePackId === p.id ? "font-semibold" : "hover:bg-white/10"}`}
+                style={sourcePackId === p.id ? { background: p.color + "40", color: p.color } : {}}
                 onClick={(e) => { e.stopPropagation(); onFolderSource(key, p.id); }}
-                title={p.name}
+                title={stripColorCodes(p.name)}
               >
-                {p.name}
+                {stripColorCodes(p.name)}
               </button>
             ))}
           </div>
@@ -907,6 +896,7 @@ function TextureCard({
   onToggleRemove,
   layoutMode,
   darkMode,
+  stripColorCodes,
 }: {
   texturePath: string;
   displayName: string;
@@ -921,6 +911,7 @@ function TextureCard({
   onToggleRemove: (path: string) => void;
   layoutMode: LayoutMode;
   darkMode: boolean;
+  stripColorCodes: (name: string) => string;
 }) {
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -971,7 +962,7 @@ function TextureCard({
                     onOverride(texturePath, pack.id);
                   }
                 }}
-                title={packsWithFile.length > 1 ? `Use from: ${pack.name}` : pack.name}
+                title={packsWithFile.length > 1 ? `Use from: ${stripColorCodes(pack.name)}` : stripColorCodes(pack.name)}
               >
                 <CroppedTexturePreview buffer={buf} path={texturePath} alt={displayName} />
                 {packsWithFile.length > 1 && (
@@ -1080,6 +1071,8 @@ function TextureGrid({
   onToggleRemove,
   layoutMode,
   darkMode,
+  stripColorCodes,
+  showJsonFiles,
 }: {
   packs: Pack[];
   folder: string;
@@ -1093,12 +1086,14 @@ function TextureGrid({
   onToggleRemove: (path: string) => void;
   layoutMode: LayoutMode;
   darkMode: boolean;
+  stripColorCodes: (name: string) => string;
+  showJsonFiles: boolean;
 }) {
   const [search, setSearch] = useState("");
 
   const paths = useMemo(
-    () => getAllTexturePathsInFolder(packs, folder),
-    [packs, folder]
+    () => getAllTexturePathsInFolder(packs, folder, showJsonFiles),
+    [packs, folder, showJsonFiles]
   );
 
   const filtered = useMemo(() => {
@@ -1123,7 +1118,7 @@ function TextureGrid({
           placeholder="Search in folder…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 flex-1"
+          className={`px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 flex-1 ${darkMode ? "glass-extra-dark" : "glass-extra"}`}
         />
         <span className="text-xs text-muted-foreground whitespace-nowrap">
           {filtered.length}/{paths.length} files
@@ -1150,6 +1145,7 @@ function TextureGrid({
               onToggleRemove={onToggleRemove}
               layoutMode={layoutMode}
               darkMode={darkMode}
+              stripColorCodes={stripColorCodes}
             />
           );
         })}
@@ -1173,6 +1169,8 @@ function SearchAllResults({
   onToggleRemove,
   layoutMode,
   darkMode,
+  stripColorCodes,
+  showJsonFiles,
 }: {
   query: string;
   packs: Pack[];
@@ -1186,16 +1184,23 @@ function SearchAllResults({
   onToggleRemove: (path: string) => void;
   layoutMode: LayoutMode;
   darkMode: boolean;
+  stripColorCodes: (name: string) => string;
+  showJsonFiles: boolean;
 }) {
   const allPaths = useMemo(() => {
     const set = new Set<string>();
     for (const pack of packs) {
       pack.files.forEach((_, p) => {
-        if (p !== "pack.mcmeta" && p !== "pack.png") set.add(p);
+        if (p !== "pack.mcmeta" && p !== "pack.png") {
+          // Skip JSON/text files unless showJsonFiles is true
+          const isJson = /\.(json|mcmeta|txt)$/i.test(p);
+          if (!showJsonFiles && isJson) return;
+          set.add(p);
+        }
       });
     }
     return [...set].sort();
-  }, [packs]);
+  }, [packs, showJsonFiles]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
@@ -1237,6 +1242,7 @@ function SearchAllResults({
                 onToggleRemove={onToggleRemove}
                 layoutMode={layoutMode}
                 darkMode={darkMode}
+                stripColorCodes={stripColorCodes}
               />
               <span className="text-[10px] text-muted-foreground text-center truncate px-1">{folder}</span>
             </div>
@@ -1258,6 +1264,7 @@ function AtlasPreviewStrip({
   displayName,
   onOverride,
   onAtlasZoom,
+  stripColorCodes,
 }: {
   packsWithFile: Pack[];
   texturePath: string;
@@ -1267,6 +1274,7 @@ function AtlasPreviewStrip({
   displayName: string;
   onOverride: (path: string, packId: string | null) => void;
   onAtlasZoom?: (url: string, displayName: string) => void;
+  stripColorCodes: (name: string) => string;
 }) {
   const stripRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -1334,13 +1342,13 @@ function AtlasPreviewStrip({
                   if (packsWithFile.length <= 1) return;
                   onOverride(texturePath, overridePackId === pack.id ? null : pack.id);
                 }}
-                title={pack.name}
+                title={stripColorCodes(pack.name)}
               >
-                <CroppedTexturePreview buffer={buf} path={texturePath} alt={pack.name} size={160} />
+                <CroppedTexturePreview buffer={buf} path={texturePath} alt={stripColorCodes(pack.name)} size={160} />
               </button>
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: pack.color }} />
-                <span className="max-w-[160px] truncate text-xs text-muted-foreground">{pack.name}</span>
+                <span className="max-w-[160px] truncate text-xs text-muted-foreground">{stripColorCodes(pack.name)}</span>
                 {isSelected && <span className="text-xs font-bold text-primary">✓</span>}
               </div>
             </div>
@@ -1391,6 +1399,7 @@ function TextureLightbox({
   onAtlasZoom,
   onClose,
   darkMode,
+  stripColorCodes,
 }: {
   texturePath: string;
   displayName: string;
@@ -1404,6 +1413,7 @@ function TextureLightbox({
   onAtlasZoom?: (url: string, displayName: string) => void;
   onClose: () => void;
   darkMode: boolean;
+  stripColorCodes: (name: string) => string;
 }) {
   const packsWithFile = packs.filter((p) => p.files.has(texturePath));
   const overridePackId = textureOverrides[texturePath];
@@ -1533,6 +1543,7 @@ function TextureLightbox({
               displayName={displayName}
               onOverride={onOverride}
               onAtlasZoom={onAtlasZoom ? (url) => onAtlasZoom(url, displayName) : undefined}
+              stripColorCodes={stripColorCodes}
             />
 
           {/* Atlas region editor */}
@@ -2584,11 +2595,13 @@ function FileViewerModal({
   onClose,
   onDeleteFile,
   darkMode,
+  stripColorCodes,
 }: {
   pack: Pack;
   onClose: () => void;
   onDeleteFile: (path: string) => void;
   darkMode: boolean;
+  stripColorCodes: (name: string) => string;
 }) {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
@@ -2676,6 +2689,17 @@ function FileViewerModal({
     const fullPath = path ? `${path}/${name}` : name;
     const isExpanded = expandedFolders.has(fullPath);
     
+    // Count files in folder
+    const countFilesInNode = (n: any): number => {
+      if (n.type === 'file') return 1;
+      if (n.type === 'folder' && n.children) {
+        return Object.values(n.children).reduce((sum: number, child: any) => sum + countFilesInNode(child), 0);
+      }
+      return 0;
+    };
+    
+    const fileCount = node.type === 'folder' ? countFilesInNode(node) : 0;
+    
     if (node.type === 'file') {
       return (
         <div 
@@ -2713,7 +2737,7 @@ function FileViewerModal({
           >
             <span>{isExpanded ? '📂' : '📁'}</span>
             <span className="flex-1 truncate text-sm font-medium">{name}</span>
-            <span className="text-xs text-muted-foreground">{childKeys.length} items</span>
+            <span className="text-xs text-muted-foreground">{fileCount} files</span>
           </div>
           {isExpanded && (
             <div>
@@ -2737,7 +2761,7 @@ function FileViewerModal({
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">File Viewer</p>
-            <h3 className="text-lg font-semibold text-foreground">{pack.name}</h3>
+            <h3 className="text-lg font-semibold text-foreground">{stripColorCodes(pack.name)}</h3>
             <p className="text-sm text-muted-foreground">{fileCount.toLocaleString()} files • {formatSize(totalSize)}</p>
           </div>
           <button onClick={onClose} className={`rounded-full border-2 border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground`}>✕</button>
@@ -2750,8 +2774,7 @@ function FileViewerModal({
             placeholder="Search files..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full rounded-lg border-2 border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
-              ${darkMode ? "bg-slate-800 border-slate-700 text-slate-200 placeholder:text-slate-500" : "bg-white border-slate-200 text-slate-700 placeholder:text-slate-400"}`}
+            className={`w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${darkMode ? "glass-extra-dark" : "glass-extra"}`}
           />
         </div>
 
@@ -2783,6 +2806,11 @@ function FileViewerModal({
 // ─── Main App ──────────────────────────────────────────────────────────────────
 
 export default function App() {
+  // Helper function to strip Minecraft color codes
+  const stripColorCodes = (name: string): string => {
+    return name.replace(/§[0-9a-fk-or]/gi, '').replace(/&[0-9a-fk-or]/gi, '');
+  };
+
   const [packs, setPacks] = useState<Pack[]>([]);
   const [selectedFolder, setSelectedFolder] = useState("blocks");
   const [folderSources, setFolderSources] = useState<FolderSources>({});
@@ -2800,6 +2828,7 @@ export default function App() {
   const [atlasZoom, setAtlasZoom] = useState<{ url: string; displayName: string } | null>(null);
   // Settings
   const [texturesPerRow, setTexturesPerRow] = useState(6);
+  const [showJsonFiles, setShowJsonFiles] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === "undefined") return true;
     const saved = window.localStorage.getItem("mc-pack-editor-theme");
@@ -2880,7 +2909,7 @@ export default function App() {
       }
 
       // Use pack name from filename
-      setPackName(topPack.name);
+      setPackName(stripColorCodes(topPack.name));
     } else {
       setPackName(uploadDefaults.name);
       setPackDescription(uploadDefaults.description);
@@ -2946,7 +2975,7 @@ export default function App() {
       }
 
       // Use pack name from filename
-      setPackName(topPack.name);
+      setPackName(stripColorCodes(topPack.name));
     }
   }, [packs, uploadDefaults.copyFromTopPack, uploadDefaults.name, uploadDefaults.description]);
 
@@ -3115,7 +3144,7 @@ export default function App() {
     } catch (e) {
       console.error("Pack analysis failed:", e);
       setAnalysis({
-        packNames: packs.map((pack) => pack.name),
+        packNames: packs.map((pack) => stripColorCodes(pack.name)),
         packCount: packs.length,
         totalFiles: 0,
         totalSizeBytes: 0,
@@ -3204,7 +3233,7 @@ export default function App() {
   return (
     <div className={`flex flex-col h-screen overflow-hidden ${darkMode ? "bg-slate-900 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
       {/* ── Top Navigation Bar ── */}
-      <nav className={`flex-shrink-0 border-b px-6 py-3 ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
+      <nav className={`flex-shrink-0 px-6 py-3 border-b ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`} style={{ position: 'relative', zIndex: 50 }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
@@ -3217,7 +3246,7 @@ export default function App() {
                   ⚙️
                 </button>
                 {settingsMenuOpen && (
-                  <div className={`absolute top-full left-0 mt-2 w-64 rounded-lg shadow-xl border z-50 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
+                  <div className={`absolute top-full left-0 mt-2 w-64 rounded-lg shadow-xl border z-[9999] ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
                     <div className="p-3">
                       <div className="flex items-center justify-between mb-3">
                         <span className={`text-sm font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Settings</span>
@@ -3240,6 +3269,15 @@ export default function App() {
                             <span className={`w-6 text-center text-sm ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{texturesPerRow}</span>
                             <button onClick={() => setTexturesPerRow(Math.min(12, texturesPerRow + 1))} className={`w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}>+</button>
                           </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Show JSON/text files</span>
+                          <button
+                            onClick={() => setShowJsonFiles(!showJsonFiles)}
+                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${showJsonFiles ? "bg-blue-500" : "bg-slate-200"}`}
+                          >
+                            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${showJsonFiles ? "right-0.5" : "left-0.5"}`} />
+                          </button>
                         </div>
                         <div className={`border-t ${darkMode ? "border-slate-700" : "border-slate-200"} pt-3`}>
                           <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Upload defaults</span>
@@ -3317,24 +3355,24 @@ export default function App() {
       {/* ── Main Content Area ── */}
       <div className="flex flex-1 overflow-hidden">
         {/* ── Left Sidebar ── */}
-        <aside className={`flex-shrink-0 w-64 border-r ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
-          <div className={`p-4 border-b ${darkMode ? "border-slate-700" : "border-slate-100"}`}>
-            <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Packs</h2>
+        <aside className={`flex-shrink-0 w-64 border-r overflow-x-hidden overflow-y-auto glass ${darkMode ? "glass-dark" : ""}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderLeft: 'none', zIndex: 10 }}>
+          <div className={`p-4 border-b`}>
+            <h2 className={`text-sm font-semibold mb-3`}>Packs</h2>
             <DropZone onLoad={handlePacksLoaded} darkMode={darkMode} />
           </div>
           
-          <div className={`p-4 border-b ${darkMode ? "border-slate-700" : "border-slate-100"}`}>
+          <div className={`p-4 border-b`}>
             <TextureImportZone onImport={handleTextureImport} darkMode={darkMode} />
           </div>
           
           {packs.length > 0 && (
             <>
-              <div className={`p-4 border-b ${darkMode ? "border-slate-700" : "border-slate-100"}`}>
+              <div className={`p-4 border-b`}>
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className={`text-sm font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Pack Order</h2>
+                  <h2 className={`text-sm font-semibold`}>Pack Order</h2>
                   <button
                     onClick={clearAllPacks}
-                    className={`text-xs px-2 py-1 rounded transition-colors ${darkMode ? "text-red-400 hover:text-red-300 hover:bg-red-950/30" : "text-red-500 hover:text-red-700 hover:bg-red-50"}`}
+                    className={`text-xs px-2 py-1 rounded transition-colors hover:bg-white/10 text-red-400 hover:text-red-300`}
                   >
                     Clear all
                   </button>
@@ -3347,11 +3385,12 @@ export default function App() {
                   onVisibilityToggle={handleVisibilityToggle}
                   onViewFiles={handleViewFiles}
                   darkMode={darkMode}
+                  stripColorCodes={stripColorCodes}
                 />
               </div>
               
-              <div className={`p-4 border-b ${darkMode ? "border-slate-700" : "border-slate-100"}`}>
-                <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Pack Settings</h2>
+              <div className={`p-4 border-b`}>
+                <h2 className={`text-sm font-semibold mb-3`}>Pack Settings</h2>
                 <PackSettings
                   packName={packName}
                   packDescription={packDescription}
@@ -3370,7 +3409,7 @@ export default function App() {
         {/* ── Main Content ── */}
         <main className="flex-1 overflow-hidden flex flex-col">
           {/* Toolbar */}
-          <div className={`flex-shrink-0 border-b px-6 py-3 ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
+          <div className={`flex-shrink-0 px-6 py-3 glass ${darkMode ? "glass-dark" : ""}`} style={{ borderRadius: 0, borderLeft: 'none', borderRight: 'none', borderTop: 'none' }}>
             <div className="flex items-center gap-4">
               <div className="flex-1">
                 <input
@@ -3378,7 +3417,7 @@ export default function App() {
                   placeholder="Search textures..."
                   value={globalSearch}
                   onChange={(e) => setGlobalSearch(e.target.value)}
-                  className={`w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 ${darkMode ? "border-slate-600 bg-slate-700 text-slate-100 placeholder:text-slate-400" : "border-slate-200 bg-white text-slate-700 placeholder:text-slate-400"}`}
+                  className={`w-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 ${darkMode ? "glass-extra-dark" : "glass-extra"}`}
                   disabled={packs.length === 0}
                 />
               </div>
@@ -3396,13 +3435,13 @@ export default function App() {
                       {Object.entries(textureOverrides).map(([path, packId]) => (
                         <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className={`block w-full rounded px-4 py-2 text-left hover:bg-slate-700 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
                           <span className="block truncate">{path.split("/").pop()}</span>
-                          <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Texture override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
+                          <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Texture override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
                         </button>
                       ))}
                       {Object.entries(atlasRegionOverrides).flatMap(([path, regions]) => Object.entries(regions).map(([regionId, packId]) => ({ path, regionId, packId }))).map(({ path, regionId, packId }) => (
                         <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className={`block w-full rounded px-4 py-2 text-left hover:bg-slate-700 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
                           <span className="block truncate">{path.split("/").pop()} · {regionId}</span>
-                          <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Atlas override · {packs.find((pack) => pack.id === packId)?.name ?? "selected pack"}</span>
+                          <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Atlas override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
                         </button>
                       ))}
                     </div>
@@ -3453,6 +3492,8 @@ export default function App() {
                     onToggleRemove={toggleRemovedFile}
                     layoutMode={layoutMode}
                     darkMode={darkMode}
+                    stripColorCodes={stripColorCodes}
+                    showJsonFiles={showJsonFiles}
                   />
                 ) : (
                   <TextureGrid
@@ -3468,6 +3509,8 @@ export default function App() {
                     onToggleRemove={toggleRemovedFile}
                     layoutMode={layoutMode}
                     darkMode={darkMode}
+                    stripColorCodes={stripColorCodes}
+                    showJsonFiles={showJsonFiles}
                   />
                 )}
               </>
@@ -3477,12 +3520,12 @@ export default function App() {
 
         {/* ── Right Sidebar (Folders) ── */}
         {sidebarOpen && packs.length > 0 && (
-          <aside className={`flex-shrink-0 w-64 border-l overflow-y-auto ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
-            <div className={`sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
-              <h2 className={`text-sm font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Folders</h2>
+          <aside className={`flex-shrink-0 w-64 border-l overflow-x-hidden overflow-y-auto glass ${darkMode ? "glass-dark" : ""}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderRight: 'none', zIndex: 10 }}>
+            <div className={`sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b`}>
+              <h2 className={`text-sm font-semibold`}>Folders</h2>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className={`p-1 rounded-lg transition-colors ${darkMode ? "text-slate-400 hover:text-slate-100 hover:bg-slate-700" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
+                className={`p-1 rounded-lg transition-colors hover:bg-white/10`}
                 title="Close folder panel"
               >
                 ✕
@@ -3496,6 +3539,7 @@ export default function App() {
               onFolderSource={handleFolderSource}
               layoutMode={layoutMode}
               darkMode={darkMode}
+              stripColorCodes={stripColorCodes}
             />
           </aside>
         )}
@@ -3532,6 +3576,7 @@ export default function App() {
           onAtlasZoom={(url) => setAtlasZoom({ url, displayName: lightbox.displayName })}
           onClose={() => setLightbox(null)}
           darkMode={darkMode}
+          stripColorCodes={stripColorCodes}
         />
       )}
 
@@ -3573,7 +3618,7 @@ export default function App() {
           pack={fileViewerPack}
           onClose={() => setFileViewerPack(null)}
           onDeleteFile={(filePath) => {
-            if (confirm(`Delete ${filePath} from ${fileViewerPack.name}?`)) {
+            if (confirm(`Delete ${filePath} from ${stripColorCodes(fileViewerPack.name)}?`)) {
               setPacks(prev => {
                 const updated = prev.map(pack => {
                   if (pack.id === fileViewerPack.id) {
@@ -3591,6 +3636,7 @@ export default function App() {
             }
           }}
           darkMode={darkMode}
+          stripColorCodes={stripColorCodes}
         />
       )}
 

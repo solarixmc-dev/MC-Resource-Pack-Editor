@@ -54,18 +54,6 @@ export function getTextureFolder(path: string): string {
   // assets/minecraft/blockstates/... -> blockstates
   if (p.match(/assets\/\w+\/blockstates\//)) return "blockstates";
 
-  // Check for sky-related paths anywhere in the path
-  if (lowerPath.includes('sky') || 
-      lowerPath.includes('sun') || 
-      lowerPath.includes('moon') || 
-      lowerPath.includes('cloud') ||
-      lowerPath.includes('sunrise') ||
-      lowerPath.includes('sunset') ||
-      lowerPath.includes('day') ||
-      lowerPath.includes('night')) {
-    return "sky";
-  }
-
   const knownTextureFolders = new Set(MC_FOLDERS.map((folder) => folder.key));
   const folderMap: Record<string, string> = {
     particle: "particle",
@@ -95,6 +83,17 @@ export function getTextureFolder(path: string): string {
     terrain: "blocks",
     armor: "items",
     misc: "misc",
+    detector: "detector",
+    daylight_detector: "detector",
+    daylight_sensor: "detector",
+    sky: "sky",
+    skies: "sky",
+    clouds: "sky",
+    cloud: "sky",
+    moon: "sky",
+    sun: "sky",
+    end: "sky",
+    environment: "environment",
   };
 
   // Check for texture paths under assets/<namespace>/textures/...
@@ -106,23 +105,73 @@ export function getTextureFolder(path: string): string {
       const firstDir = parts[0];
       if (folderMap[firstDir]) return folderMap[firstDir];
       if (knownTextureFolders.has(firstDir)) return firstDir;
+      
+      // Check filename for item patterns to categorize items regardless of directory
+      const filename = parts[parts.length - 1].toLowerCase();
+      
+      // Check for sky-related filenames - more lenient matching
+      const skyPatterns = [
+        'sky', 'sky0', 'sky1', 'sky2', 'sky3', 'sky4', 'sky5',
+        'end_sky', 'end_sky0', 'moon', 'moon_phases', 'sun',
+        'sunrise', 'sunset', 'cloud', 'clouds'
+      ];
+      for (const pattern of skyPatterns) {
+        if (filename.includes(pattern)) {
+          return "sky";
+        }
+      }
+      
+      const itemPatterns = [
+        'sword', 'axe', 'pickaxe', 'shovel', 'hoe', 'bow', 'crossbow',
+        'trident', 'fishing_rod', 'shears', 'flint_and_steel',
+        'bucket', 'bottle', 'potion', 'splash_potion', 'lingering_potion',
+        'egg', 'snowball', 'ender_pearl', 'ender_eye', 'fire_charge',
+        'armor', 'helmet', 'chestplate', 'leggings', 'boots',
+        'chestplate', 'elytra', 'shield', 'banner',
+        'wheat_seeds', 'carrot', 'potato', 'beetroot_seeds',
+        'melon_seeds', 'pumpkin_seeds', 'sugar_cane', 'cactus',
+        'bamboo', 'kelp', 'seagrass', 'vine', 'lily_pad',
+        'mushroom', 'cocoa_beans', 'nether_wart', 'chorus_fruit',
+        'sweet_berries', 'glow_berries', 'honeycomb',
+        'cake', 'cookie', 'bread', 'apple', 'golden_apple',
+        'enchanted_golden_apple', 'golden_carrot', 'baked_potato',
+        'cookie', 'pumpkin_pie', 'rabbit_stew', 'mushroom_stew',
+        'beetroot_soup', 'suspicious_stew', 'rabbit_foot',
+        'clock', 'compass', 'map', 'filled_map', 'name_tag',
+        'lead', 'barrel', 'smoker', 'blast_furnace', 'campfire',
+        'soul_campfire', 'lantern', 'soul_lantern', 'torch',
+        'book', 'enchanted_book', 'writable_book', 'written_book',
+        'knowledge_book', 'feather', 'ink_sac', 'glow_ink_sac',
+        'string', 'stick', 'blaze_rod', 'bone', 'bone_block',
+        'gunpowder', 'coal', 'charcoal', 'iron_ingot', 'gold_ingot',
+        'diamond', 'emerald', 'netherite_scrap', 'copper_ingot',
+        'netherite_ingot', 'redstone', 'lapis_lazuli', 'amethyst_shard',
+        'quartz', 'nether_quartz', 'prismarine_shard', 'prismarine_crystals',
+        'nautilus_shell', 'scute', 'turtle_shell', 'rabbit_hide',
+        'leather', 'rabbit_foot', 'ghast_tear', 'dragon_breath',
+        'nether_star', 'totem', 'bell', 'saddle', 'carrot_on_a_stick',
+        'warped_fungus_on_a_stick', 'mushroom_on_a_stick',
+        'flint', 'brick', 'nether_brick', 'stone', 'cobblestone',
+        'sand', 'gravel', 'dirt', 'grass', 'farmland', 'dirt_path',
+        'stone_button', 'stone_pressure_plate', 'polished_blackstone_button',
+        'polished_blackstone_pressure_plate'
+      ];
+      
+      // Check if filename matches any item pattern
+      for (const pattern of itemPatterns) {
+        if (filename.includes(pattern)) {
+          return "items";
+        }
+      }
+      
       return firstDir;
     }
-  }
-
-  // Handle files directly in textures directory (like world0.png)
-  const directTextureMatch = p.match(/assets\/\w+\/textures\/([^/]+)\.(png|jpg|jpeg|gif|tga)$/i);
-  if (directTextureMatch) {
-    const filename = directTextureMatch[1].toLowerCase();
-    if (folderMap[filename]) return folderMap[filename];
-    // Sky detection is now handled at the top of the function
-    return "environment";
   }
 
   return "other";
 }
 
-export function getTexturesForFolder(pack: Pack, folder: string): TextureEntry[] {
+export function getTexturesForFolder(pack: Pack, folder: string, showJsonFiles: boolean = false): TextureEntry[] {
   const entries: TextureEntry[] = [];
 
   pack.files.forEach((_, path) => {
@@ -139,6 +188,9 @@ export function getTexturesForFolder(pack: Pack, folder: string): TextureEntry[]
     const isLang = folder === "lang";
 
     if (!isImage && !isJson && !isSounds && !isLang) return;
+
+    // Skip JSON/text files unless showJsonFiles is true (always allow for sounds and lang)
+    if (!showJsonFiles && isJson && !isSounds && !isLang) return;
 
     // Get display name
     const parts = path.split("/");
@@ -161,12 +213,17 @@ export function getAllFoldersInPacks(packs: Pack[]): Set<string> {
   return folders;
 }
 
-export function getAllTexturePathsInFolder(packs: Pack[], folder: string): string[] {
+export function getAllTexturePathsInFolder(packs: Pack[], folder: string, showJsonFiles: boolean = false): string[] {
   const paths = new Set<string>();
   for (const pack of packs) {
     pack.files.forEach((_, path) => {
       const f = getTextureFolder(path);
       if (f === folder) {
+        // Skip JSON/text files unless showJsonFiles is true (always allow for sounds and lang)
+        const isJson = /\.(json|mcmeta|txt)$/i.test(path);
+        const isSounds = folder === "sounds" && /\.ogg$/i.test(path);
+        const isLang = folder === "lang";
+        if (!showJsonFiles && isJson && !isSounds && !isLang) return;
         paths.add(path);
       }
     });

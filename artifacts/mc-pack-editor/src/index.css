@@ -3,6 +3,228 @@
 @tailwind components;
 @tailwind utilities;
 
+/* iOS 26 Glass Theme - Midnight Blue */
+.glass-theme {
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+  --glass-blur: blur(20px);
+  --glass-text: rgba(255, 255, 255, 0.95);
+  --glass-text-secondary: rgba(255, 255, 255, 0.8);
+  --glass-accent: rgba(59, 130, 246, 0.5);
+  --glass-accent-hover: rgba(59, 130, 246, 0.7);
+}
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--glass-text);
+  border-radius: 1.5rem;
+}
+
+.glass.nav {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.glass.toolbar {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.glass.left-sidebar {
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+}
+
+.glass.right-sidebar {
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  border-right: none;
+}
+
+.glass-dark {
+  --glass-bg: rgba(30, 40, 60, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+  --glass-blur: blur(20px);
+  --glass-text: rgba(255, 255, 255, 0.95);
+  --glass-text-secondary: rgba(255, 255, 255, 0.8);
+  --glass-accent: rgba(59, 130, 246, 0.6);
+  --glass-accent-hover: rgba(59, 130, 246, 0.8);
+}
+
+.glass-dark.nav {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.glass-dark.toolbar {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.glass-dark.left-sidebar {
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+}
+
+.glass-dark.right-sidebar {
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  border-right: none;
+}
+
+/* Edge-specific glass modifiers */
+.glass.nav {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.glass-dark.nav {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.glass.toolbar {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.glass-dark.toolbar {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.glass.left-sidebar {
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+}
+
+.glass-dark.left-sidebar {
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+}
+
+.glass.right-sidebar {
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  border-right: none;
+}
+
+.glass-dark.right-sidebar {
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  border-right: none;
+}
+
+/* Remove unused classes */
+.glass.sidebar,
+.glass-dark.sidebar {
+  /* These are replaced by left-sidebar and right-sidebar */
+}
+
+/* Extra glassy variant for search bars */
+.glass-extra {
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+  --glass-blur: blur(30px);
+  --glass-text: rgba(255, 255, 255, 0.95);
+  --glass-text-secondary: rgba(255, 255, 255, 0.85);
+  --glass-accent: rgba(59, 130, 246, 0.5);
+  --glass-accent-hover: rgba(59, 130, 246, 0.7);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--glass-text);
+  border-radius: 2rem;
+}
+
+.glass-extra-dark {
+  --glass-bg: rgba(60, 70, 90, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.35);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+  --glass-blur: blur(30px);
+  --glass-text: rgba(255, 255, 255, 0.95);
+  --glass-text-secondary: rgba(255, 255, 255, 0.85);
+  --glass-accent: rgba(59, 130, 246, 0.6);
+  --glass-accent-hover: rgba(59, 130, 246, 0.8);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--glass-text);
+  border-radius: 2rem;
+}
+
+/* Glass input styling */
+.glass input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.glass-dark input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.glass input {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.glass-dark input {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.glass-extra input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.glass-extra-dark input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.glass-extra input {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.glass-extra-dark input {
+  color: rgba(255, 255, 255, 0.95);
+}
+
 /* LIGHT / DARK MINECRAFT THEME */
 :root {
   --button-outline: rgba(0, 0, 0, 0.08);
