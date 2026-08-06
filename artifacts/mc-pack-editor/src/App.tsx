@@ -239,7 +239,7 @@ function PackOrderPanel({
       {/* Trigger button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer select-none glass ${darkMode ? "glass-dark" : ""}`}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer select-none glass ${darkMode ? "glass-dark" : "glass-light"}`}
       >
         <span className="text-base">⇅</span>
         <span>Pack Priority</span>
@@ -709,7 +709,7 @@ function PackSettings({
         >
           <div className="absolute inset-0 bg-black/50" />
           <div
-            className={`relative z-10 w-full max-w-md rounded-xl border shadow-2xl ${darkMode ? "glass-extra-dark" : "glass-extra"}`}
+            className={`relative z-10 w-full max-w-md rounded-xl border shadow-2xl ${darkMode ? "glass-extra-dark" : "glass-extra-light"}`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className={`flex items-center justify-between px-4 py-3 border-b`}>
@@ -802,7 +802,7 @@ function FolderSidebar({
     const active = selectedFolder === key;
 
     return (
-      <div key={key} className={`group border transition-all glass ${darkMode ? "glass-dark" : ""} ${active ? "border-blue-400 bg-blue-500/20" : "hover:bg-white/10"} mb-2`}>
+      <div key={key} className={`group border transition-all glass ${darkMode ? "glass-dark" : "glass-light"} ${active ? "border-blue-400 bg-blue-500/20" : "hover:bg-white/10"} mb-2`}>
         <button
           className="w-full flex items-center px-3 py-2.5 text-sm text-left"
           onClick={() => onSelect(key)}
@@ -1118,7 +1118,7 @@ function TextureGrid({
           placeholder="Search in folder…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className={`px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 flex-1 ${darkMode ? "glass-extra-dark" : "glass-extra"}`}
+          className={`px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 flex-1 ${darkMode ? "glass-extra-dark" : "glass-extra-light"}`}
         />
         <span className="text-xs text-muted-foreground whitespace-nowrap">
           {filtered.length}/{paths.length} files
@@ -2774,7 +2774,7 @@ function FileViewerModal({
             placeholder="Search files..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${darkMode ? "glass-extra-dark" : "glass-extra"}`}
+            className={`w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${darkMode ? "glass-extra-dark" : "glass-extra-light"}`}
           />
         </div>
 
@@ -2908,8 +2908,8 @@ export default function App() {
         setPackDescription(uploadDefaults.description);
       }
 
-      // Use pack name from filename
-      setPackName(stripColorCodes(topPack.name));
+      // Use pack name from filename (preserve color codes for pack settings)
+      setPackName(topPack.name);
     } else {
       setPackName(uploadDefaults.name);
       setPackDescription(uploadDefaults.description);
@@ -2974,8 +2974,8 @@ export default function App() {
         setPackDescription(uploadDefaults.description);
       }
 
-      // Use pack name from filename
-      setPackName(stripColorCodes(topPack.name));
+      // Use pack name from filename (preserve color codes for pack settings)
+      setPackName(topPack.name);
     }
   }, [packs, uploadDefaults.copyFromTopPack, uploadDefaults.name, uploadDefaults.description]);
 
@@ -3355,7 +3355,7 @@ export default function App() {
       {/* ── Main Content Area ── */}
       <div className="flex flex-1 overflow-hidden">
         {/* ── Left Sidebar ── */}
-        <aside className={`flex-shrink-0 w-64 border-r overflow-x-hidden overflow-y-auto glass ${darkMode ? "glass-dark" : ""}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderLeft: 'none', zIndex: 10 }}>
+        <aside className={`flex-shrink-0 w-64 border-r overflow-x-hidden overflow-y-auto glass ${darkMode ? "glass-dark" : "glass-light"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderLeft: 'none', zIndex: 10 }}>
           <div className={`p-4 border-b`}>
             <h2 className={`text-sm font-semibold mb-3`}>Packs</h2>
             <DropZone onLoad={handlePacksLoaded} darkMode={darkMode} />
@@ -3409,7 +3409,7 @@ export default function App() {
         {/* ── Main Content ── */}
         <main className="flex-1 overflow-hidden flex flex-col">
           {/* Toolbar */}
-          <div className={`flex-shrink-0 px-6 py-3 glass ${darkMode ? "glass-dark" : ""}`} style={{ borderRadius: 0, borderLeft: 'none', borderRight: 'none', borderTop: 'none' }}>
+          <div className={`flex-shrink-0 px-6 py-3 glass ${darkMode ? "glass-dark" : "glass-light"}`} style={{ borderRadius: 0, borderLeft: 'none', borderRight: 'none', borderTop: 'none' }}>
             <div className="flex items-center gap-4">
               <div className="flex-1">
                 <input
@@ -3417,7 +3417,7 @@ export default function App() {
                   placeholder="Search textures..."
                   value={globalSearch}
                   onChange={(e) => setGlobalSearch(e.target.value)}
-                  className={`w-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 ${darkMode ? "glass-extra-dark" : "glass-extra"}`}
+                  className={`w-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 ${darkMode ? "glass-extra-dark" : "glass-extra-light"}`}
                   disabled={packs.length === 0}
                 />
               </div>
@@ -3459,16 +3459,33 @@ export default function App() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-auto p-6">
+          <div className="flex-1 overflow-auto p-8">
             {packs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full">
-                <div className={`text-center max-w-lg rounded-2xl border-2 px-10 py-12 ${darkMode ? "border-slate-700 bg-slate-800/50" : "border-slate-200 bg-white/60"}`}>
-                  <h1 className={`text-3xl font-bold mb-4 tracking-tight ${darkMode ? "text-slate-100" : "text-slate-800"}`}>
+              <div className="flex flex-col items-center justify-center h-full p-4">
+                <div className={`text-center max-w-4xl w-full rounded-3xl border-2 px-12 py-12 glass ${darkMode ? "glass-dark" : "glass-light"}`}>
+                  <h1 className={`text-5xl font-bold mb-6 tracking-tight ${darkMode ? "bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent" : "text-slate-800"}`}>
                     MCTextureLab
                   </h1>
-                  <p className={`text-sm leading-relaxed ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                  <p className={`text-lg leading-relaxed mb-12 ${darkMode ? "text-slate-300" : "text-slate-600"}`}>
                     Upload resource pack ZIP files above, or import individual PNG textures to create custom packs.
                   </p>
+                  <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 text-left mb-12`}>
+                    <div className={`p-6 rounded-xl border ${darkMode ? "bg-slate-700/50 border-slate-600" : "bg-white border-slate-200 shadow-sm"}`}>
+                      <h3 className={`font-semibold mb-2 ${darkMode ? "text-slate-200" : "text-slate-800"}`}>Merge Packs</h3>
+                      <p className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Combine multiple resource packs with smart override management</p>
+                    </div>
+                    <div className={`p-6 rounded-xl border ${darkMode ? "bg-slate-700/50 border-slate-600" : "bg-white border-slate-200 shadow-sm"}`}>
+                      <h3 className={`font-semibold mb-2 ${darkMode ? "text-slate-200" : "text-slate-800"}`}>Search & Edit</h3>
+                      <p className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Search across all textures and edit them with a built-in editor</p>
+                    </div>
+                    <div className={`p-6 rounded-xl border ${darkMode ? "bg-slate-700/50 border-slate-600" : "bg-white border-slate-200 shadow-sm"}`}>
+                      <h3 className={`font-semibold mb-2 ${darkMode ? "text-slate-200" : "text-slate-800"}`}>Export Packs</h3>
+                      <p className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Export your custom pack with all overrides preserved</p>
+                    </div>
+                  </div>
+                  <div className={`flex items-center justify-center gap-2 text-base ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    <span>Drag & drop a ZIP file to get started</span>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -3520,7 +3537,7 @@ export default function App() {
 
         {/* ── Right Sidebar (Folders) ── */}
         {sidebarOpen && packs.length > 0 && (
-          <aside className={`flex-shrink-0 w-64 border-l overflow-x-hidden overflow-y-auto glass ${darkMode ? "glass-dark" : ""}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderRight: 'none', zIndex: 10 }}>
+          <aside className={`flex-shrink-0 w-64 border-l overflow-x-hidden overflow-y-auto glass ${darkMode ? "glass-dark" : "glass-light"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderRight: 'none', zIndex: 10 }}>
             <div className={`sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b`}>
               <h2 className={`text-sm font-semibold`}>Folders</h2>
               <button

@@ -25,6 +25,35 @@
   border-radius: 1.5rem;
 }
 
+/* Light mode glass variant - will be applied when not in dark mode */
+.glass-light {
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(0, 0, 0, 0.15);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  --glass-text: rgba(0, 0, 0, 0.9);
+  --glass-text-secondary: rgba(0, 0, 0, 0.7);
+  --glass-accent: rgba(59, 130, 246, 0.7);
+  --glass-accent-hover: rgba(59, 130, 246, 0.9);
+}
+
+.glass-extra-light {
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+  --glass-blur: blur(30px);
+  --glass-text: rgba(0, 0, 0, 0.9);
+  --glass-text-secondary: rgba(0, 0, 0, 0.75);
+  --glass-accent: rgba(59, 130, 246, 0.7);
+  --glass-accent-hover: rgba(59, 130, 246, 0.9);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--glass-text);
+  border-radius: 2rem;
+}
+
 .glass.nav {
   border-radius: 0;
   border-left: none;
@@ -223,6 +252,22 @@
 
 .glass-extra-dark input {
   color: rgba(255, 255, 255, 0.95);
+}
+
+.glass-extra-light input::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.glass-extra-light input {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.glass-light input::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.glass-light input {
+  color: rgba(0, 0, 0, 0.9);
 }
 
 /* LIGHT / DARK MINECRAFT THEME */
