@@ -234,7 +234,7 @@ function PackOrderPanel({
   };
 
   return (
-    <div ref={containerRef} className="relative flex flex-col min-w-0">
+    <div ref={containerRef} className={`relative flex flex-col min-w-0 ${darkMode ? "dark" : ""}`}>
       {/* Trigger button */}
       <button
         onClick={() => setOpen((v) => !v)}
@@ -633,7 +633,7 @@ function PackSettings({
     <div className="flex items-start gap-3">
       {/* Pack icon */}
       <button
-        className={`w-12 h-12 rounded-lg border flex-shrink-0 overflow-hidden ${darkMode ? "checkered-dark" : "checkered"} transition-colors cursor-pointer mt-5 ${darkMode ? "border-slate-600 hover:border-white" : "border-slate-200 hover:border-black"}`}
+        className={`w-12 h-12 rounded-lg border flex-shrink-0 overflow-hidden checkered transition-colors cursor-pointer mt-5 ${darkMode ? "border-slate-600 hover:border-white" : "border-slate-200 hover:border-black"}`}
         onClick={() => iconRef.current?.click()}
         title="Click to change pack icon"
       >
@@ -950,7 +950,7 @@ function TextureCard({
             return (
               <button
                 key={pack.id}
-                className={`flex-1 flex items-center justify-center p-2 ${darkMode ? "checkered-dark" : "checkered"} min-h-[80px] relative transition-all ${
+                className={`flex-1 flex items-center justify-center p-2 checkered min-h-[80px] relative transition-all ${
                   packsWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
                 } ${isSelected && packsWithFile.length > 1 ? "ring-2 ring-inset ring-black dark:ring-white" : ""}`}
                 onClick={() => {
@@ -1336,7 +1336,7 @@ function AtlasPreviewStrip({
             <div key={pack.id} className="flex w-[184px] flex-shrink-0 flex-col items-center gap-2">
               <button
                 type="button"
-                className={`${darkMode ? "checkered-dark" : "checkered"} rounded-lg p-3 border-2 transition-all ${isSelected ? "border-primary" : "border-transparent hover:border-border"} ${packsWithFile.length > 1 ? "cursor-pointer" : "cursor-default"}`}
+                className={`checkered rounded-lg p-3 border-2 transition-all ${isSelected ? "border-primary" : "border-transparent hover:border-border"} ${packsWithFile.length > 1 ? "cursor-pointer" : "cursor-default"}`}
                 onClick={() => {
                   if (packsWithFile.length <= 1) return;
                   onOverride(texturePath, overridePackId === pack.id ? null : pack.id);
@@ -1936,7 +1936,7 @@ function SettingsModal({
           <div className="flex items-center gap-3">
             <div className="relative flex-shrink-0">
               <button
-                className={`w-14 h-14 rounded border overflow-hidden ${darkMode ? "checkered-dark" : "checkered"} transition-colors cursor-pointer ${darkMode ? "border-slate-600 hover:border-white" : "border-slate-200 hover:border-white"}`}
+                className={`w-14 h-14 rounded border overflow-hidden checkered transition-colors cursor-pointer ${darkMode ? "border-slate-600 hover:border-white" : "border-slate-200 hover:border-white"}`}
                 onClick={() => iconInputRef.current?.click()}
                 title="Click to set pack icon"
               >
@@ -3401,7 +3401,7 @@ export default function App() {
   };
 
   return (
-    <div className={`flex flex-col h-screen overflow-hidden ${darkMode ? "bg-slate-900 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
+    <div className={`flex flex-col h-screen overflow-hidden ${darkMode ? "dark bg-slate-900 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
       {/* ── Top Navigation Bar ── */}
       <nav className={`flex-shrink-0 px-6 py-3 border-b ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`} style={{ position: 'relative', zIndex: 50 }}>
         <div className="flex items-center justify-between">

@@ -274,7 +274,8 @@
   background-color: #f0f0f0;
 }
 
-.checkered-dark {
+/* Dark mode override for checkered pattern when app is in dark mode */
+.dark .checkered {
   background-image:
     linear-gradient(45deg, #333 25%, transparent 25%),
     linear-gradient(-45deg, #333 25%, transparent 25%),
@@ -283,19 +284,6 @@
   background-size: 12px 12px;
   background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
   background-color: #222;
-}
-
-@media (prefers-color-scheme: dark) {
-  .checkered {
-    background-image:
-      linear-gradient(45deg, #333 25%, transparent 25%),
-      linear-gradient(-45deg, #333 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #333 75%),
-      linear-gradient(-45deg, transparent 75%, #333 75%);
-    background-size: 12px 12px;
-    background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
-    background-color: #222;
-  }
 }
 
 .texture-preview {
