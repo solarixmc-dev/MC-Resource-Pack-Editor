@@ -22,7 +22,6 @@ import {
   loadImageDataFromBuffer,
   pickColorAt,
   type EditorTool,
-  type RectRegion,
   type RecolorMode,
 } from "./lib/textureEditor";
 
@@ -63,7 +62,7 @@ function Btn({
     default: "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200",
     ghost: "text-slate-600 hover:text-slate-900 hover:bg-slate-100",
     danger: "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200",
-    primary: "bg-blue-500 text-white hover:bg-blue-600",
+    primary: "bg-black text-white hover:bg-gray-800",
   };
   return (
     <button
@@ -239,7 +238,7 @@ function PackOrderPanel({
       {/* Trigger button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer select-none glass ${darkMode ? "glass-dark" : "glass-light"}`}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer select-none sleek ${darkMode ? "sleek-dark" : "sleek"}`}
       >
         <span className="text-base">⇅</span>
         <span>Pack Priority</span>
@@ -265,7 +264,7 @@ function PackOrderPanel({
             <span className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>drag to reorder</span>
           </div>
           <p className={`px-3 pt-2 pb-1 text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-            When set to <span className="font-medium text-blue-500">auto</span>, the first pack is preferred. Textures missing from it fall through to the next pack.
+            When set to <span className="font-medium text-black dark:text-white">auto</span>, the first pack is preferred. Textures missing from it fall through to the next pack.
           </p>
           <div className="p-2 flex flex-col gap-1">
             {packs.map((pack, i) => {
@@ -280,8 +279,8 @@ function PackOrderPanel({
                   onDrop={(e) => handleDrop(e, i)}
                   onDragEnd={handleDragEnd}
                   className={`flex items-center gap-2 px-2 py-2 rounded border transition-all cursor-grab active:cursor-grabbing select-none
-                    ${isDragging ? "opacity-40 border-blue-500" : darkMode ? "border-transparent hover:border-slate-600 hover:bg-slate-700" : "border-transparent hover:border-slate-200 hover:bg-slate-50"}
-                    ${isOver ? "border-blue-500 bg-blue-500/10" : ""}
+                    ${isDragging ? "opacity-40 border-black dark:border-white" : darkMode ? "border-transparent hover:border-slate-600 hover:bg-slate-700" : "border-transparent hover:border-slate-200 hover:bg-slate-50"}
+                    ${isOver ? "border-black dark:border-white bg-black/5 dark:bg-white/5" : ""}
                   `}
                 >
                   {/* Drag handle */}
@@ -308,7 +307,7 @@ function PackOrderPanel({
                   {/* View Files */}
                   <button
                     onClick={(e) => { e.stopPropagation(); onViewFiles(pack.id); }}
-                    className={`text-sm transition-colors flex-shrink-0 ${darkMode ? "text-slate-400 hover:text-blue-400" : "text-slate-400 hover:text-blue-500"}`}
+                    className={`text-sm transition-colors flex-shrink-0 ${darkMode ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-black"}`}
                     title="View and manage files"
                   >
                     📁
@@ -369,7 +368,7 @@ function DropZone({ onLoad, darkMode }: { onLoad: (packs: Pack[]) => void; darkM
       }}
       onClick={() => inputRef.current?.click()}
       className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-lg p-8 cursor-pointer transition-colors
-        ${dragging ? "border-blue-500 bg-blue-500/10" : darkMode ? "border-slate-600 hover:border-blue-400 hover:bg-slate-700" : "border-slate-300 hover:border-blue-400 hover:bg-slate-50"}`}
+        ${dragging ? "border-black dark:border-white bg-black/5 dark:bg-white/5" : darkMode ? "border-slate-600 hover:border-white hover:bg-slate-700" : "border-slate-300 hover:border-black hover:bg-slate-50"}`}
     >
       <input
         ref={inputRef}
@@ -634,7 +633,7 @@ function PackSettings({
     <div className="flex items-start gap-3">
       {/* Pack icon */}
       <button
-        className={`w-12 h-12 rounded-lg border flex-shrink-0 overflow-hidden checkered transition-colors cursor-pointer mt-5 ${darkMode ? "border-slate-600 hover:border-blue-400" : "border-slate-200 hover:border-blue-400"}`}
+        className={`w-12 h-12 rounded-lg border flex-shrink-0 overflow-hidden ${darkMode ? "checkered-dark" : "checkered"} transition-colors cursor-pointer mt-5 ${darkMode ? "border-slate-600 hover:border-white" : "border-slate-200 hover:border-black"}`}
         onClick={() => iconRef.current?.click()}
         title="Click to change pack icon"
       >
@@ -656,7 +655,7 @@ function PackSettings({
             value={packName}
             onFocus={() => setActiveField("name")}
             onChange={(e) => onNameChange(e.target.value)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+            className={`rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-black dark:focus:border-white w-full ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
             placeholder="My Resource Pack"
           />
           {packName.includes("§") && (
@@ -677,7 +676,7 @@ function PackSettings({
             value={packDescription}
             onFocus={() => setActiveField("desc")}
             onChange={(e) => onDescriptionChange(e.target.value)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+            className={`rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-black dark:focus:border-white w-full ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
             placeholder="A Minecraft resource pack"
           />
           {packDescription.includes("§") && (
@@ -694,7 +693,7 @@ function PackSettings({
             className="flex items-center gap-1.5 text-left"
           >
             <label className={`text-xs font-medium ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Format codes</label>
-            <span className={`text-xs ${darkMode ? "text-blue-400" : "text-blue-600"}`}>
+            <span className={`text-xs ${darkMode ? "text-white" : "text-black"}`}>
               → inserting into <span className="font-semibold">{activeField === "name" ? "Name" : "Description"}</span>
             </span>
           </button>
@@ -709,13 +708,13 @@ function PackSettings({
         >
           <div className="absolute inset-0 bg-black/50" />
           <div
-            className={`relative z-10 w-full max-w-md rounded-xl border shadow-2xl ${darkMode ? "glass-extra-dark" : "glass-extra-light"}`}
+            className={`relative z-10 w-full max-w-md rounded-xl border shadow-2xl ${darkMode ? "sleek-input" : "sleek-input-light"}`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className={`flex items-center justify-between px-4 py-3 border-b`}>
               <div className="flex flex-col">
                 <span className={`text-sm font-semibold`}>Minecraft Format Codes</span>
-                <span className={`text-xs text-blue-400`}>Inserting into {activeField === "name" ? "Name" : "Description"}</span>
+                <span className={`text-xs text-white dark:text-black`}>Inserting into {activeField === "name" ? "Name" : "Description"}</span>
               </div>
               <button
                 onClick={() => setColorCodesOpen(false)}
@@ -802,19 +801,19 @@ function FolderSidebar({
     const active = selectedFolder === key;
 
     return (
-      <div key={key} className={`group border transition-all glass ${darkMode ? "glass-dark" : "glass-light"} ${active ? "border-blue-400 bg-blue-500/20" : "hover:bg-white/10"} mb-2`}>
+      <div key={key} className={`group border transition-all sleek rounded-lg ${darkMode ? "sleek-dark" : "sleek"} ${active ? "border-black dark:border-white bg-black/5 dark:bg-white/5" : darkMode ? "bg-slate-800/50" : "bg-[#f5f0e6]"} mb-2`}>
         <button
-          className="w-full flex items-center px-3 py-2.5 text-sm text-left"
+          className={`w-full flex items-center px-3 py-2.5 text-sm text-left transition-colors rounded-lg ${darkMode ? "hover:bg-slate-700/50" : "hover:bg-[#ebe5d9]"}`}
           onClick={() => onSelect(key)}
         >
-          <span className={`flex-1 font-medium leading-snug ${active ? "text-blue-400" : ""}`}>
+          <span className={`flex-1 font-medium leading-snug ${active ? "text-black dark:text-white" : ""}`}>
             {label}
           </span>
         </button>
         {packs.length > 1 && (
           <div className="px-3 pb-2 flex items-center gap-1 flex-wrap">
             <button
-              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-blue-500/30 text-blue-300 font-semibold" : "hover:bg-white/10"}`}
+              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold" : "hover:bg-white/10"}`}
               onClick={(e) => { e.stopPropagation(); onFolderSource(key, null); }}
               title="Use highest-priority pack for each file"
             >
@@ -937,7 +936,7 @@ function TextureCard({
   const isAtlas = !!getAtlasDefinition(texturePath);
 
   return (
-    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-lg border transition-all min-w-0 ${isRemoved ? (darkMode ? "border-red-500 bg-red-950/30 opacity-70" : "border-red-300 bg-red-50 opacity-70") : `${darkMode ? "border-slate-700 bg-slate-800 hover:border-blue-400" : "border-slate-200 bg-white hover:border-blue-300"} shadow-sm`}`}>
+    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-lg border transition-all min-w-0 ${isRemoved ? (darkMode ? "border-red-500 bg-red-950/30 opacity-70" : "border-red-300 bg-red-50 opacity-70") : `${darkMode ? "border-slate-700 bg-slate-800 hover:border-white" : "border-slate-200 bg-white hover:border-black"} shadow-sm`}`}>
       {/* Texture previews row */}
       {isImg && (
         <div
@@ -951,9 +950,9 @@ function TextureCard({
             return (
               <button
                 key={pack.id}
-                className={`flex-1 flex items-center justify-center p-2 checkered min-h-[80px] relative transition-all ${
+                className={`flex-1 flex items-center justify-center p-2 ${darkMode ? "checkered-dark" : "checkered"} min-h-[80px] relative transition-all ${
                   packsWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
-                } ${isSelected && packsWithFile.length > 1 ? "ring-2 ring-inset ring-blue-500" : ""}`}
+                } ${isSelected && packsWithFile.length > 1 ? "ring-2 ring-inset ring-black dark:ring-white" : ""}`}
                 onClick={() => {
                   if (packsWithFile.length <= 1) return;
                   if (overridePackId === pack.id) {
@@ -986,14 +985,14 @@ function TextureCard({
         >
           <div className="flex items-center gap-1 min-w-0">
             {isAtlas && (
-              <span className={`text-[10px] font-bold flex-shrink-0 ${darkMode ? "text-blue-400" : "text-blue-600"}`} title="Atlas texture — region editor available">ATL</span>
+              <span className={`text-[10px] font-bold flex-shrink-0 ${darkMode ? "text-slate-400" : "text-slate-600"}`} title="Atlas texture — region editor available">ATL</span>
             )}
             <span className={`text-xs truncate flex-1 ${darkMode ? "text-slate-300" : "text-slate-500"}`} title={displayName}>
               {displayName}
             </span>
             {overridePackId && (
               <span
-                className={`text-xs flex-shrink-0 ${darkMode ? "text-blue-400" : "text-blue-600"}`}
+                className={`text-xs flex-shrink-0 ${darkMode ? "text-black dark:text-white400" : "text-black dark:text-white600"}`}
                 onClick={(e) => { e.stopPropagation(); onOverride(texturePath, null); }}
                 title="Clear override"
               >
@@ -1033,7 +1032,7 @@ function TextureCard({
         {packsWithFile.length > 1 && (
           <div className="flex gap-1 flex-wrap">
             <button
-              className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-blue-100 text-blue-600 font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
+              className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
               onClick={() => onOverride(texturePath, null)}
             >
             auto
@@ -1118,7 +1117,7 @@ function TextureGrid({
           placeholder="Search in folder…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className={`px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 flex-1 ${darkMode ? "glass-extra-dark" : "glass-extra-light"}`}
+          className={`px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 flex-1 ${darkMode ? "sleek-input" : "sleek-input-light"}`}
         />
         <span className="text-xs text-muted-foreground whitespace-nowrap">
           {filtered.length}/{paths.length} files
@@ -1337,7 +1336,7 @@ function AtlasPreviewStrip({
             <div key={pack.id} className="flex w-[184px] flex-shrink-0 flex-col items-center gap-2">
               <button
                 type="button"
-                className={`checkered rounded-lg p-3 border-2 transition-all ${isSelected ? "border-primary" : "border-transparent hover:border-border"} ${packsWithFile.length > 1 ? "cursor-pointer" : "cursor-default"}`}
+                className={`${darkMode ? "checkered-dark" : "checkered"} rounded-lg p-3 border-2 transition-all ${isSelected ? "border-primary" : "border-transparent hover:border-border"} ${packsWithFile.length > 1 ? "cursor-pointer" : "cursor-default"}`}
                 onClick={() => {
                   if (packsWithFile.length <= 1) return;
                   onOverride(texturePath, overridePackId === pack.id ? null : pack.id);
@@ -1366,7 +1365,7 @@ function AtlasPreviewStrip({
                 <img
                   src={composedPreviewUrl}
                   alt="Preview of the atlas after region overrides"
-                  className="h-40 w-40 rounded-md border border-border bg-black/50 object-contain"
+                  className={`h-40 w-40 rounded-md border border-border object-contain ${darkMode ? "checkered-dark" : "checkered"}`}
                   style={{ imageRendering: "pixelated" }}
                 />
               </button>
@@ -1523,7 +1522,7 @@ function TextureLightbox({
             <span className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{displayName}</span>
             <span className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>{texturePath}</span>
             {atlasDef && (
-              <span className={`rounded px-2 py-0.5 text-xs font-medium ${darkMode ? "bg-blue-900/50 text-blue-300" : "bg-blue-100 text-blue-600"}`}>Atlas</span>
+              <span className={`rounded px-2 py-0.5 text-xs font-medium ${darkMode ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>Atlas</span>
             )}
             <button
               className={`ml-auto text-lg leading-none ${darkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-400 hover:text-slate-600"}`}
@@ -1568,7 +1567,7 @@ function TextureLightbox({
                       <img
                         src={regionPreviewUrls[previewRegion.id]}
                         alt={previewRegion.label}
-                        className="h-14 w-14 rounded-md border bg-black/50 object-contain"
+                        className={`h-14 w-14 rounded-md border object-contain ${darkMode ? "checkered-dark" : "checkered"}`}
                         style={{ imageRendering: "pixelated" }}
                       />
                     ) : (
@@ -1590,11 +1589,11 @@ function TextureLightbox({
                   return (
                     <div
                       key={region.id}
-                      className={`flex items-center gap-3 px-3 py-2.5 border-l-4 transition-colors ${regionPackId ? "shadow-[inset_0_0_0_1px_rgba(74,222,128,0.35)]" : ""} ${isPreviewedRegion ? (darkMode ? "bg-slate-700/50" : "bg-slate-100") : ""}`}
+                      className={`flex items-center gap-3 px-3 py-2.5 border-l-4 transition-colors ${regionPackId ? "shadow-[inset_0_0_0_1px_rgba(100,100,100,0.2)]" : ""} ${isPreviewedRegion ? (darkMode ? "bg-slate-700/50" : "bg-slate-100") : ""}`}
                       style={{
                         borderLeftColor: regionOverridePack ? regionOverridePack.color : "transparent",
                         background: regionPackId
-                          ? "linear-gradient(135deg, rgba(34,197,94,0.08), rgba(15,23,42,0.02))"
+                          ? "linear-gradient(135deg, rgba(100,100,100,0.05), rgba(15,23,42,0.02))"
                           : undefined,
                       }}
                     >
@@ -1611,8 +1610,8 @@ function TextureLightbox({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className={`text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{region.label}</span>
-                          {regionPackId && <span className="text-[10px] uppercase tracking-[0.2em] text-green-500 font-semibold">override</span>}
-                          {mappedRegions.length > 0 && <span className="text-[10px] uppercase tracking-[0.2em] text-blue-500 font-semibold">→ {mappedRegions.map(r => r.label).join(', ')}</span>}
+                          {regionPackId && <span className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 font-semibold">override</span>}
+                          {mappedRegions.length > 0 && <span className="text-[10px] uppercase tracking-[0.2em] text-black dark:text-white500 font-semibold">→ {mappedRegions.map(r => r.label).join(', ')}</span>}
                         </div>
                         <div className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
                           {region.description} · ({region.x},{region.y}) {region.w}×{region.h}px
@@ -1620,7 +1619,7 @@ function TextureLightbox({
                       </div>
                       <div className="flex gap-1 flex-wrap justify-end">
                         <button
-                          className={`text-xs px-2 py-0.5 rounded transition-colors ${!regionPackId ? (darkMode ? "bg-blue-900/50 text-blue-300 font-semibold" : "bg-blue-100 text-blue-600 font-semibold") : (darkMode ? "text-slate-400 hover:bg-slate-700" : "text-slate-500 hover:bg-slate-100")}`}
+                          className={`text-xs px-2 py-0.5 rounded transition-colors ${!regionPackId ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold" : (darkMode ? "text-slate-400 hover:bg-slate-700" : "text-slate-500 hover:bg-slate-100")}`}
                           onClick={() => {
                             setPreviewRegionId(region.id);
                             onAtlasRegionOverride(texturePath, region.id, null);
@@ -1655,7 +1654,7 @@ function TextureLightbox({
             <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
               <span className="text-xs text-muted-foreground">Whole file:</span>
               <button
-                className={`text-xs px-2 py-0.5 rounded transition-colors ${!overridePackId ? "bg-primary/20 text-primary font-semibold" : "text-muted-foreground hover:bg-accent"}`}
+                className={`text-xs px-2 py-0.5 rounded transition-colors ${!overridePackId ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold" : "text-muted-foreground hover:bg-accent"}`}
                 onClick={() => onOverride(texturePath, null)}
               >
                 auto
@@ -1890,7 +1889,7 @@ function SettingsModal({
               type="number"
               value={texturesPerRow}
               onChange={(e) => onTexturesPerRowChange(clampCols(parseInt(e.target.value) || 6))}
-              className={`w-10 text-center rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+              className={`w-10 text-center rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
               min={1} max={12}
             />
             <button
@@ -1903,7 +1902,7 @@ function SettingsModal({
             <span className={`text-sm flex-1 ${darkMode ? "text-slate-300" : "text-slate-700"}`}>{darkMode ? "Dark mode" : "Light mode"}</span>
             <button
               onClick={() => onDarkModeChange(!darkMode)}
-              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${darkMode ? "bg-blue-500" : "bg-slate-200"}`}
+              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${darkMode ? "bg-black dark:bg-white" : "bg-slate-200"}`}
             >
               <span
                 className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${darkMode ? "right-0.5" : "left-0.5"}`}
@@ -1922,7 +1921,7 @@ function SettingsModal({
             <span className={`text-sm flex-1 ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Copy from top imported pack</span>
             <button
               onClick={() => onCopyFromTopPackChange(!copyFromTopPack)}
-              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${copyFromTopPack ? "bg-blue-500" : "bg-slate-200"}`}
+              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${copyFromTopPack ? "bg-black dark:bg-white" : "bg-slate-200"}`}
             >
               <span
                 className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${copyFromTopPack ? "right-0.5" : "left-0.5"}`}
@@ -1937,7 +1936,7 @@ function SettingsModal({
           <div className="flex items-center gap-3">
             <div className="relative flex-shrink-0">
               <button
-                className={`w-14 h-14 rounded border overflow-hidden checkered transition-colors cursor-pointer ${darkMode ? "border-slate-600 hover:border-blue-400" : "border-slate-200 hover:border-blue-400"}`}
+                className={`w-14 h-14 rounded border overflow-hidden ${darkMode ? "checkered-dark" : "checkered"} transition-colors cursor-pointer ${darkMode ? "border-slate-600 hover:border-white" : "border-slate-200 hover:border-white"}`}
                 onClick={() => iconInputRef.current?.click()}
                 title="Click to set pack icon"
               >
@@ -1969,7 +1968,7 @@ function SettingsModal({
               type="text"
               value={defaultPackName}
               onChange={(e) => onDefaultNameChange(e.target.value)}
-              className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+              className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
               placeholder="My Resource Pack"
             />
           </div>
@@ -1981,7 +1980,7 @@ function SettingsModal({
               type="text"
               value={defaultPackDescription}
               onChange={(e) => onDefaultDescriptionChange(e.target.value)}
-              className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+              className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
               placeholder="A Minecraft resource pack"
             />
           </div>
@@ -1989,7 +1988,7 @@ function SettingsModal({
           {/* Save button */}
           <button
             onClick={onClose}
-            className={`mt-2 w-full py-2.5 rounded-lg text-sm font-semibold transition-colors ${darkMode ? "bg-blue-500 hover:bg-blue-600 text-white shadow-lg" : "bg-blue-500 hover:bg-blue-600 text-white shadow-lg"}`}
+            className={`mt-2 w-full py-2.5 rounded-lg text-sm font-semibold transition-colors ${darkMode ? "bg-black dark:bg-white hover:bg-black dark:bg-white600 text-white shadow-lg" : "bg-black dark:bg-white hover:bg-black dark:bg-white600 text-white shadow-lg"}`}
           >
             Save Settings
           </button>
@@ -2117,10 +2116,102 @@ function rgbToHexColor(red: number, green: number, blue: number): string {
   return `#${channel(red)}${channel(green)}${channel(blue)}`;
 }
 
-function rgbChannelGradient(channel: number, rgb: [number, number, number]): string {
-  if (channel === 0) return `linear-gradient(to right, rgb(0, 0, 0), rgb(255, 0, 0))`;
-  if (channel === 1) return `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 255, 0))`;
-  return `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 0, 255))`;
+
+
+function applyRecolorToPixel(r: number, g: number, b: number, options: { mode: RecolorMode; color: string; intensity: number }): { r: number; g: number; b: number } {
+  const [targetR, targetG, targetB] = hexToRgbColor(options.color);
+  const intensity = options.intensity;
+  
+  switch (options.mode) {
+    case "tint": {
+      return {
+        r: Math.round(r + (targetR - r) * intensity),
+        g: Math.round(g + (targetG - g) * intensity),
+        b: Math.round(b + (targetB - b) * intensity),
+      };
+    }
+    case "colorize": {
+      const avg = (r + g + b) / 3;
+      return {
+        r: Math.round(avg + (targetR - avg) * intensity),
+        g: Math.round(avg + (targetG - avg) * intensity),
+        b: Math.round(avg + (targetB - avg) * intensity),
+      };
+    }
+    case "multiply": {
+      return {
+        r: Math.round(r * (targetR / 255) * (1 + intensity)),
+        g: Math.round(g * (targetG / 255) * (1 + intensity)),
+        b: Math.round(b * (targetB / 255) * (1 + intensity)),
+      };
+    }
+    case "overlay": {
+      const overlay = (base: number, over: number) => {
+        return base < 128 
+          ? Math.round(2 * base * over / 255)
+          : Math.round(255 - 2 * (255 - base) * (255 - over) / 255);
+      };
+      const blendedR = overlay(r, targetR);
+      const blendedG = overlay(g, targetG);
+      const blendedB = overlay(b, targetB);
+      return {
+        r: Math.round(r + (blendedR - r) * intensity),
+        g: Math.round(g + (blendedG - g) * intensity),
+        b: Math.round(b + (blendedB - b) * intensity),
+      };
+    }
+    case "hue-shift": {
+      // Convert to HSL, shift hue, convert back
+      const toHsl = (red: number, green: number, blue: number) => {
+        const r = red / 255, g = green / 255, b = blue / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h = 0, s = 0, l = (max + min) / 2;
+        
+        if (max !== min) {
+          const d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+          }
+        }
+        return { h: h * 360, s, l };
+      };
+      
+      const toRgb = (h: number, s: number, l: number) => {
+        let r, g, b;
+        if (s === 0) {
+          r = g = b = l;
+        } else {
+          const hue2rgb = (p: number, q: number, t: number) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+          };
+          const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+          const p = 2 * l - q;
+          r = hue2rgb(p, q, h / 360 + 1/3);
+          g = hue2rgb(p, q, h / 360);
+          b = hue2rgb(p, q, h / 360 - 1/3);
+        }
+        return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+      };
+      
+      const currentHsl = toHsl(r, g, b);
+      const targetHsl = toHsl(targetR, targetG, targetB);
+      const hueShift = (targetHsl.h - currentHsl.h) * intensity;
+      const newHsl = { h: (currentHsl.h + hueShift + 360) % 360, s: currentHsl.s, l: currentHsl.l };
+      const newRgb = toRgb(newHsl.h, newHsl.s, newHsl.l);
+      
+      return newRgb;
+    }
+    default:
+      return { r, g, b };
+  }
 }
 
 function TextureEditorModal({
@@ -2143,10 +2234,10 @@ function TextureEditorModal({
   const isTextFile = /\.(json|mcmeta|txt|lang)$/i.test(texturePath);
   
   const [tool, setTool] = useState<EditorTool>("pencil");
-  const [color, setColor] = useState("#22c55e");
-  const [hexInput, setHexInput] = useState("#22c55e");
+  const [color, setColor] = useState("#000000");
+  const [hexInput, setHexInput] = useState("#000000");
   const [brushSize, setBrushSize] = useState(1);
-  const [colorInputMode, setColorInputMode] = useState<"hex" | "rgb">("rgb");
+  const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
   const [recolorMode, setRecolorMode] = useState<RecolorMode>("tint");
   const [recolorIntensity, setRecolorIntensity] = useState(0.6);
   const [imageData, setImageData] = useState<ImageData | null>(null);
@@ -2300,8 +2391,8 @@ function TextureEditorModal({
       }
     };
 
-    window.addEventListener("keydown", handleKeyboardShortcut);
-    return () => window.removeEventListener("keydown", handleKeyboardShortcut);
+    window.addEventListener("keydown", handleKeyboardShortcut, { capture: true });
+    return () => window.removeEventListener("keydown", handleKeyboardShortcut, { capture: true });
   }, [undoEdit, redoEdit]);
 
   const canUndo = editHistory.index > 0;
@@ -2311,7 +2402,15 @@ function TextureEditorModal({
   const updateRgbColor = (channel: number, value: number) => {
     const next = [...rgbColor];
     next[channel] = value;
-    setColor(rgbToHexColor(next[0], next[1], next[2]));
+    const newColor = rgbToHexColor(next[0], next[1], next[2]);
+    setColor(newColor);
+    setHexInput(newColor.toUpperCase());
+  };
+  
+  const getRgbGradient = (channel: number, rgb: [number, number, number]) => {
+    if (channel === 0) return `linear-gradient(to right, rgb(0, ${rgb[1]}, ${rgb[2]}), rgb(255, ${rgb[1]}, ${rgb[2]}))`;
+    if (channel === 1) return `linear-gradient(to right, rgb(${rgb[0]}, 0, ${rgb[2]}), rgb(${rgb[0]}, 255, ${rgb[2]}))`;
+    return `linear-gradient(to right, rgb(${rgb[0]}, ${rgb[1]}, 0), rgb(${rgb[0]}, ${rgb[1]}, 255))`;
   };
 
   const handleCanvasPointer = (e: PointerEvent<HTMLCanvasElement>) => {
@@ -2327,6 +2426,36 @@ function TextureEditorModal({
       const colorValue = pickColorAt(imageData, px, py);
       setColor(colorValue);
       setTool("pencil");
+      return;
+    }
+
+    if (tool === "pixel-select") {
+      if (e.type === "pointerdown") {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }
+      
+      if (e.type === "pointerdown" || (e.type === "pointermove" && e.buttons === 1)) {
+        const pixelKey = `${px},${py}`;
+        setSelectedPixels(prev => {
+          const next = new Set(prev);
+          if (e.ctrlKey || e.metaKey) {
+            // Toggle individual pixel
+            if (next.has(pixelKey)) {
+              next.delete(pixelKey);
+            } else {
+              next.add(pixelKey);
+            }
+          } else {
+            // Add pixel to selection
+            next.add(pixelKey);
+          }
+          return next;
+        });
+      }
+      
+      if (e.type === "pointerup") {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
       return;
     }
 
@@ -2347,7 +2476,36 @@ function TextureEditorModal({
 
   const handleApplyRecolor = () => {
     if (!imageData) return;
-    applyImageChange(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }));
+    
+    if (selectedPixels.size > 0) {
+      // Apply recolor only to selected pixels
+      const pixelArray = new Uint8ClampedArray(imageData.data);
+      const width = imageData.width;
+      
+      for (const key of selectedPixels) {
+        const [x, y] = key.split(',').map(Number);
+        const idx = (y * width + x) * 4;
+        const r = pixelArray[idx];
+        const g = pixelArray[idx + 1];
+        const b = pixelArray[idx + 2];
+        
+        // Apply recolor to individual pixel
+        const recolored = applyRecolorToPixel(r, g, b, { mode: recolorMode, color, intensity: recolorIntensity });
+        pixelArray[idx] = recolored.r;
+        pixelArray[idx + 1] = recolored.g;
+        pixelArray[idx + 2] = recolored.b;
+      }
+      
+      applyImageChange(new ImageData(pixelArray, imageData.width, imageData.height));
+      clearPixelSelection();
+    } else {
+      // Apply recolor to entire texture
+      applyImageChange(applyRecolor(imageData, { mode: recolorMode, color, intensity: recolorIntensity }));
+    }
+  };
+  
+  const clearPixelSelection = () => {
+    setSelectedPixels(new Set());
   };
 
   const handleSave = async () => {
@@ -2366,43 +2524,37 @@ function TextureEditorModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-border bg-white dark:bg-slate-950 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 px-4 py-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Texture editor</p>
-            <h3 className="text-lg font-semibold text-foreground">{displayName}</h3>
-            <p className="text-sm text-muted-foreground">{texturePath}</p>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{displayName}</h3>
           </div>
           <div className="flex items-center gap-2">
             {!isTextFile && (
               <>
-                <button type="button" className="rounded-lg border-2 border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={undoEdit} disabled={!canUndo} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
-                <button type="button" className="rounded-lg border-2 border-border bg-secondary px-2.5 py-1.5 text-lg leading-none text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40" onClick={redoEdit} disabled={!canRedo} title="Redo (Ctrl/Cmd+Y)" aria-label="Redo">↷</button>
+                <button type="button" className="rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 text-lg leading-none text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40" onClick={undoEdit} disabled={!canUndo} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
+                <button type="button" className="rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 text-lg leading-none text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40" onClick={redoEdit} disabled={!canRedo} title="Redo (Ctrl/Cmd+Y)" aria-label="Redo">↷</button>
               </>
             )}
-            <button onClick={onClose} className="rounded-full border-2 border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
+            <button onClick={onClose} className="rounded-full border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700">✕</button>
           </div>
         </div>
 
         <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="min-w-0 rounded-[24px] border-2 border-border bg-white dark:bg-slate-900 p-3">
+          <div className="min-w-0 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-3">
             <div className="mb-3 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-foreground">{isTextFile ? "Text Editor" : "Canvas"}</p>
-                <p className="text-xs text-muted-foreground">{isTextFile ? "Edit the text content directly. Changes are saved back to the selected pack on export." : "Paint directly into the texture. The edit is saved back to the selected pack on export."}</p>
-              </div>
               {!isTextFile && atlasDef && (
-                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border-2 border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
+                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1 text-sm text-slate-700 dark:text-slate-200">
                   {regionOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
                 </select>
               )}
             </div>
             <div
               ref={canvasFrameRef}
-              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-2xl border-2 border-border bg-white dark:bg-slate-900 p-3"
+              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-3"
             >
               {isLoading ? (
-                <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">Loading {isTextFile ? "text" : "texture"}…</div>
+                <div className="flex h-80 items-center justify-center text-sm text-slate-500 dark:text-slate-400">Loading {isTextFile ? "text" : "texture"}…</div>
               ) : isTextFile ? (
                 <textarea
                   value={textContent}
@@ -2410,20 +2562,19 @@ function TextureEditorModal({
                     setTextContent(e.target.value);
                     setHasChanges(true);
                   }}
-                  className="w-full h-full rounded-lg border-2 border-border bg-white dark:bg-slate-700 p-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+                  className="w-full h-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 p-3 font-mono text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-slate-600 resize-none"
                   spellCheck={false}
                 />
               ) : canEdit ? (
-                <div className="checkered relative inline-block rounded-lg border-2 border-border p-1 shadow-inner">
+                <div className={`${darkMode ? "checkered-dark" : "checkered"} relative inline-block rounded-lg border border-slate-200 dark:border-slate-600 p-1`}>
                   <canvas
                     ref={canvasRef}
                     className="mx-auto block"
                     style={{
-                      // CSS scaling leaves canvas.width/height (and therefore saved PNG pixels) untouched.
                       width: `${imageData?.width ? imageData.width * canvasScale : 0}px`,
                       height: `${imageData?.height ? imageData.height * canvasScale : 0}px`,
                       imageRendering: "pixelated",
-                      cursor: tool === "eyedropper" ? "crosshair" : "cell",
+                      cursor: tool === "eyedropper" ? "crosshair" : tool === "pixel-select" ? "crosshair" : "cell",
                     }}
                     onPointerDown={handleCanvasPointer}
                     onPointerMove={(e) => {
@@ -2434,7 +2585,7 @@ function TextureEditorModal({
                   />
                   {selectedRegion && (
                     <div
-                      className="pointer-events-none absolute border-2 border-amber-400 bg-amber-300/20 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
+                      className="pointer-events-none absolute border-2 border-amber-400 bg-amber-300/20"
                       style={{
                         left: `${4 + selectedRegion.x * canvasScale}px`,
                         top: `${4 + selectedRegion.y * canvasScale}px`,
@@ -2444,25 +2595,44 @@ function TextureEditorModal({
                       title="Atlas region"
                     />
                   )}
+                  {selectedPixels.size > 0 && (
+                    <div className="pointer-events-none absolute inset-0">
+                      {Array.from(selectedPixels).map(key => {
+                        const [x, y] = key.split(',').map(Number);
+                        return (
+                          <div
+                            key={key}
+                            className="absolute bg-blue-500/50"
+                            style={{
+                              left: `${4 + x * canvasScale}px`,
+                              top: `${4 + y * canvasScale}px`,
+                              width: `${canvasScale}px`,
+                              height: `${canvasScale}px`,
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">This {isTextFile ? "text" : "texture"} could not be loaded for editing.</div>
+                <div className="flex h-80 items-center justify-center text-sm text-slate-500 dark:text-slate-400">This {isTextFile ? "text" : "texture"} could not be loaded for editing.</div>
               )}
             </div>
           </div>
 
           {!isTextFile && (
-            <div className="w-full rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-4 space-y-4">
-              <p className="text-sm font-semibold text-foreground">Tools</p>
+            <div className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-4 space-y-4">
               <div className="flex gap-2">
                 {[
                   { id: "pencil", label: "Brush", icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z" /><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /><path d="M2 2l7.586 7.586" /><circle cx="11" cy="11" r="2" /></svg> },
                   { id: "eraser", label: "Eraser", icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M20 20H7L3 16C2 15 2 13 3 12L13 2L22 11L20 20Z" /><path d="M17 17L7 7" /><path d="M3 16L2 17" /><path d="M20 20L21 21" /></svg> },
                   { id: "eyedropper", label: "Eyedropper", icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M19 12l-7-7-3 3 7 7 3-3z" /><path d="M22 19l-2 2-3-3 2-2 3 3z" /><path d="M2 22l7-7" /><path d="M9 5l3 3" /><circle cx="16" cy="8" r="2" /></svg> },
+                  { id: "pixel-select", label: "Select", icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 9h6v6H9z" /></svg> },
                 ].map((item) => (
-                  <button 
-                    key={item.id} 
-                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border-2 px-3 py-3 text-sm transition-all ${tool === item.id ? "border-slate-400 bg-slate-200 text-black dark:border-slate-600 dark:bg-slate-800 dark:text-white" : "border-border bg-background text-gray-700 dark:text-gray-200 hover:bg-accent"}`} 
+                  <button
+                    key={item.id}
+                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border px-3 py-3 text-sm transition-all ${tool === item.id ? "border-slate-400 bg-slate-200 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100" : "border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
                     onClick={() => setTool(item.id as EditorTool)}
                   >
                     <span className="text-lg flex items-center justify-center">{item.icon}</span>
@@ -2471,97 +2641,77 @@ function TextureEditorModal({
                 ))}
               </div>
 
-            <section className="rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-3">
-              <div className="flex items-center justify-between gap-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Color</label>
-                <div className="flex overflow-hidden rounded-lg border-2 border-border text-[11px] font-semibold uppercase tracking-[0.14em]">
-                  <button
-                    type="button"
-                    className={`px-2.5 py-1 transition-colors ${colorInputMode === "hex" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}
-                    onClick={() => setColorInputMode("hex")}
-                  >
-                    Hex
-                  </button>
-                  <button
-                    type="button"
-                    className={`border-l-2 border-border px-2.5 py-1 transition-colors ${colorInputMode === "rgb" ? "bg-primary/15 text-primary" : "bg-white dark:bg-slate-700 text-muted-foreground hover:text-foreground"}`}
-                    onClick={() => setColorInputMode("rgb")}
-                  >
-                    RGB
-                  </button>
+              {tool === "pixel-select" && selectedPixels.size > 0 && (
+                <button
+                  onClick={clearPixelSelection}
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                >
+                  Clear selection ({selectedPixels.size} pixels)
+                </button>
+              )}
+
+              <div className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 p-3">
+                <div className="flex items-center gap-3 mb-3">
+                  <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-10 w-10 cursor-pointer rounded border border-slate-200 dark:border-slate-600 bg-transparent p-1" aria-label="Color picker" />
+                  <input
+                    type="text"
+                    value={hexInput}
+                    onChange={(e) => { const value = e.target.value; setHexInput(value); if (isValidHexColor(value)) setColor(value); }}
+                    onBlur={() => setHexInput(color.toUpperCase())}
+                    maxLength={7}
+                    spellCheck={false}
+                    className="flex-1 rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-1.5 font-mono text-sm text-slate-900 dark:text-slate-100"
+                    aria-label="Hex color code"
+                  />
+                </div>
+                <div className="space-y-2">
+                  {(["Red", "Green", "Blue"] as const).map((label, index) => (
+                    <div key={label} className="flex items-center gap-2">
+                      <span className="text-xs text-slate-600 dark:text-slate-400 w-3">{label[0]}</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="255"
+                        value={rgbColor[index]}
+                        onChange={(e) => updateRgbColor(index, Number(e.target.value))}
+                        aria-label={`${label} value`}
+                        className="flex-1 h-1 appearance-none cursor-pointer"
+                        style={{ background: getRgbGradient(index, rgbColor) }}
+                      />
+                      <span className="text-xs text-slate-600 dark:text-slate-400 w-6 text-right font-mono">{rgbColor[index]}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="mt-2 flex items-center gap-3">
-                <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-12 w-14 cursor-pointer rounded border-2 border-border bg-transparent p-1" aria-label="Color picker" />
-                {colorInputMode === "hex" ? (
-                  <label className="flex-1 text-xs font-medium text-muted-foreground">
-                    Hex code
-                    <input
-                      type="text"
-                      value={hexInput}
-                      onChange={(e) => { const value = e.target.value; setHexInput(value); if (isValidHexColor(value)) setColor(value); }}
-                      onBlur={() => setHexInput(color.toUpperCase())}
-                      maxLength={7}
-                      spellCheck={false}
-                      className="mt-1 w-full rounded border-2 border-border bg-white dark:bg-slate-700 px-2 py-1.5 font-mono text-sm text-foreground"
-                      aria-label="Hex color code"
-                    />
-                  </label>
-                ) : (
-                  <div className="flex-1 space-y-2">
-                    {(["Red", "Green", "Blue"] as const).map((label, index) => (
-                      <label key={label} className="grid grid-cols-[2.75rem_1fr_2.5rem] items-center gap-2 text-xs text-muted-foreground">
-                        <span>{label}</span>
-                        <input
-                          type="range"
-                          min="0"
-                          max="255"
-                          value={rgbColor[index]}
-                          onChange={(e) => updateRgbColor(index, Number(e.target.value))}
-                          aria-label={`${label} value`}
-                          className="rgb-channel-slider w-full"
-                          style={{ background: rgbChannelGradient(index, rgbColor) }}
-                        />
-                        <span className="rounded bg-white dark:bg-slate-700 px-1.5 py-1 text-right font-mono text-foreground">{rgbColor[index]}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
+
+              {tool !== "pixel-select" && (
+                <div className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 p-3">
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Brush size: {brushSize}px</label>
+                  <input type="range" min="1" max="24" value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="mt-2 w-full" />
+                </div>
+              )}
+
+              <div className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 p-3">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Recolor mode</label>
+                <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-1 text-sm text-slate-900 dark:text-slate-100">
+                  <option value="tint">Tint</option>
+                  <option value="hue-shift">Hue shift</option>
+                  <option value="colorize">Colorize</option>
+                  <option value="multiply">Multiply</option>
+                  <option value="overlay">Overlay</option>
+                </select>
+                <label className="mt-3 text-xs font-medium text-slate-700 dark:text-slate-300">Intensity: {recolorIntensity.toFixed(2)}</label>
+                <input type="range" min="0" max="1" step="0.01" value={recolorIntensity} onChange={(e) => setRecolorIntensity(Number(e.target.value))} className="mt-2 w-full" />
+                <button className="mt-3 w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600" onClick={handleApplyRecolor}>
+                  {selectedPixels.size > 0 ? `Apply to ${selectedPixels.size} pixels` : "Apply to entire texture"}
+                </button>
               </div>
-            </section>
 
-            <div className="rounded-lg border-2 border-border bg-white dark:bg-slate-900 p-3">
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Brush size</label>
-              <input type="range" min="1" max="24" value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="mt-2 w-full" />
-              <p className="mt-1 text-xs text-muted-foreground">Current size: {brushSize}px</p>
+              <div className="flex gap-2">
+                <button className="flex-1 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600" onClick={onClose}>Cancel</button>
+                <button className="flex-1 rounded-lg bg-slate-900 dark:bg-slate-100 px-3 py-2 text-sm font-semibold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200" onClick={handleSave}>Save</button>
+              </div>
             </div>
-
-            <div className="rounded-2xl border-2 border-border bg-white dark:bg-slate-900 p-3">
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Recolor</label>
-              <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border-2 border-border bg-white dark:bg-slate-700 px-2 py-1 text-sm text-foreground">
-                <option value="tint">Tint</option>
-                <option value="hue-shift">Hue shift</option>
-                <option value="colorize">Colorize</option>
-                <option value="multiply">Multiply</option>
-                <option value="overlay">Overlay</option>
-              </select>
-              <input type="range" min="0" max="1" step="0.01" value={recolorIntensity} onChange={(e) => setRecolorIntensity(Number(e.target.value))} className="mt-3 w-full" />
-              <p className="mt-1 text-xs text-muted-foreground">Intensity: {recolorIntensity.toFixed(2)}</p>
-              <button className="mt-3 rounded-xl border-2 border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent" onClick={handleApplyRecolor}>
-                Apply recolor to entire texture
-              </button>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between rounded-2xl border-2 border-border bg-white dark:bg-slate-900 px-3 py-2 text-sm text-muted-foreground">
-              <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
-              <span>{selectedRegion ? `Target: ${selectedRegion.label}` : "Target: whole texture"}</span>
-            </div>
-
-            <div className="mt-4 flex gap-2">
-              <button className="flex-1 rounded-xl border-2 border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground hover:bg-accent" onClick={onClose}>Cancel</button>
-              <button className="flex-1 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90" onClick={handleSave}>Save</button>
-            </div>
-          </div>
           )}
 
           {isTextFile && (
@@ -2774,7 +2924,7 @@ function FileViewerModal({
             placeholder="Search files..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${darkMode ? "glass-extra-dark" : "glass-extra-light"}`}
+            className={`w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${darkMode ? "sleek-input" : "sleek-input-light"}`}
           />
         </div>
 
@@ -2829,6 +2979,11 @@ export default function App() {
   // Settings
   const [texturesPerRow, setTexturesPerRow] = useState(6);
   const [showJsonFiles, setShowJsonFiles] = useState(false);
+  const [selectedFont, setSelectedFont] = useState(() => {
+    if (typeof window === "undefined") return "montserrat";
+    const saved = window.localStorage.getItem("mc-pack-editor-font");
+    return saved || "montserrat";
+  });
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === "undefined") return true;
     const saved = window.localStorage.getItem("mc-pack-editor-theme");
@@ -2978,6 +3133,21 @@ export default function App() {
       setPackName(topPack.name);
     }
   }, [packs, uploadDefaults.copyFromTopPack, uploadDefaults.name, uploadDefaults.description]);
+
+  // Save font preference to localStorage
+  useEffect(() => {
+    window.localStorage.setItem("mc-pack-editor-font", selectedFont);
+  }, [selectedFont]);
+
+  // Apply font to document
+  useEffect(() => {
+    const fontMap: Record<string, string> = {
+      "montserrat": "'Montserrat', sans-serif",
+      "quicksand": "'Quicksand', sans-serif",
+      "jetbrains-mono": "'JetBrains Mono', monospace",
+    };
+    document.body.style.fontFamily = fontMap[selectedFont] || fontMap["montserrat"];
+  }, [selectedFont]);
 
   const removePack = useCallback((id: string) => {
     setPacks((prev) => prev.filter((p) => p.id !== id));
@@ -3257,7 +3427,7 @@ export default function App() {
                           <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>{darkMode ? "Dark mode" : "Light mode"}</span>
                           <button
                             onClick={() => setDarkMode(!darkMode)}
-                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${darkMode ? "bg-blue-500" : "bg-slate-200"}`}
+                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${darkMode ? "bg-black dark:bg-white" : "bg-slate-200"}`}
                           >
                             <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${darkMode ? "right-0.5" : "left-0.5"}`} />
                           </button>
@@ -3274,10 +3444,22 @@ export default function App() {
                           <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Show JSON/text files</span>
                           <button
                             onClick={() => setShowJsonFiles(!showJsonFiles)}
-                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${showJsonFiles ? "bg-blue-500" : "bg-slate-200"}`}
+                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${showJsonFiles ? "bg-black dark:bg-white" : "bg-slate-200"}`}
                           >
                             <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${showJsonFiles ? "right-0.5" : "left-0.5"}`} />
                           </button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Font</span>
+                          <select
+                            value={selectedFont}
+                            onChange={(e) => setSelectedFont(e.target.value)}
+                            className={`px-2 py-1 text-sm rounded border ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+                          >
+                            <option value="montserrat">Montserrat</option>
+                            <option value="quicksand">Quicksand</option>
+                            <option value="jetbrains-mono">JetBrains Mono</option>
+                          </select>
                         </div>
                         <div className={`border-t ${darkMode ? "border-slate-700" : "border-slate-200"} pt-3`}>
                           <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Upload defaults</span>
@@ -3286,7 +3468,7 @@ export default function App() {
                           <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Copy from top pack</span>
                           <button
                             onClick={() => setUploadDefaults((prev) => ({ ...prev, copyFromTopPack: !prev.copyFromTopPack }))}
-                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${uploadDefaults.copyFromTopPack ? "bg-blue-500" : "bg-slate-200"}`}
+                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${uploadDefaults.copyFromTopPack ? "bg-black dark:bg-white" : "bg-slate-200"}`}
                           >
                             <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${uploadDefaults.copyFromTopPack ? "right-0.5" : "left-0.5"}`} />
                           </button>
@@ -3297,7 +3479,7 @@ export default function App() {
                             type="text"
                             value={uploadDefaults.name}
                             onChange={(e) => setUploadDefaults((prev) => ({ ...prev, name: e.target.value }))}
-                            className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+                            className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
                             placeholder="My Resource Pack"
                           />
                         </div>
@@ -3307,7 +3489,7 @@ export default function App() {
                             type="text"
                             value={uploadDefaults.description}
                             onChange={(e) => setUploadDefaults((prev) => ({ ...prev, description: e.target.value }))}
-                            className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+                            className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
                             placeholder="A Minecraft resource pack"
                           />
                         </div>
@@ -3342,7 +3524,7 @@ export default function App() {
                 <button
                   onClick={handleExport}
                   disabled={exporting}
-                  className="px-6 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-2xl transition-colors disabled:opacity-50"
+                  className="px-6 py-2 text-sm font-medium text-white bg-black dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 hover:scale-105 hover:shadow-lg transition-all duration-200 rounded-2xl disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
                 >
                   {exporting ? "Exporting…" : "Export"}
                 </button>
@@ -3355,7 +3537,7 @@ export default function App() {
       {/* ── Main Content Area ── */}
       <div className="flex flex-1 overflow-hidden">
         {/* ── Left Sidebar ── */}
-        <aside className={`flex-shrink-0 w-64 border-r overflow-x-hidden overflow-y-auto glass ${darkMode ? "glass-dark" : "glass-light"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderLeft: 'none', zIndex: 10 }}>
+        <aside className={`flex-shrink-0 w-64 border-r overflow-x-hidden overflow-y-auto sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderLeft: 'none', zIndex: 10 }}>
           <div className={`p-4 border-b`}>
             <h2 className={`text-sm font-semibold mb-3`}>Packs</h2>
             <DropZone onLoad={handlePacksLoaded} darkMode={darkMode} />
@@ -3409,51 +3591,56 @@ export default function App() {
         {/* ── Main Content ── */}
         <main className="flex-1 overflow-hidden flex flex-col">
           {/* Toolbar */}
-          <div className={`flex-shrink-0 px-6 py-3 glass ${darkMode ? "glass-dark" : "glass-light"}`} style={{ borderRadius: 0, borderLeft: 'none', borderRight: 'none', borderTop: 'none' }}>
+          <div className={`flex-shrink-0 px-6 py-3 sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderLeft: 'none', borderRight: 'none', borderTop: 'none' }}>
             <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="Search textures..."
-                  value={globalSearch}
-                  onChange={(e) => setGlobalSearch(e.target.value)}
-                  className={`w-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-50 ${darkMode ? "glass-extra-dark" : "glass-extra-light"}`}
-                  disabled={packs.length === 0}
-                />
-              </div>
+              {packs.length > 0 && (
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search textures..."
+                    value={globalSearch}
+                    onChange={(e) => setGlobalSearch(e.target.value)}
+                    className={`w-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 disabled:opacity-50 ${darkMode ? "sleek-input" : "sleek-input-light"}`}
+                  />
+                </div>
+              )}
               <div className="flex items-center gap-2">
-                {totalOverrideCount > 0 && (
-                  <details className="group relative">
-                    <summary className="cursor-pointer list-none flex items-center gap-1 hover:text-foreground">
-                      <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-600"}`}>🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
-                      {atlasRegionOverrideCount > 0 && (
-                        <span className="text-[10px]">({textureOverrideCount} texture, {atlasRegionOverrideCount} atlas)</span>
-                      )}
-                      <span className="inline-block transition-transform group-open:rotate-180">⌄</span>
-                    </summary>
-                    <div className={`absolute right-0 top-full z-[100] mt-1 max-h-36 w-[400px] overflow-y-auto rounded-lg border p-3 pb-4 shadow-xl ${darkMode ? "border-slate-600 bg-slate-800" : "border-slate-200 bg-white"}`}>
-                      {Object.entries(textureOverrides).map(([path, packId]) => (
-                        <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className={`block w-full rounded px-4 py-2 text-left hover:bg-slate-700 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
-                          <span className="block truncate">{path.split("/").pop()}</span>
-                          <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Texture override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
-                        </button>
-                      ))}
-                      {Object.entries(atlasRegionOverrides).flatMap(([path, regions]) => Object.entries(regions).map(([regionId, packId]) => ({ path, regionId, packId }))).map(({ path, regionId, packId }) => (
-                        <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className={`block w-full rounded px-4 py-2 text-left hover:bg-slate-700 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
-                          <span className="block truncate">{path.split("/").pop()} · {regionId}</span>
-                          <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Atlas override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </details>
+                {packs.length > 0 && (
+                  <>
+                    {totalOverrideCount > 0 && (
+                      <details className="group relative">
+                        <summary className="cursor-pointer list-none flex items-center gap-1 hover:text-foreground">
+                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-600"}`}>🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
+                          {atlasRegionOverrideCount > 0 && (
+                            <span className="text-[10px]">({textureOverrideCount} texture, {atlasRegionOverrideCount} atlas)</span>
+                          )}
+                          <span className="inline-block transition-transform group-open:rotate-180">⌄</span>
+                        </summary>
+                        <div className={`absolute right-0 top-full z-[1000] mt-1 max-h-36 w-[400px] overflow-y-auto rounded-lg border p-3 pb-4 shadow-xl ${darkMode ? "border-slate-600 bg-slate-800" : "border-slate-200 bg-white"}`}>
+                          {Object.entries(textureOverrides).map(([path, packId]) => (
+                            <button key={path} type="button" onClick={() => jumpToOverriddenTexture(path)} className={`block w-full rounded px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-700/30 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+                              <span className="block truncate">{path.split("/").pop()}</span>
+                              <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Texture override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
+                            </button>
+                          ))}
+                          {Object.entries(atlasRegionOverrides).flatMap(([path, regions]) => Object.entries(regions).map(([regionId, packId]) => ({ path, regionId, packId }))).map(({ path, regionId, packId }) => (
+                            <button key={`${path}-${regionId}`} type="button" onClick={() => jumpToOverriddenTexture(path)} className={`block w-full rounded px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-700/30 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+                              <span className="block truncate">{path.split("/").pop()} · {regionId}</span>
+                              <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Atlas override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </details>
+                    )}
+                    <button
+                      onClick={() => setSidebarOpen(!sidebarOpen)}
+                      className={`px-3 py-2 text-sm rounded-lg transition-colors ${darkMode ? "text-slate-300 hover:text-slate-100 hover:bg-slate-700" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"} ${sidebarOpen && packs.length > 0 ? "bg-black dark:bg-white/15 text-black dark:text-white500" : ""}`}
+                      title="Toggle folder panel"
+                    >
+                      ☰
+                    </button>
+                  </>
                 )}
-                <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${darkMode ? "text-slate-300 hover:text-slate-100 hover:bg-slate-700" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"} ${sidebarOpen && packs.length > 0 ? "bg-blue-500/15 text-blue-500" : ""}`}
-                  title="Toggle folder panel"
-                >
-                  ☰
-                </button>
               </div>
             </div>
           </div>
@@ -3462,8 +3649,8 @@ export default function App() {
           <div className="flex-1 overflow-auto p-8">
             {packs.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full p-4">
-                <div className={`text-center max-w-4xl w-full rounded-3xl border-2 px-12 py-12 glass ${darkMode ? "glass-dark" : "glass-light"}`}>
-                  <h1 className={`text-5xl font-bold mb-6 tracking-tight ${darkMode ? "bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent" : "text-slate-800"}`}>
+                <div className={`text-center max-w-4xl w-full rounded-3xl border-2 px-12 py-12 sleek ${darkMode ? "sleek-dark" : "sleek"}`}>
+                  <h1 className={`text-5xl font-bold mb-6 tracking-tight ${darkMode ? "text-white" : "text-slate-800"}`}>
                     MCTextureLab
                   </h1>
                   <p className={`text-lg leading-relaxed mb-12 ${darkMode ? "text-slate-300" : "text-slate-600"}`}>
@@ -3537,8 +3724,8 @@ export default function App() {
 
         {/* ── Right Sidebar (Folders) ── */}
         {sidebarOpen && packs.length > 0 && (
-          <aside className={`flex-shrink-0 w-64 border-l overflow-x-hidden overflow-y-auto glass ${darkMode ? "glass-dark" : "glass-light"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderRight: 'none', zIndex: 10 }}>
-            <div className={`sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b`}>
+          <aside className={`flex-shrink-0 w-64 border-l overflow-x-hidden overflow-y-auto sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderRight: 'none', zIndex: 10 }}>
+            <div className={`flex items-center justify-between px-4 py-3 border-b`}>
               <h2 className={`text-sm font-semibold`}>Folders</h2>
               <button
                 onClick={() => setSidebarOpen(false)}

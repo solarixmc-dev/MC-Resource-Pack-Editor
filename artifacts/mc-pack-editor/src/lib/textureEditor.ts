@@ -1,4 +1,4 @@
-export type EditorTool = "pencil" | "eraser" | "eyedropper";
+export type EditorTool = "pencil" | "eraser" | "eyedropper" | "pixel-select";
 export type RecolorMode = "tint" | "hue-shift" | "colorize" | "multiply" | "overlay";
 
 export interface RectRegion {
