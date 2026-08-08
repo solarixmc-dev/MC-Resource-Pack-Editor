@@ -1,25 +1,41 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .pin { fill: #000; }
+      .outer { fill: #FFF; }
+      .inner { fill: #222; }
+      .center-stroke { stroke: #000; }
+      .center-fill { fill: #000; }
+    }
+    @media (prefers-color-scheme: light) {
+      .pin { fill: #FFF; }
+      .outer { fill: #000; }
+      .inner { fill: #0D1117; }
+      .center-stroke { stroke: #FFF; }
+      .center-fill { fill: #FFF; }
+    }
+  </style>
   <!-- Top pins -->
-  <rect x="58" y="8" width="14" height="28" rx="6" fill="#FFF"/>
-  <rect x="82" y="8" width="14" height="28" rx="6" fill="#FFF"/>
-  <rect x="106" y="8" width="14" height="28" rx="6" fill="#FFF"/>
+  <rect class="pin" x="58" y="12" width="14" height="24" rx="6"/>
+  <rect class="pin" x="82" y="12" width="14" height="24" rx="6"/>
+  <rect class="pin" x="106" y="12" width="14" height="24" rx="6"/>
   <!-- Right pins -->
-  <rect x="148" y="58" width="28" height="14" rx="6" fill="#FFF"/>
-  <rect x="148" y="82" width="28" height="14" rx="6" fill="#FFF"/>
-  <rect x="148" y="106" width="28" height="14" rx="6" fill="#FFF"/>
+  <rect class="pin" x="144" y="58" width="24" height="14" rx="6"/>
+  <rect class="pin" x="144" y="82" width="24" height="14" rx="6"/>
+  <rect class="pin" x="144" y="106" width="24" height="14" rx="6"/>
   <!-- Bottom pins -->
-  <rect x="58" y="148" width="14" height="28" rx="6" fill="#FFF"/>
-  <rect x="82" y="148" width="14" height="28" rx="6" fill="#FFF"/>
-  <rect x="106" y="148" width="14" height="28" rx="6" fill="#FFF"/>
+  <rect class="pin" x="58" y="144" width="14" height="24" rx="6"/>
+  <rect class="pin" x="82" y="144" width="14" height="24" rx="6"/>
+  <rect class="pin" x="106" y="144" width="14" height="24" rx="6"/>
   <!-- Left pins -->
-  <rect x="8" y="58" width="28" height="14" rx="6" fill="#FFF"/>
-  <rect x="8" y="82" width="28" height="14" rx="6" fill="#FFF"/>
-  <rect x="8" y="106" width="28" height="14" rx="6" fill="#FFF"/>
+  <rect class="pin" x="12" y="58" width="24" height="14" rx="6"/>
+  <rect class="pin" x="12" y="82" width="24" height="14" rx="6"/>
+  <rect class="pin" x="12" y="106" width="24" height="14" rx="6"/>
   <!-- Outer square -->
-  <rect x="36" y="36" width="108" height="108" rx="14" fill="#000"/>
+  <rect class="outer" x="36" y="36" width="108" height="108" rx="14"/>
   <!-- Inner chip face -->
-  <rect x="48" y="48" width="84" height="84" rx="12" fill="#0D1117"/>
+  <rect class="inner" x="48" y="48" width="84" height="84" rx="12"/>
   <!-- Center node -->
-  <rect x="66" y="66" width="48" height="48" rx="10" fill="none" stroke="#FFF" stroke-width="8"/>
-  <rect x="78" y="78" width="24" height="24" rx="6" fill="#FFF"/>
+  <rect class="center-stroke" x="66" y="66" width="48" height="48" rx="10" fill="none" stroke-width="8"/>
+  <rect class="center-fill" x="78" y="78" width="24" height="24" rx="6"/>
 </svg>

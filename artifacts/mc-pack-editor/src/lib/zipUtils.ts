@@ -32,12 +32,13 @@ export function getTextureFolder(path: string): string {
   
   // Skip system files - use case-insensitive matching and more patterns
   const lowerPath = p.toLowerCase();
-  if (lowerPath.match(/^\./) || 
-      lowerPath.includes('.ds_store') || 
+  if (lowerPath.match(/^\./) ||
+      lowerPath.includes('.ds_store') ||
       lowerPath.includes('thumbs.db') ||
       lowerPath.includes('.git') ||
       lowerPath.includes('.svn') ||
-      lowerPath.includes('__macosx')) {
+      lowerPath.includes('__macosx') ||
+      lowerPath.endsWith('.zip')) {
     return "system"; // Use a special folder for system files
   }
 
@@ -220,7 +221,7 @@ export function getAllTexturePathsInFolder(packs: Pack[], folder: string, showJs
       const f = getTextureFolder(path);
       if (f === folder) {
         // Skip JSON/text files unless showJsonFiles is true (always allow for sounds and lang)
-        const isJson = /\.(json|mcmeta|txt)$/i.test(path);
+        const isJson = /\.(json|mcmeta|txt|properties|lang|yml|yaml|toml|cfg|conf|ini)$/i.test(path);
         const isSounds = folder === "sounds" && /\.ogg$/i.test(path);
         const isLang = folder === "lang";
         if (!showJsonFiles && isJson && !isSounds && !isLang) return;
@@ -252,6 +253,7 @@ export function arrayBufferToDataURL(buffer: ArrayBuffer, path: string): string 
 }
 
 export function isImagePath(path: string): boolean {
+  if (path.toLowerCase().endsWith('.zip')) return false;
   return /\.(png|jpg|jpeg|gif)$/i.test(path);
 }
 
@@ -500,6 +502,18 @@ export async function exportMergedPack(
   for (const path of allPaths) {
     if (path === "pack.mcmeta" || path === "pack.png") continue;
     if (removedFiles[path]) continue;
+    // Skip zip files that might be nested in the original packs
+    if (path.toLowerCase().endsWith('.zip')) continue;
+    // Skip system files
+    const lowerPath = path.toLowerCase();
+    if (lowerPath.match(/^\./) ||
+        lowerPath.includes('.ds_store') ||
+        lowerPath.includes('thumbs.db') ||
+        lowerPath.includes('.git') ||
+        lowerPath.includes('.svn') ||
+        lowerPath.includes('__macosx')) {
+      continue;
+    }
 
     const folder = getTextureFolder(path);
 
@@ -519,8 +533,12 @@ export async function exportMergedPack(
     }
 
     if (!sourcePack) {
-      // Use first pack that has this file
-      sourcePack = packs.find((p) => p.files.has(path));
+      // Only include files that exist in the top priority pack
+      // Don't include unique files from lower priority packs
+      if (!packs[0].files.has(path)) {
+        continue;
+      }
+      sourcePack = packs[0];
     }
 
     if (sourcePack) {
