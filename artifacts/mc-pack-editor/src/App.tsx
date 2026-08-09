@@ -792,19 +792,19 @@ function FolderSidebar({
     const active = selectedFolder === key;
 
     return (
-      <div key={key} className={`group border transition-all sleek rounded-lg ${darkMode ? "sleek-dark" : "sleek"} ${active ? "border-black dark:border-white bg-black/5 dark:bg-white/5" : darkMode ? "bg-slate-800/50" : "bg-[#f5f0e6]"} mb-2`}>
+      <div key={key} className={`group border transition-all sleek rounded-lg ${darkMode ? "sleek-dark" : "sleek"} ${active ? "border-black dark:border-black bg-black/5 dark:bg-black/5" : darkMode ? "bg-slate-200/50" : "bg-[#f5f0e6]"} mb-2`}>
         <button
-          className={`w-full flex items-center px-3 py-2.5 text-sm text-left transition-colors rounded-lg ${darkMode ? "hover:bg-slate-700/50" : "hover:bg-[#ebe5d9]"}`}
+          className={`w-full flex items-center px-3 py-2.5 text-sm text-left transition-colors rounded-lg ${darkMode ? "hover:bg-slate-300/50" : "hover:bg-[#ebe5d9]"}`}
           onClick={() => onSelect(key)}
         >
-          <span className={`flex-1 font-medium leading-snug ${active ? "text-black dark:text-white" : ""}`}>
+          <span className={`flex-1 font-medium leading-snug ${active ? "text-black dark:text-black" : ""}`}>
             {label}
           </span>
         </button>
         {packs.length > 1 && (
           <div className="px-3 pb-2 flex items-center gap-1 flex-wrap">
             <button
-              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold" : "hover:bg-white/10"}`}
+              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-slate-200 dark:bg-slate-300 text-slate-700 dark:text-slate-700 font-semibold" : "hover:bg-white/10"}`}
               onClick={(e) => { e.stopPropagation(); onFolderSource(key, null); }}
               title="Use highest-priority pack for each file"
             >
@@ -2963,7 +2963,7 @@ export default function App() {
   const [atlasZoom, setAtlasZoom] = useState<{ url: string; displayName: string } | null>(null);
   // Settings
   const [texturesPerRow, setTexturesPerRow] = useState(6);
-  const [showJsonFiles, setShowJsonFiles] = useState(false);
+  const [showJsonFiles, setShowJsonFiles] = useState(true);
   const [selectedFont, setSelectedFont] = useState(() => {
     if (typeof window === "undefined") return "montserrat";
     const saved = window.localStorage.getItem("mc-pack-editor-font");
@@ -3368,8 +3368,8 @@ export default function App() {
     (sum, regionOverrides) => sum + Object.keys(regionOverrides).length,
     0,
   );
-  const totalOverrideCount = textureOverrideCount + atlasRegionOverrideCount;
   const folderSourceCount = Object.values(folderSources).filter(Boolean).length;
+  const totalOverrideCount = textureOverrideCount + atlasRegionOverrideCount + folderSourceCount;
 
   useEffect(() => {
     if (!jumpTarget) return;
@@ -3383,6 +3383,12 @@ export default function App() {
     setSelectedFolder(getTextureFolder(path));
     setGlobalSearch("");
     setJumpTarget(path);
+  };
+
+  const jumpToOverriddenFolder = (folder: string) => {
+    setSelectedFolder(folder);
+    setGlobalSearch("");
+    setJumpTarget(null);
   };
 
   return (
@@ -3509,7 +3515,7 @@ export default function App() {
                 <button
                   onClick={handleExport}
                   disabled={exporting}
-                  className="px-6 py-2 text-sm font-medium text-white bg-black dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 hover:scale-105 hover:shadow-lg transition-all duration-200 rounded-2xl disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
+                  className="px-6 py-2 text-sm font-medium text-white dark:text-black bg-black dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 hover:scale-105 hover:shadow-lg transition-all duration-200 rounded-2xl disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
                 >
                   {exporting ? "Exporting…" : "Export"}
                 </button>
@@ -3597,8 +3603,8 @@ export default function App() {
                       <details className="group relative">
                         <summary className="cursor-pointer list-none flex items-center gap-1 hover:text-foreground">
                           <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-600"}`}>🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
-                          {atlasRegionOverrideCount > 0 && (
-                            <span className="text-[10px]">({textureOverrideCount} texture, {atlasRegionOverrideCount} atlas)</span>
+                          {(atlasRegionOverrideCount > 0 || folderSourceCount > 0) && (
+                            <span className="text-[10px]">({textureOverrideCount} texture, {atlasRegionOverrideCount} atlas, {folderSourceCount} folder{folderSourceCount !== 1 ? "s" : ""})</span>
                           )}
                           <span className="inline-block transition-transform group-open:rotate-180">⌄</span>
                         </summary>
@@ -3611,7 +3617,7 @@ export default function App() {
                               </button>
                               <button
                                 type="button"
-                                onClick={(e) => { e.stopPropagation(); handleOverride(path, null); }}
+                                onClick={() => handleOverride(path, null)}
                                 className={`p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 ${darkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-700"}`}
                                 title="Revert to auto"
                               >
@@ -3627,7 +3633,23 @@ export default function App() {
                               </button>
                               <button
                                 type="button"
-                                onClick={(e) => { e.stopPropagation(); handleAtlasRegionOverride(path, regionId, null); }}
+                                onClick={() => handleAtlasRegionOverride(path, regionId, null)}
+                                className={`p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 ${darkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-700"}`}
+                                title="Revert to auto"
+                              >
+                                ↺
+                              </button>
+                            </div>
+                          ))}
+                          {Object.entries(folderSources).map(([folder, packId]) => (
+                            <div key={folder} className="flex items-center gap-2">
+                              <button type="button" onClick={() => jumpToOverriddenFolder(folder)} className={`flex-1 rounded px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-700/30 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+                                <span className="block truncate">{folder}</span>
+                                <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Folder override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleFolderSource(folder, null)}
                                 className={`p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 ${darkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-700"}`}
                                 title="Revert to auto"
                               >
@@ -3640,7 +3662,7 @@ export default function App() {
                     )}
                     <button
                       onClick={() => setSidebarOpen(!sidebarOpen)}
-                      className={`px-3 py-2 text-sm rounded-lg transition-colors ${darkMode ? "text-slate-300 hover:text-slate-100 hover:bg-slate-700" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"} ${sidebarOpen && packs.length > 0 ? "bg-black dark:bg-white/15 text-black dark:text-white500" : ""}`}
+                      className={`px-3 py-2 text-sm rounded-lg transition-colors ${darkMode ? "text-slate-800 hover:text-slate-900 hover:bg-slate-300" : "text-black hover:text-black hover:bg-slate-200"} ${sidebarOpen && packs.length > 0 ? "bg-slate-200 dark:bg-slate-300" : ""}`}
                       title="Toggle folder panel"
                     >
                       ☰
