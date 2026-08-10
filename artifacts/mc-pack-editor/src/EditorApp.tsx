@@ -14,6 +14,7 @@ import {
   cropAtlasRegion,
 } from "./lib/zipUtils";
 import { getAtlasDefinition, AtlasDefinition } from "./lib/atlasRegions";
+import { packLibrary } from "./lib/packLibrary";
 import { createCroppedTexturePreviewDataUrl, TEXTURE_THUMBNAIL_SIZE } from "./lib/texturePreview";
 import {
   applyBrush,
@@ -333,28 +334,33 @@ function PackOrderPanel({
 
 // ─── Drop Zone ─────────────────────────────────────────────────────────────────
 
-function DropZone({ onLoad, darkMode }: { onLoad: (packs: Pack[]) => void; darkMode: boolean }) {
+function DropZone({ onLoad, onTextureImport, darkMode }: { onLoad: (packs: Pack[]) => void; onTextureImport: (file: File) => void; darkMode: boolean }) {
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
-      const arr = Array.from(files).filter((f) =>
-        f.name.toLowerCase().endsWith(".zip")
-      );
-      if (!arr.length) return;
+      const arr = Array.from(files);
+      const zipFiles = arr.filter((f) => f.name.toLowerCase().endsWith(".zip"));
+      const pngFiles = arr.filter((f) => f.name.toLowerCase().endsWith(".png"));
+
       setLoading(true);
       try {
-        const loaded = await Promise.all(arr.map(loadPackFromFile));
-        onLoad(loaded);
+        if (zipFiles.length > 0) {
+          const loaded = await Promise.all(zipFiles.map(loadPackFromFile));
+          onLoad(loaded);
+        }
+        if (pngFiles.length > 0) {
+          pngFiles.forEach(onTextureImport);
+        }
       } catch (e) {
         console.error("Failed to load pack:", e);
       } finally {
         setLoading(false);
       }
     },
-    [onLoad]
+    [onLoad, onTextureImport]
   );
 
   return (
@@ -373,7 +379,7 @@ function DropZone({ onLoad, darkMode }: { onLoad: (packs: Pack[]) => void; darkM
       <input
         ref={inputRef}
         type="file"
-        accept=".zip"
+        accept=".zip,.png"
         multiple
         className="hidden"
         onChange={(e) => e.target.files && handleFiles(e.target.files)}
@@ -382,56 +388,13 @@ function DropZone({ onLoad, darkMode }: { onLoad: (packs: Pack[]) => void; darkM
         <path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" />
       </svg>
       {loading ? (
-        <p className={`text-sm animate-pulse ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Loading packs…</p>
+        <p className={`text-sm animate-pulse ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Loading…</p>
       ) : (
         <>
-          <p className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-600"}`}>Drop ZIP files here</p>
+          <p className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-600"}`}>Drop ZIP or PNG files here</p>
           <p className={`text-xs ${darkMode ? "text-slate-500" : "text-slate-400"}`}>or click to browse</p>
         </>
       )}
-    </div>
-  );
-}
-
-// ─── Texture Import Zone ───────────────────────────────────────────────────
-
-function TextureImportZone({ onImport, darkMode }: { onImport: (file: File) => void; darkMode: boolean }) {
-  const [dragging, setDragging] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleFile = useCallback(
-    async (file: File) => {
-      if (!file.name.toLowerCase().endsWith('.png')) return;
-      onImport(file);
-    },
-    [onImport]
-  );
-
-  return (
-    <div
-      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-      onDragLeave={() => setDragging(false)}
-      onDrop={(e) => {
-        e.preventDefault();
-        setDragging(false);
-        const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) handleFile(files[0]);
-      }}
-      onClick={() => inputRef.current?.click()}
-      className={`flex items-center justify-center gap-2 border-2 border-dashed rounded-lg p-2 cursor-pointer transition-colors
-        ${dragging ? "border-green-500 bg-green-500/10" : darkMode ? "border-slate-600 hover:border-green-400 hover:bg-slate-700" : "border-slate-300 hover:border-green-400 hover:bg-slate-50"}`}
-    >
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".png"
-        className="hidden"
-        onChange={(e) => e.target.files && handleFile(e.target.files[0])}
-      />
-      <svg className={`w-5 h-5 ${darkMode ? "text-slate-400" : "text-slate-500"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" />
-      </svg>
-      <p className={`text-xs ${darkMode ? "text-slate-300" : "text-slate-600"}`}>Import PNG texture</p>
     </div>
   );
 }
@@ -882,6 +845,7 @@ function TextureCard({
   onOverride,
   onOpenLightbox,
   onEditTexture,
+  onUpscaleTexture,
   isRemoved,
   onToggleRemove,
   layoutMode,
@@ -1049,6 +1013,7 @@ function TextureGrid({
   onOverride,
   onOpenLightbox,
   onEditTexture,
+  onUpscaleTexture,
   cols,
   removedFiles,
   onToggleRemove,
@@ -2938,9 +2903,9 @@ function FileViewerModal({
   );
 }
 
-// ─── Main App ──────────────────────────────────────────────────────────────────
+// ─── Main Editor App ──────────────────────────────────────────────────────────────
 
-export default function App() {
+export default function EditorApp() {
   // Helper function to strip Minecraft color codes
   const stripColorCodes = (name: string): string => {
     return name.replace(/§[0-9a-fk-or]/gi, '').replace(/&[0-9a-fk-or]/gi, '');
@@ -2955,6 +2920,9 @@ export default function App() {
   const [packName, setPackName] = useState(uploadDefaults.name);
   const [packDescription, setPackDescription] = useState(uploadDefaults.description);
   const [packIcon, setPackIcon] = useState<string | null>(uploadDefaults.icon);
+  const [showOpenFilePrompt, setShowOpenFilePrompt] = useState(false);
+  const [waitingForFileSelection, setWaitingForFileSelection] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [exporting, setExporting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [globalSearch, setGlobalSearch] = useState("");
@@ -3282,8 +3250,18 @@ export default function App() {
       a.download = `${safeFilename}.zip`;
       a.click();
       URL.revokeObjectURL(url);
+
+      // Also save to library
+      const arrayBuffer = await blob.arrayBuffer();
+      try {
+        await packLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
+      } catch (error) {
+        console.error("Failed to save to library:", error);
+        // Don't block export if library save fails
+      }
     } catch (e) {
       console.error("Export failed:", e);
+      alert("Export failed. Please try again.");
     } finally {
       setExporting(false);
     }
@@ -3348,6 +3326,39 @@ export default function App() {
     };
     
     setPacks((prev) => [newPack, ...prev]);
+  }, []);
+
+  const handleCreateFromScratch = useCallback(() => {
+    window.open('https://www.curseforge.com/api/v1/mods/690071/files/4370838/download', '_blank');
+    // Wait a moment for the download to start, then show the confirmation prompt
+    setTimeout(() => setShowOpenFilePrompt(true), 1000);
+  }, []);
+
+  const handleConfirmOpenFile = useCallback(() => {
+    setWaitingForFileSelection(true);
+    // Trigger the file input click
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 100);
+  }, []);
+
+  const handleOpenDownloadedFile = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setWaitingForFileSelection(false);
+      return;
+    }
+    
+    try {
+      const pack = await loadPackFromFile(file);
+      setPacks((prev) => [pack, ...prev]);
+      setShowOpenFilePrompt(false);
+      setWaitingForFileSelection(false);
+    } catch (error) {
+      console.error("Failed to load pack:", error);
+      alert("Failed to load the downloaded file. Please try again.");
+      setWaitingForFileSelection(false);
+    }
   }, []);
 
   const handleVisibilityToggle = useCallback((id: string) => {
@@ -3525,17 +3536,78 @@ export default function App() {
         </div>
       </nav>
 
+      {/* Hidden file input for Create from Scratch */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".zip"
+        className="hidden"
+        onChange={handleOpenDownloadedFile}
+      />
+
+      {/* Open File Prompt */}
+      {showOpenFilePrompt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000]" onClick={() => setShowOpenFilePrompt(false)}>
+          <div className={`max-w-md w-full mx-4 rounded-lg p-6 shadow-xl ${darkMode ? "bg-slate-800" : "bg-white"}`} onClick={(e) => e.stopPropagation()}>
+            <h3 className={`text-lg font-semibold mb-3 ${darkMode ? "text-white" : "text-slate-900"}`}>Select Template Pack</h3>
+            {!waitingForFileSelection ? (
+              <>
+                <p className={`text-sm mb-4 ${darkMode ? "text-slate-300" : "text-slate-600"}`}>
+                  Would you like to select the template pack to load the default textures?
+                </p>
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => setShowOpenFilePrompt(false)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConfirmOpenFile}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? "bg-blue-600 hover:bg-slate-600 text-white" : "bg-blue-600 hover:bg-slate-500 text-white"}`}
+                  >
+                    Select File
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className={`text-sm mb-4 ${darkMode ? "text-slate-300" : "text-slate-600"}`}>
+                  Please select the template pack ZIP file.
+                </p>
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => {
+                      setWaitingForFileSelection(false);
+                      setShowOpenFilePrompt(false);
+                    }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── Main Content Area ── */}
       <div className="flex flex-1 overflow-hidden">
         {/* ── Left Sidebar ── */}
         <aside className={`flex-shrink-0 w-64 border-r overflow-x-hidden overflow-y-auto sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderLeft: 'none', zIndex: 10 }}>
           <div className={`p-4 border-b`}>
             <h2 className={`text-sm font-semibold mb-3`}>Packs</h2>
-            <DropZone onLoad={handlePacksLoaded} darkMode={darkMode} />
-          </div>
-          
-          <div className={`p-4 border-b`}>
-            <TextureImportZone onImport={handleTextureImport} darkMode={darkMode} />
+            <DropZone onLoad={handlePacksLoaded} onTextureImport={handleTextureImport} darkMode={darkMode} />
+            <button
+              onClick={handleCreateFromScratch}
+              className={`w-full mt-3 px-4 py-3 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2 sleek ${darkMode ? "sleek-dark bg-blue-600 hover:bg-slate-600 text-white" : "bg-blue-600 hover:bg-slate-500 text-white"}`}
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Create from Scratch
+            </button>
           </div>
           
           {packs.length > 0 && (

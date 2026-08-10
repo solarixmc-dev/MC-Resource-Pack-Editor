@@ -13,6 +13,8 @@
     "typescript": "~5.9.3"
   },
   "dependencies": {
-    "esbuild": "0.28.1"
+    "esbuild": "0.28.1",
+    "firebase": "^12.17.1",
+    "react-router-dom": "^7.18.2"
   }
 }
