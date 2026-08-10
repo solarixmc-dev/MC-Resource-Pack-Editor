@@ -18,8 +18,8 @@ export default function AuthPage() {
       setLoading(false);
       // Use auth context login
       login(email, username);
-      // Redirect to editor after auth
-      window.location.href = "/editor";
+      // Redirect to home after auth
+      window.location.href = "/";
     }, 1000);
   };
 

@@ -17,7 +17,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return (localStorage.getItem('theme') as Theme) || 'light';
   });
   const [font, setFontState] = useState<Font>(() => {
-    return (localStorage.getItem('font') as Font) || 'arial';
+    const savedFont = localStorage.getItem('font') as Font;
+    // Default to montserrat if no saved font
+    return savedFont || 'montserrat';
   });
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   useEffect(() => {
-    // Apply font to document
+    // Apply font to document and body
     const fontMap: Record<Font, string> = {
       'arial': 'Arial, sans-serif',
       'montserrat': 'Montserrat, sans-serif',
@@ -41,6 +43,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     };
     
     document.documentElement.style.fontFamily = fontMap[font];
+    document.body.style.fontFamily = fontMap[font];
     localStorage.setItem('font', font);
   }, [font]);
 

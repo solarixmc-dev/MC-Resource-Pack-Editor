@@ -43,7 +43,7 @@ export default function ProfileDropdown() {
                 type="text"
                 value={tempUsername}
                 onChange={(e) => setTempUsername(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-sand text-black"
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#C2B280] text-black"
               />
             </div>
             
@@ -53,7 +53,7 @@ export default function ProfileDropdown() {
                 type="email"
                 value={tempEmail}
                 onChange={(e) => setTempEmail(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-sand text-black"
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#C2B280] text-black"
               />
             </div>
             
@@ -64,43 +64,8 @@ export default function ProfileDropdown() {
                 value={tempPassword}
                 onChange={(e) => setTempPassword(e.target.value)}
                 placeholder="Leave blank to keep current"
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-sand text-black"
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#C2B280] text-black"
               />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-black mb-2">Theme</label>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setTheme('light')}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
-                    theme === 'light' ? 'bg-black text-white' : 'bg-gray-100 text-black'
-                  }`}
-                >
-                  Light
-                </button>
-                <button
-                  onClick={() => setTheme('dark')}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
-                    theme === 'dark' ? 'bg-black text-white' : 'bg-gray-100 text-black'
-                  }`}
-                >
-                  Dark
-                </button>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-black mb-2">Font</label>
-              <select
-                value={font}
-                onChange={(e) => setFont(e.target.value as any)}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-sand text-black"
-              >
-                {fonts.map((f) => (
-                  <option key={f.value} value={f.value}>{f.label}</option>
-                ))}
-              </select>
             </div>
           </div>
           
@@ -136,7 +101,45 @@ export default function ProfileDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+          {/* Theme Toggle */}
+          <div className="px-4 py-2 border-b border-gray-100">
+            <p className="text-xs font-medium text-gray-500 mb-2">Theme</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setTheme('light')}
+                className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  theme === 'light' ? 'bg-black text-white' : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                Light
+              </button>
+              <button
+                onClick={() => setTheme('dark')}
+                className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  theme === 'dark' ? 'bg-black text-white' : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                Dark
+              </button>
+            </div>
+          </div>
+
+          {/* Font Selector */}
+          <div className="px-4 py-2 border-b border-gray-100">
+            <p className="text-xs font-medium text-gray-500 mb-2">Font</p>
+            <select
+              value={font}
+              onChange={(e) => setFont(e.target.value as any)}
+              className="w-full px-3 py-1.5 border-2 border-gray-300 rounded-md focus:outline-none focus:border-[#C2B280] text-sm text-black"
+            >
+              {fonts.map((f) => (
+                <option key={f.value} value={f.value}>{f.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Account Settings */}
           <button
             onClick={() => {
               setShowSettings(true);
@@ -146,6 +149,8 @@ export default function ProfileDropdown() {
           >
             Account Settings
           </button>
+
+          {/* Logout */}
           <button
             onClick={logout}
             className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 transition-colors"

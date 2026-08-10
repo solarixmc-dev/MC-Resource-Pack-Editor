@@ -15,9 +15,9 @@ export default function Navigation() {
   return (
     <nav className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
+        <div className="flex items-center justify-center h-16 relative">
+          {/* Logo - positioned absolutely on left */}
+          <Link href="/" className="absolute left-0 flex items-center gap-2">
             <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
               <span className="text-white text-lg font-bold">MC</span>
             </div>
@@ -37,7 +37,7 @@ export default function Navigation() {
                   {item.label}
                   {/* Underline animation */}
                   <span
-                    className={`absolute bottom-0 left-0 h-0.5 bg-sand transition-all duration-300 ${
+                    className={`absolute bottom-0 left-0 h-0.5 bg-[#C2B280] transition-all duration-300 ${
                       isActive ? "w-full" : "w-0 group-hover:w-full"
                     }`}
                   />
@@ -46,8 +46,8 @@ export default function Navigation() {
             })}
           </div>
 
-          {/* Login Button or Profile Dropdown */}
-          <div className="flex-shrink-0">
+          {/* Login Button or Profile Dropdown - positioned absolutely on right */}
+          <div className="absolute right-4 flex-shrink-0">
             {isLoggedIn ? (
               <ProfileDropdown />
             ) : (

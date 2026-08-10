@@ -14,10 +14,10 @@ export default function LaunchPage() {
               </div>
               <h1 className="text-5xl font-bold text-black">Studio</h1>
             </div>
-            <p className="text-xl text-gray-600 mt-4">
-              <u className="text-sand">The</u> ultimate lighting-quick editing Minecraft<br />
-              <span className="text-sand font-bold text-2xl">Texture Editor</span>
-            </p>
+            <h2 className="text-3xl text-gray-600 mt-6">
+              <span className="border-b-2 border-[#C2B280] pb-1">The</span> ultimate lighting-quick editing Minecraft<br />
+              <span className="text-[#C2B280] font-bold text-4xl">Texture Editor</span>
+            </h2>
           </div>
 
           {/* Get Started Button */}

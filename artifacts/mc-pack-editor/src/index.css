@@ -208,7 +208,7 @@
   --sidebar-accent-foreground: 0 0% 10%;
   --sidebar-ring: 0 0% 40%;
 
-  --app-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --app-font-sans: 'Montserrat', system-ui, -apple-system, sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: 'Fira Code', 'Cascadia Code', Menlo, monospace;
   --radius: .375rem;
