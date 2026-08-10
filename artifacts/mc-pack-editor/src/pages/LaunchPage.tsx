@@ -1,6 +1,9 @@
 import { Link } from "wouter";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function LaunchPage() {
+  const { isLoggedIn } = useAuth();
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Hero Section */}
@@ -23,7 +26,7 @@ export default function LaunchPage() {
           {/* Get Started Button */}
           <div className="text-center mb-16">
             <Link
-              href="/editor"
+              href={isLoggedIn ? "/editor" : "/auth"}
               className="inline-block bg-black text-white px-12 py-4 rounded-full font-semibold text-lg hover:bg-gray-800 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               Get Started
