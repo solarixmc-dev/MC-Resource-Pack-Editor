@@ -1,16 +1,42 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { packLibrary } from "../lib/packLibrary";
+import { getUserPackLibrary } from "../lib/packLibrary";
 import { loadPackFromFile } from "../lib/zipUtils";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function LibraryPage() {
-  const [packs, setPacks] = useState(() => packLibrary.getAllPacks());
+  const { user } = useAuth();
+  const [packs, setPacks] = useState(() => {
+    if (user) {
+      const userLibrary = getUserPackLibrary(user.id);
+      return userLibrary.getAllPacks();
+    }
+    return [];
+  });
   const [loading, setLoading] = useState(false);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-black mb-4">Pack Library</h1>
+          <p className="text-gray-600 mb-6">Please log in to access your pack library</p>
+          <Link
+            href="/auth"
+            className="inline-block bg-black text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+          >
+            Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const handleLoadPack = async (packId: string) => {
     setLoading(true);
     try {
-      const packData = await packLibrary.loadPack(packId);
+      const userLibrary = getUserPackLibrary(user.id);
+      const packData = await userLibrary.loadPack(packId);
       const pack = await loadPackFromFile(new File([packData], 'library-pack.zip'));
       // Navigate to editor with the pack loaded
       window.location.href = `/editor?pack=${encodeURIComponent(pack.name)}`;
@@ -24,19 +50,21 @@ export default function LibraryPage() {
 
   const handleDeletePack = (packId: string) => {
     if (confirm("Are you sure you want to delete this pack from your library?")) {
-      packLibrary.deletePack(packId);
-      setPacks(packLibrary.getAllPacks());
+      const userLibrary = getUserPackLibrary(user.id);
+      userLibrary.deletePack(packId);
+      setPacks(userLibrary.getAllPacks());
     }
   };
 
   const handleClearAll = () => {
     if (confirm("Are you sure you want to clear all saved packs?")) {
-      packLibrary.clearAll();
+      const userLibrary = getUserPackLibrary(user.id);
+      userLibrary.clearAll();
       setPacks([]);
     }
   };
 
-  const storageUsage = packLibrary.getStorageUsage();
+  const storageUsage = getUserPackLibrary(user.id).getStorageUsage();
 
   return (
     <div className="min-h-screen bg-white">

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface User {
+  id: string;
   username: string;
   email: string;
 }
@@ -24,10 +25,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
     const savedUsername = localStorage.getItem('username');
     const savedEmail = localStorage.getItem('email');
+    const savedUserId = localStorage.getItem('userId');
     
     if (loggedIn && savedUsername) {
       setIsLoggedIn(true);
       setUser({
+        id: savedUserId || crypto.randomUUID(),
         username: savedUsername,
         email: savedEmail || ''
       });
@@ -35,22 +38,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (email: string, username?: string) => {
+    const userId = crypto.randomUUID();
     setIsLoggedIn(true);
     setUser({
+      id: userId,
       username: username || email.split('@')[0],
       email
     });
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('username', username || email.split('@')[0]);
     localStorage.setItem('email', email);
+    localStorage.setItem('userId', userId);
   };
 
   const logout = () => {
+    // Clean up user's pack library
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      localStorage.removeItem(`mc-pack-editor-library-${userId}`);
+    }
+    
     setIsLoggedIn(false);
     setUser(null);
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('username');
     localStorage.removeItem('email');
+    localStorage.removeItem('userId');
   };
 
   const updateUser = (updatedUser: User) => {

@@ -14,8 +14,27 @@ import {
   cropAtlasRegion,
 } from "./lib/zipUtils";
 import { getAtlasDefinition, AtlasDefinition } from "./lib/atlasRegions";
-import { packLibrary } from "./lib/packLibrary";
+import { getUserPackLibrary, SavedPack } from "./lib/packLibrary";
 import { createCroppedTexturePreviewDataUrl, TEXTURE_THUMBNAIL_SIZE } from "./lib/texturePreview";
+import { useAuth } from "./contexts/AuthContext";
+
+// Fallback library for non-logged-in users
+const fallbackLibrary = {
+  savePack: async (name: string, description: string, icon: string | null, packData: ArrayBuffer): Promise<SavedPack> => {
+    console.log('Fallback library save (not logged in)');
+    const base64Data = btoa(String.fromCharCode(...new Uint8Array(packData)));
+    return Promise.resolve({
+      id: crypto.randomUUID(),
+      name,
+      description,
+      icon,
+      packData: base64Data,
+      createdAt: new Date().toISOString(),
+      fileSize: packData.byteLength,
+      userId: 'guest'
+    });
+  }
+};
 import {
   applyBrush,
   applyRecolor,
@@ -2906,6 +2925,8 @@ function FileViewerModal({
 // ─── Main Editor App ──────────────────────────────────────────────────────────────
 
 export default function EditorApp() {
+  const { user } = useAuth();
+  
   // Helper function to strip Minecraft color codes
   const stripColorCodes = (name: string): string => {
     return name.replace(/§[0-9a-fk-or]/gi, '').replace(/&[0-9a-fk-or]/gi, '');
@@ -3254,7 +3275,14 @@ export default function EditorApp() {
       // Also save to library
       const arrayBuffer = await blob.arrayBuffer();
       try {
-        await packLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
+        // Use user-specific library if logged in
+        if (user) {
+          const userLibrary = getUserPackLibrary(user.id);
+          await userLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
+        } else {
+          // Fallback for non-logged-in users
+          await fallbackLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
+        }
       } catch (error) {
         console.error("Failed to save to library:", error);
         // Don't block export if library save fails

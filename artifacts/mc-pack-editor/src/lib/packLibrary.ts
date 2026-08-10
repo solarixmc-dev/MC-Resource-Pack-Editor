@@ -1,6 +1,7 @@
 /**
  * Pack Library Service
  * Manages storing and retrieving exported packs in localStorage
+ * Now user-specific based on login credentials
  */
 
 export interface SavedPack {
@@ -11,20 +12,27 @@ export interface SavedPack {
   packData: ArrayBuffer;
   createdAt: string;
   fileSize: number;
+  userId: string; // Add user ID to associate packs with users
 }
 
-const STORAGE_KEY = 'mc-pack-editor-library';
+const STORAGE_KEY_PREFIX = 'mc-pack-editor-library-';
 
 export class PackLibrary {
   private savedPacks: SavedPack[] = [];
+  private userId: string;
 
-  constructor() {
+  constructor(userId: string) {
+    this.userId = userId;
     this.loadFromStorage();
+  }
+
+  private getStorageKey(): string {
+    return `${STORAGE_KEY_PREFIX}${this.userId}`;
   }
 
   private loadFromStorage(): void {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(this.getStorageKey());
       if (stored) {
         this.savedPacks = JSON.parse(stored);
       }
@@ -36,7 +44,7 @@ export class PackLibrary {
 
   private saveToStorage(): void {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.savedPacks));
+      localStorage.setItem(this.getStorageKey(), JSON.stringify(this.savedPacks));
     } catch (error) {
       console.error('Failed to save pack library:', error);
       throw new Error('Failed to save pack to library. Storage may be full.');
@@ -60,6 +68,7 @@ export class PackLibrary {
       packData: base64Data,
       createdAt: new Date().toISOString(),
       fileSize: packData.byteLength,
+      userId: this.userId, // Associate with current user
     };
 
     this.savedPacks.unshift(savedPack);
@@ -122,7 +131,14 @@ export class PackLibrary {
       percentage: (used / total) * 100,
     };
   }
+
+  // Static method to get user-specific library instance
+  static forUser(userId: string): PackLibrary {
+    return new PackLibrary(userId);
+  }
 }
 
-// Singleton instance
-export const packLibrary = new PackLibrary();
+// Function to get user-specific library
+export function getUserPackLibrary(userId: string): PackLibrary {
+  return PackLibrary.forUser(userId);
+}
