@@ -47,7 +47,7 @@ export default function Navigation() {
           </div>
 
           {/* Login Button or Profile Dropdown - positioned absolutely on right */}
-          <div className="absolute right-4 flex-shrink-0">
+          <div className="absolute right-2 flex-shrink-0">
             {isLoggedIn ? (
               <ProfileDropdown />
             ) : (

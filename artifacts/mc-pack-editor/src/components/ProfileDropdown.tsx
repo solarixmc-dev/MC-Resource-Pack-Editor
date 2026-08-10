@@ -8,6 +8,7 @@ export default function ProfileDropdown() {
   const { theme, setTheme, font, setFont } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showThemeDropdown, setShowThemeDropdown] = useState(false);
   const [tempUsername, setTempUsername] = useState(user?.username || '');
   const [tempEmail, setTempEmail] = useState(user?.email || '');
   const [tempPassword, setTempPassword] = useState('');
@@ -102,27 +103,45 @@ export default function ProfileDropdown() {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-          {/* Theme Toggle */}
+          {/* Theme Toggle with Dropdown */}
           <div className="px-4 py-2 border-b border-gray-100">
-            <p className="text-xs font-medium text-gray-500 mb-2">Theme</p>
-            <div className="flex gap-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium text-gray-500">Theme</p>
               <button
-                onClick={() => setTheme('light')}
-                className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  theme === 'light' ? 'bg-black text-white' : 'bg-gray-100 text-gray-700'
-                }`}
+                onClick={() => setShowThemeDropdown(!showThemeDropdown)}
+                className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md text-xs font-medium hover:bg-gray-200 transition-colors"
               >
-                Light
-              </button>
-              <button
-                onClick={() => setTheme('dark')}
-                className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  theme === 'dark' ? 'bg-black text-white' : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                Dark
+                {theme === 'light' && '☀️ Light'}
+                {theme === 'dark' && '🌙 Dark'}
+                {theme === 'system' && '💻 System'}
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
               </button>
             </div>
+            
+            {showThemeDropdown && (
+              <div className="absolute top-full left-0 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <button
+                  onClick={() => { setTheme('light'); setShowThemeDropdown(false); }}
+                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  ☀️ Light
+                </button>
+                <button
+                  onClick={() => { setTheme('dark'); setShowThemeDropdown(false); }}
+                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  🌙 Dark
+                </button>
+                <button
+                  onClick={() => { setTheme('system'); setShowThemeDropdown(false); }}
+                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  💻 System
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Font Selector */}
