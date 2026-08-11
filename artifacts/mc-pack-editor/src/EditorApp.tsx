@@ -14,9 +14,8 @@ import {
   cropAtlasRegion,
 } from "./lib/zipUtils";
 import { getAtlasDefinition, AtlasDefinition } from "./lib/atlasRegions";
-import { getUserPackLibrary, SavedPack } from "./lib/packLibrary";
+import { SavedPack } from "./lib/packLibrary";
 import { createCroppedTexturePreviewDataUrl, TEXTURE_THUMBNAIL_SIZE } from "./lib/texturePreview";
-import { useAuth } from "./contexts/AuthContext";
 import { useTheme } from "./contexts/ThemeContext";
 
 // Notification type
@@ -972,7 +971,12 @@ function TextureCard({
                 key={pack.id}
                 className={`flex-1 flex items-center justify-center p-2 checkered min-h-[80px] relative transition-all ${
                   packsWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
-                } ${isSelected ? "ring-2 ring-inset ring-black dark:ring-white" : ""}`}
+                }`}
+                style={isSelected && packsWithFile.length > 1 ? { 
+                  borderBottom: '4px solid', 
+                  borderBottomColor: pack.color,
+                  boxShadow: `0 4px 12px ${pack.color}66`
+                } : {}}
                 onClick={() => {
                   if (packsWithFile.length <= 1) return;
                   if (overridePackId === pack.id) {
@@ -3033,7 +3037,6 @@ function FileViewerModal({
 // ─── Main Editor App ──────────────────────────────────────────────────────────────
 
 export default function EditorApp() {
-  const { user } = useAuth();
   const { checkerboardStyle, setCheckerboardStyle } = useTheme();
   
   // Helper function to strip Minecraft color codes
@@ -3454,14 +3457,8 @@ export default function EditorApp() {
       // Also save to library
       const arrayBuffer = await blob.arrayBuffer();
       try {
-        // Use user-specific library if logged in
-        if (user) {
-          const userLibrary = getUserPackLibrary(user.id);
-          await userLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
-        } else {
-          // Fallback for non-logged-in users
-          await fallbackLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
-        }
+        // Always use fallback library (no login required)
+        await fallbackLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
       } catch (error) {
         console.error("Failed to save to library:", error);
         // Don't block export if library save fails
@@ -3490,22 +3487,12 @@ export default function EditorApp() {
       );
       const arrayBuffer = await blob.arrayBuffer();
       
-      console.log('Saving to library, user:', user);
-      console.log('User ID:', user?.id);
+      console.log('Saving to library');
       
       try {
-        // Use user-specific library if logged in
-        if (user) {
-          console.log('Using user library for:', user.id);
-          const userLibrary = getUserPackLibrary(user.id);
-          await userLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
-          console.log('Saved to user library successfully');
-        } else {
-          console.log('Using fallback library (guest)');
-          // Fallback for non-logged-in users
-          await fallbackLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
-          console.log('Saved to guest library successfully');
-        }
+        // Always use fallback library (no login required)
+        await fallbackLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
+        console.log('Saved to library successfully');
         addNotification("Pack saved to library!", "success");
       } catch (error) {
         console.error("Failed to save to library:", error);
