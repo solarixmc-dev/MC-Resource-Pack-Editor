@@ -1,13 +1,16 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 type Theme = 'light' | 'dark' | 'system';
-type Font = 'arial' | 'montserrat' | 'quicksand' | 'jetbrains-mono' | 'pixel-sans';
+type Font = 'arial' | 'montserrat' | 'quicksand' | 'inter' | 'comfortaa' | 'jetbrains-mono' | 'pixel-sans';
+type CheckerboardStyle = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: Theme;
   font: Font;
+  checkerboardStyle: CheckerboardStyle;
   setTheme: (theme: Theme) => void;
   setFont: (font: Font) => void;
+  setCheckerboardStyle: (style: CheckerboardStyle) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -22,6 +25,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const savedFont = localStorage.getItem('font') as Font;
     // Default to montserrat if no saved font
     return savedFont || 'montserrat';
+  });
+  const [checkerboardStyle, setCheckerboardStyleState] = useState<CheckerboardStyle>(() => {
+    const savedCheckerboardStyle = localStorage.getItem('checkerboardStyle') as CheckerboardStyle;
+    // Default to dark if no saved style
+    return savedCheckerboardStyle || 'dark';
   });
 
   useEffect(() => {
@@ -52,6 +60,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
+    return undefined;
   }, [theme]);
 
   useEffect(() => {
@@ -60,6 +69,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       'arial': 'Arial, sans-serif',
       'montserrat': 'Montserrat, sans-serif',
       'quicksand': 'Quicksand, sans-serif',
+      'inter': 'Inter, sans-serif',
+      'comfortaa': 'Comfortaa, cursive',
       'jetbrains-mono': 'JetBrains Mono, monospace',
       'pixel-sans': 'VT323, monospace'
     };
@@ -69,6 +80,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('font', font);
   }, [font]);
 
+  useEffect(() => {
+    // Apply checkerboard style to document
+    if (checkerboardStyle === 'dark') {
+      document.documentElement.classList.add('dark-checkerboard');
+    } else {
+      document.documentElement.classList.remove('dark-checkerboard');
+    }
+    localStorage.setItem('checkerboardStyle', checkerboardStyle);
+  }, [checkerboardStyle]);
+
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
   };
@@ -77,8 +98,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setFontState(newFont);
   };
 
+  const setCheckerboardStyle = (newStyle: CheckerboardStyle) => {
+    setCheckerboardStyleState(newStyle);
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, font, setTheme, setFont }}>
+    <ThemeContext.Provider value={{ theme, font, checkerboardStyle, setTheme, setFont, setCheckerboardStyle }}>
       {children}
     </ThemeContext.Provider>
   );

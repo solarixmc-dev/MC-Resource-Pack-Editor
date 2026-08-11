@@ -17,6 +17,7 @@ import { getAtlasDefinition, AtlasDefinition } from "./lib/atlasRegions";
 import { getUserPackLibrary, SavedPack } from "./lib/packLibrary";
 import { createCroppedTexturePreviewDataUrl, TEXTURE_THUMBNAIL_SIZE } from "./lib/texturePreview";
 import { useAuth } from "./contexts/AuthContext";
+import { useTheme } from "./contexts/ThemeContext";
 
 // Fallback library for non-logged-in users
 const fallbackLibrary = {
@@ -50,7 +51,7 @@ import {
 function Badge({ color, label }: { color: string; label: string }) {
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-dark-text-secondary border border-slate-200 dark:border-dark-border"
     >
       <span
         className="w-1.5 h-1.5 rounded-full flex-shrink-0"
@@ -79,10 +80,10 @@ function Btn({
   const base =
     "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer select-none";
   const variants = {
-    default: "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200",
-    ghost: "text-slate-600 hover:text-slate-900 hover:bg-slate-100",
-    danger: "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200",
-    primary: "bg-black text-white hover:bg-gray-800",
+    default: "bg-slate-100 dark:bg-dark-tertiary text-slate-700 dark:text-dark-text-secondary hover:bg-slate-200 dark:hover:bg-dark-border border border-slate-200 dark:border-dark-border",
+    ghost: "text-slate-600 dark:text-dark-text-secondary hover:text-slate-900 dark:hover:text-dark-text hover:bg-slate-100 dark:hover:bg-dark-tertiary",
+    danger: "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/50 border border-red-200 dark:border-red-900",
+    primary: "bg-black dark:bg-dark-text text-white dark:text-dark-bg hover:bg-gray-800 dark:hover:bg-dark-tertiary",
   };
   return (
     <button
@@ -276,15 +277,15 @@ function PackOrderPanel({
 
       {/* Dropdown panel */}
       {open && (
-        <div className={`absolute top-full left-0 z-50 mt-1 w-60 border rounded-lg shadow-lg overflow-hidden ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
-          <div className={`px-3 py-2 border-b flex items-center justify-between ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
-            <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+        <div className={`absolute top-full left-0 z-50 mt-1 w-60 border rounded-lg shadow-lg overflow-hidden ${darkMode ? "bg-dark-secondary border-dark-border" : "bg-white border-slate-200"}`}>
+          <div className={`px-3 py-2 border-b flex items-center justify-between ${darkMode ? "border-dark-border" : "border-slate-200"}`}>
+            <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>
               Auto priority order
             </span>
-            <span className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>drag to reorder</span>
+            <span className={`text-xs ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>drag to reorder</span>
           </div>
-          <p className={`px-3 pt-2 pb-1 text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-            When set to <span className="font-medium text-black dark:text-white">auto</span>, the first pack is preferred. Textures missing from it fall through to the next pack.
+          <p className={`px-3 pt-2 pb-1 text-xs ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>
+            When set to <span className="font-medium text-black dark:text-dark-text">auto</span>, the first pack is preferred. Textures missing from it fall through to the next pack.
           </p>
           <div className="p-2 flex flex-col gap-1">
             {packs.map((pack, i) => {
@@ -299,19 +300,19 @@ function PackOrderPanel({
                   onDrop={(e) => handleDrop(e, i)}
                   onDragEnd={handleDragEnd}
                   className={`flex items-center gap-2 px-2 py-2 rounded border transition-all cursor-grab active:cursor-grabbing select-none
-                    ${isDragging ? "opacity-40 border-black dark:border-white" : darkMode ? "border-transparent hover:border-slate-600 hover:bg-slate-700" : "border-transparent hover:border-slate-200 hover:bg-slate-50"}
+                    ${isDragging ? "opacity-40 border-black dark:border-white" : darkMode ? "border-transparent hover:border-dark-border hover:bg-dark-tertiary" : "border-transparent hover:border-slate-200 hover:bg-slate-50"}
                     ${isOver ? "border-black dark:border-white bg-black/5 dark:bg-white/5" : ""}
                   `}
                 >
                   {/* Drag handle */}
-                  <span className={`text-base leading-none flex-shrink-0 ${darkMode ? "text-slate-500" : "text-slate-400"}`}>⋮⋮</span>
+                  <span className={`text-base leading-none flex-shrink-0 ${darkMode ? "text-dark-text-tertiary" : "text-slate-400"}`}>⋮⋮</span>
 
                   {/* Color dot (static) */}
                   <span
                     className="w-3.5 h-3.5 rounded-full flex-shrink-0 border border-white/20"
                     style={{ background: pack.color }}
                   />
-                  <span className={`text-sm font-medium flex-1 truncate ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+                  <span className={`text-sm font-medium flex-1 truncate ${darkMode ? "text-dark-text-secondary" : "text-slate-700"}`}>
                     {stripColorCodes(pack.name)}
                   </span>
 
@@ -327,7 +328,7 @@ function PackOrderPanel({
                   {/* View Files */}
                   <button
                     onClick={(e) => { e.stopPropagation(); onViewFiles(pack.id); }}
-                    className={`text-sm transition-colors flex-shrink-0 ${darkMode ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-black"}`}
+                    className={`text-sm transition-colors flex-shrink-0 ${darkMode ? "text-dark-text-tertiary hover:text-dark-text" : "text-slate-400 hover:text-black"}`}
                     title="View and manage files"
                   >
                     📁
@@ -336,7 +337,7 @@ function PackOrderPanel({
                   {/* Remove */}
                   <button
                     onClick={(e) => { e.stopPropagation(); onRemove(pack.id); }}
-                    className={`text-sm transition-colors flex-shrink-0 ${darkMode ? "text-slate-400 hover:text-red-400" : "text-slate-400 hover:text-red-500"}`}
+                    className={`text-sm transition-colors flex-shrink-0 ${darkMode ? "text-dark-text-tertiary hover:text-red-400" : "text-slate-400 hover:text-red-500"}`}
                     title="Remove pack"
                   >
                     ✕
@@ -393,7 +394,7 @@ function DropZone({ onLoad, onTextureImport, darkMode }: { onLoad: (packs: Pack[
       }}
       onClick={() => inputRef.current?.click()}
       className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-lg p-8 cursor-pointer transition-colors
-        ${dragging ? "border-black dark:border-white bg-black/5 dark:bg-white/5" : darkMode ? "border-slate-600 hover:border-white hover:bg-slate-700" : "border-slate-300 hover:border-black hover:bg-slate-50"}`}
+        ${dragging ? "border-black dark:border-white bg-black/5 dark:bg-white/5" : darkMode ? "border-dark-border hover:border-dark-text hover:bg-dark-tertiary" : "border-slate-300 hover:border-black hover:bg-slate-50"}`}
     >
       <input
         ref={inputRef}
@@ -403,15 +404,15 @@ function DropZone({ onLoad, onTextureImport, darkMode }: { onLoad: (packs: Pack[
         className="hidden"
         onChange={(e) => e.target.files && handleFiles(e.target.files)}
       />
-      <svg className={`w-10 h-10 ${darkMode ? "text-slate-400" : "text-slate-500"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+      <svg className={`w-10 h-10 ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" />
       </svg>
       {loading ? (
-        <p className={`text-sm animate-pulse ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Loading…</p>
+        <p className={`text-sm animate-pulse ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>Loading…</p>
       ) : (
         <>
-          <p className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-600"}`}>Drop ZIP or PNG files here</p>
-          <p className={`text-xs ${darkMode ? "text-slate-500" : "text-slate-400"}`}>or click to browse</p>
+          <p className={`text-sm ${darkMode ? "text-dark-text-secondary" : "text-slate-600"}`}>Drop ZIP or PNG files here</p>
+          <p className={`text-xs ${darkMode ? "text-dark-text-tertiary" : "text-slate-400"}`}>or click to browse</p>
         </>
       )}
     </div>
@@ -468,7 +469,7 @@ function parseMcText(raw: string): McSegment[] {
 function McText({ text, fallback = "—" }: { text: string; fallback?: string }) {
   const segments = parseMcText(text);
   if (!segments.length) {
-    return <span className="text-slate-400 italic text-xs">{fallback}</span>;
+    return <span className="text-slate-400 dark:text-dark-text-tertiary italic text-xs">{fallback}</span>;
   }
   return (
     <>
@@ -624,14 +625,14 @@ function PackSettings({
     <div className="flex items-start gap-3">
       {/* Pack icon */}
       <button
-        className={`w-12 h-12 rounded-lg border flex-shrink-0 overflow-hidden checkered transition-colors cursor-pointer mt-5 ${darkMode ? "border-slate-600 hover:border-white" : "border-slate-200 hover:border-black"}`}
+        className={`w-12 h-12 rounded-lg border flex-shrink-0 overflow-hidden checkered transition-colors cursor-pointer mt-5 ${darkMode ? "border-dark-border hover:border-dark-text" : "border-slate-200 hover:border-black"}`}
         onClick={() => iconRef.current?.click()}
         title="Click to change pack icon"
       >
         {packIcon ? (
           <img src={packIcon} alt="icon" className="w-full h-full object-cover texture-preview" />
         ) : (
-          <svg className="w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" /></svg>
+          <svg className="w-5 h-5 text-slate-400 dark:text-dark-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" /></svg>
         )}
         <input ref={iconRef} type="file" accept="image/*" className="hidden" onChange={handleIcon} />
       </button>
@@ -639,18 +640,18 @@ function PackSettings({
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
         {/* Pack name */}
         <div className="flex flex-col gap-1">
-          <label className={`text-xs font-medium ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Output Pack Name</label>
+          <label className={`text-xs font-medium ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>Output Pack Name</label>
           <input
             ref={nameRef}
             type="text"
             value={packName}
             onFocus={() => setActiveField("name")}
             onChange={(e) => onNameChange(e.target.value)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-black dark:focus:border-white w-full ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+            className="rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-black dark:focus:border-white w-full bg-white border-slate-200 text-slate-700 dark:bg-dark-tertiary dark:border-dark-border dark:text-dark-text-secondary"
             placeholder="My Resource Pack"
           />
           {packName.includes("§") && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-black rounded-lg border border-slate-700 text-sm min-h-[26px]">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-black rounded-lg border border-dark-border text-sm min-h-[26px]">
               <McText text={packName} fallback="…" />
             </div>
           )}
@@ -658,7 +659,7 @@ function PackSettings({
 
         {/* Description */}
         <div className="flex flex-col gap-1">
-          <label className={`text-xs font-medium ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+          <label className={`text-xs font-medium ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>
             Description <span className="opacity-60">(pack.mcmeta)</span>
           </label>
           <input
@@ -667,11 +668,11 @@ function PackSettings({
             value={packDescription}
             onFocus={() => setActiveField("desc")}
             onChange={(e) => onDescriptionChange(e.target.value)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-black dark:focus:border-white w-full ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+            className="rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20 focus:border-black dark:focus:border-white w-full bg-white border-slate-200 text-slate-700 dark:bg-dark-tertiary dark:border-dark-border dark:text-dark-text-secondary"
             placeholder="A Minecraft resource pack"
           />
           {packDescription.includes("§") && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-black rounded-lg border border-slate-700 text-sm min-h-[26px]">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-black rounded-lg border border-dark-border text-sm min-h-[26px]">
               <McText text={packDescription} fallback="…" />
             </div>
           )}
@@ -683,8 +684,8 @@ function PackSettings({
             onClick={() => setColorCodesOpen(!colorCodesOpen)}
             className="flex items-center gap-1.5 text-left transition-colors hover:opacity-70"
           >
-            <label className={`text-xs font-medium ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Open Codes</label>
-            <span className={`text-xs ${darkMode ? "text-white" : "text-black"}`}>
+            <label className={`text-xs font-medium ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>Open Codes</label>
+            <span className={`text-xs ${darkMode ? "text-dark-text" : "text-black"}`}>
               {colorCodesOpen ? "↓" : "→"} inserting into <span className="font-semibold">{activeField === "name" ? "Name" : "Description"}</span>
             </span>
           </button>
@@ -693,11 +694,11 @@ function PackSettings({
           {colorCodesOpen && (
             <div
               ref={dropdownRef}
-              className={`absolute top-full left-0 z-[100] w-full max-w-md rounded-xl border shadow-2xl mt-2 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}
+              className={`absolute top-full left-0 z-[100] w-full max-w-md rounded-xl border shadow-2xl mt-2 ${darkMode ? "bg-dark-secondary border-dark-border" : "bg-white border-slate-200"}`}
             >
               <div className="p-4 flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
-                  <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Colors</span>
+                  <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>Colors</span>
                   <div className="flex flex-wrap gap-1.5">
                     {MC_COLORS.map(({ code, color, label }) => (
                       <button
@@ -716,13 +717,13 @@ function PackSettings({
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Formatting</span>
+                  <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>Formatting</span>
                   <div className="flex flex-wrap gap-1.5">
                     {MC_FORMATS.map(({ code, label, title, style }) => (
                       <button
                         key={code}
                         onMouseDown={(e) => { e.preventDefault(); insertCode(code); }}
-                        className={`px-3 h-8 rounded-lg text-sm transition-colors flex-shrink-0 border ${darkMode ? "border-slate-600 hover:bg-slate-700" : "border-slate-200 hover:bg-slate-100"}`}
+                        className={`px-3 h-8 rounded-lg text-sm transition-colors flex-shrink-0 border ${darkMode ? "border-dark-border hover:bg-dark-tertiary" : "border-slate-200 hover:bg-slate-100"}`}
                         style={style}
                         title={title}
                       >
@@ -774,9 +775,9 @@ function FolderSidebar({
     const active = selectedFolder === key;
 
     return (
-      <div key={key} className={`group border transition-all sleek rounded-lg ${darkMode ? "sleek-dark" : "sleek"} ${active ? "border-black dark:border-black bg-black/5 dark:bg-black/5" : darkMode ? "bg-slate-200/50" : "bg-[#f5f0e6]"} mb-2`}>
+      <div key={key} className={`group border transition-all sleek rounded-lg ${darkMode ? "sleek-dark" : "sleek"} ${active ? "border-black dark:border-black bg-black/5 dark:bg-black/5" : darkMode ? "bg-dark-secondary" : "bg-[#f5f0e6] hover:bg-[#C2B280]/30"} mb-2`}>
         <button
-          className={`w-full flex items-center px-3 py-2.5 text-sm text-left transition-colors rounded-lg ${darkMode ? "hover:bg-slate-300/50" : "hover:bg-[#ebe5d9]"}`}
+          className={`w-full flex items-center px-3 py-2.5 text-sm text-left transition-colors rounded-lg ${darkMode ? "hover:bg-[#C2B280]/50" : "hover:bg-[#C2B280]/50"}`}
           onClick={() => onSelect(key)}
         >
           <span className={`flex-1 font-medium leading-snug ${active ? "text-black dark:text-black" : ""}`}>
@@ -786,7 +787,7 @@ function FolderSidebar({
         {packs.length > 1 && (
           <div className="px-3 pb-2 flex items-center gap-1 flex-wrap">
             <button
-              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-slate-200 dark:bg-slate-300 text-slate-700 dark:text-slate-700 font-semibold" : "hover:bg-white/10"}`}
+              className={`text-xs px-2 py-0.5 rounded transition-colors ${!sourcePackId ? "bg-slate-200 dark:bg-dark-tertiary text-slate-700 dark:text-dark-text-secondary font-semibold" : "hover:bg-[#C2B280]/50"}`}
               onClick={(e) => { e.stopPropagation(); onFolderSource(key, null); }}
               title="Use highest-priority pack for each file"
             >
@@ -795,7 +796,7 @@ function FolderSidebar({
             {packs.map((p) => (
               <button
                 key={p.id}
-                className={`text-xs px-2 py-0.5 rounded transition-colors ${sourcePackId === p.id ? "font-semibold" : "hover:bg-white/10"}`}
+                className={`text-xs px-2 py-0.5 rounded transition-colors ${sourcePackId === p.id ? "font-semibold" : "hover:bg-[#C2B280]/50"}`}
                 style={sourcePackId === p.id ? { background: p.color + "40", color: p.color } : {}}
                 onClick={(e) => { e.stopPropagation(); onFolderSource(key, p.id); }}
                 title={stripColorCodes(p.name)}
@@ -910,11 +911,11 @@ function TextureCard({
   const isAtlas = !!getAtlasDefinition(texturePath);
 
   return (
-    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-lg border transition-all min-w-0 ${isRemoved ? (darkMode ? "border-red-500 bg-red-950/30 opacity-70" : "border-red-300 bg-red-50 opacity-70") : `${darkMode ? "border-slate-700 bg-slate-800 hover:border-white" : "border-slate-200 bg-white hover:border-black"} shadow-sm`}`}>
+    <div id={`texture-card-${texturePath}`} className={`overflow-hidden flex flex-col rounded-lg border transition-all min-w-0 ${isRemoved ? (darkMode ? "border-red-500 bg-red-950/30 opacity-70" : "border-red-300 bg-red-50 opacity-70") : `${darkMode ? "border-dark-border bg-dark-secondary hover:border-dark-text" : "border-slate-200 bg-white hover:border-black"} shadow-sm`}`}>
       {/* Texture previews row */}
       {isImg && (
         <div
-          className={`flex border-b ${darkMode ? "border-slate-700" : "border-slate-100"} ${packsWithFile.length === 1 ? "" : darkMode ? "divide-x divide-slate-700" : "divide-x divide-slate-100"}`}
+          className={`flex border-b ${darkMode ? "border-dark-border" : "border-slate-100"} ${packsWithFile.length === 1 ? "" : darkMode ? "divide-x divide-dark-border" : "divide-x divide-slate-100"}`}
         >
           {packsWithFile.map((pack) => {
             const buf = pack.files.get(texturePath)!;
@@ -945,22 +946,22 @@ function TextureCard({
       )}
 
       {/* File label & controls — click label to open lightbox */}
-      <div className={`flex items-center gap-1 px-2 py-1.5 ${darkMode ? "bg-slate-700" : "bg-slate-50"}`}>
+      <div className={`flex items-center gap-1 px-2 py-1.5 ${darkMode ? "bg-dark-tertiary" : "bg-slate-50"}`}>
         <button
-          className={`flex-1 min-w-0 text-left transition-colors ${darkMode ? "hover:bg-slate-600" : "hover:bg-slate-100"}`}
+          className={`flex-1 min-w-0 text-left transition-colors ${darkMode ? "hover:bg-dark-border" : "hover:bg-slate-100"}`}
           onClick={() => onOpenLightbox?.()}
           title="Click to view larger"
         >
           <div className="flex items-center gap-1 min-w-0">
             {isAtlas && (
-              <span className={`text-[10px] font-bold flex-shrink-0 ${darkMode ? "text-slate-400" : "text-slate-600"}`} title="Atlas texture — region editor available">ATL</span>
+              <span className={`text-[10px] font-bold flex-shrink-0 ${darkMode ? "text-dark-text-tertiary" : "text-slate-600"}`} title="Atlas texture — region editor available">ATL</span>
             )}
-            <span className={`text-xs truncate flex-1 ${darkMode ? "text-slate-300" : "text-slate-500"}`} title={displayName}>
+            <span className={`text-xs truncate flex-1 ${darkMode ? "text-dark-text-secondary" : "text-slate-500"}`} title={displayName}>
               {displayName}
             </span>
             {overridePackId && (
               <span
-                className={`text-xs flex-shrink-0 ${darkMode ? "text-black dark:text-white400" : "text-black dark:text-white600"}`}
+                className={`text-xs flex-shrink-0 ${darkMode ? "text-black dark:text-dark-text400" : "text-black dark:text-dark-text600"}`}
                 onClick={(e) => { e.stopPropagation(); onOverride(texturePath, null); }}
                 title="Clear override"
               >
@@ -970,7 +971,7 @@ function TextureCard({
           </div>
         </button>
         <button
-          className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${darkMode ? "bg-slate-800 text-slate-400 hover:bg-slate-600 hover:text-slate-200" : "bg-white text-slate-400 hover:bg-slate-200 hover:text-slate-600"}`}
+          className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${darkMode ? "bg-dark-secondary text-dark-text-tertiary hover:bg-dark-border hover:text-dark-text-secondary" : "bg-white text-slate-400 hover:bg-slate-200 hover:text-slate-600"}`}
           onClick={(e) => { e.stopPropagation(); onEditTexture?.(texturePath, displayName, folder); }}
           title="Edit texture"
           aria-label={`Edit ${displayName}`}
@@ -978,7 +979,7 @@ function TextureCard({
           ✎
         </button>
         <button
-          className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${darkMode ? "text-slate-400 hover:bg-slate-600 hover:text-slate-200" : "text-slate-400 hover:bg-slate-200 hover:text-slate-600"}`}
+          className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${darkMode ? "text-dark-text-tertiary hover:bg-dark-border hover:text-dark-text-secondary" : "text-slate-400 hover:bg-slate-200 hover:text-slate-600"}`}
           onClick={handleDownload}
           title="Download texture"
           aria-label={`Download ${displayName}`}
@@ -999,7 +1000,7 @@ function TextureCard({
         {packsWithFile.length > 1 && (
           <div className="flex gap-1 flex-wrap">
             <button
-              className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold" : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"}`}
+              className={`text-xs px-1.5 py-0.5 rounded transition-colors ${!overridePackId ? "bg-slate-200 dark:bg-dark-tertiary text-slate-700 dark:text-dark-text-secondary font-semibold" : "text-slate-500 dark:text-dark-text-tertiary hover:text-slate-700 dark:hover:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-tertiary"}`}
               onClick={() => onOverride(texturePath, null)}
             >
             auto
@@ -1177,7 +1178,6 @@ function SearchAllResults({
   if (!filtered.length) {
     return (
       <div className="flex flex-col items-center justify-center h-48 gap-2 text-muted-foreground">
-        <span className="text-3xl">🔍</span>
         <p className="text-sm">No textures match <strong className="text-foreground">"{query}"</strong></p>
       </div>
     );
@@ -1341,7 +1341,7 @@ function AtlasPreviewStrip({
                 onClick={() => onAtlasZoom && onAtlasZoom(composedPreviewUrl, displayName)}
                 title="Zoom atlas preview"
               >
-                🔍 Zoom Atlas
+                Zoom Atlas
               </button>
             </div>
             <p className="max-w-[184px] text-center text-xs text-muted-foreground">Live composite preview</p>
@@ -1485,7 +1485,7 @@ function TextureLightbox({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className={`flex items-center gap-3 border-b px-4 py-3 ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
+          <div className="flex items-center gap-3 px-4 py-3">
             <span className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{displayName}</span>
             <span className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>{texturePath}</span>
             {atlasDef && (
@@ -1515,7 +1515,7 @@ function TextureLightbox({
           {/* Atlas region editor */}
           {atlasDef && packsWithFile.length > 0 && (
             <div className={`flex-shrink-0 rounded-lg border ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
-              <div className={`px-3 py-2 border-b ${darkMode ? "bg-slate-900/50 border-slate-700" : "bg-slate-50 border-slate-200"}`}>
+              <div className={`px-3 py-2 ${darkMode ? "bg-slate-900/50" : "bg-slate-50"}`}>
                 <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
                   {atlasDef.label} — Region Overrides
                 </span>
@@ -1523,7 +1523,7 @@ function TextureLightbox({
                   Pick a different pack for each region. On export, regions are composited onto the base atlas.
                 </p>
               </div>
-              <div className={`px-3 py-3 border-b ${darkMode ? "bg-slate-900/50 border-slate-700" : "bg-slate-50 border-slate-200"}`}>
+              <div className={`px-3 py-3 ${darkMode ? "bg-slate-900/50" : "bg-slate-50"}`}>
                 <div className="flex items-start gap-3 flex-wrap">
                   <div className="flex-1 min-w-[220px]">
                     <div className={`text-[11px] font-semibold uppercase tracking-[0.2em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>HUD preview</div>
@@ -1547,7 +1547,7 @@ function TextureLightbox({
                   </div>
                 </div>
               </div>
-              <div className={darkMode ? "divide-y divide-slate-700" : "divide-y divide-slate-200"}>
+              <div>
                 {atlasDef.regions.filter(region => !region.mapsTo).map((region) => {
                   const regionPackId = regionOverrides[region.id];
                   const regionOverridePack = packsWithFile.find(p => p.id === regionPackId);
@@ -1556,19 +1556,13 @@ function TextureLightbox({
                   return (
                     <div
                       key={region.id}
-                      className={`flex items-center gap-3 px-3 py-2.5 border-l-4 transition-colors ${regionPackId ? "shadow-[inset_0_0_0_1px_rgba(100,100,100,0.2)]" : ""} ${isPreviewedRegion ? (darkMode ? "bg-slate-700/50" : "bg-slate-100") : ""}`}
-                      style={{
-                        borderLeftColor: regionOverridePack ? regionOverridePack.color : "transparent",
-                        background: regionPackId
-                          ? "linear-gradient(135deg, rgba(100,100,100,0.05), rgba(15,23,42,0.02))"
-                          : undefined,
-                      }}
+                      className={`flex items-center gap-3 px-3 py-2.5 ${isPreviewedRegion ? (darkMode ? "bg-slate-700/50" : "bg-slate-100") : ""}`}
                     >
                       {regionPreviewUrls[region.id] ? (
                         <img
                           src={regionPreviewUrls[region.id]}
                           alt={region.label}
-                          className="h-10 w-10 rounded border bg-black/40 object-contain flex-shrink-0"
+                          className="h-10 w-10 rounded border bg-black/40 object-contain flex-shrink-0 checkered"
                           style={{ imageRendering: "pixelated" }}
                         />
                       ) : (
@@ -1577,8 +1571,8 @@ function TextureLightbox({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className={`text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{region.label}</span>
-                          {regionPackId && <span className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 font-semibold">override</span>}
-                          {mappedRegions.length > 0 && <span className="text-[10px] uppercase tracking-[0.2em] text-black dark:text-white500 font-semibold">→ {mappedRegions.map(r => r.label).join(', ')}</span>}
+                          {regionPackId && <span className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-dark-text-tertiary font-semibold">override</span>}
+                          {mappedRegions.length > 0 && <span className="text-[10px] uppercase tracking-[0.2em] text-black dark:text-dark-text500 font-semibold">→ {mappedRegions.map(r => r.label).join(', ')}</span>}
                         </div>
                         <div className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
                           {region.description} · ({region.x},{region.y}) {region.w}×{region.h}px
@@ -1586,7 +1580,7 @@ function TextureLightbox({
                       </div>
                       <div className="flex gap-1 flex-wrap justify-end">
                         <button
-                          className={`text-xs px-2 py-0.5 rounded transition-colors ${!regionPackId ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold" : (darkMode ? "text-slate-400 hover:bg-slate-700" : "text-slate-500 hover:bg-slate-100")}`}
+                          className={`text-xs px-2 py-0.5 rounded transition-colors ${!regionPackId ? "bg-slate-200 dark:bg-dark-tertiary text-slate-700 dark:text-dark-text-secondary font-semibold" : (darkMode ? "text-dark-text-tertiary hover:bg-dark-tertiary" : "text-slate-500 hover:bg-slate-100")}`}
                           onClick={() => {
                             setPreviewRegionId(region.id);
                             onAtlasRegionOverride(texturePath, region.id, null);
@@ -1613,15 +1607,14 @@ function TextureLightbox({
                   );
                 })}
               </div>
-            </div>
-          )}
+              <div className={`px-3 py-3 ${darkMode ? "bg-slate-900/50" : "bg-slate-50"}`}>
 
           {/* Whole-file pack selector for non-atlas or as fallback */}
           {packsWithFile.length > 1 && (
             <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
               <span className="text-xs text-muted-foreground">Whole file:</span>
               <button
-                className={`text-xs px-2 py-0.5 rounded transition-colors ${!overridePackId ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold" : "text-muted-foreground hover:bg-accent"}`}
+                className={`text-xs px-2 py-0.5 rounded transition-colors ${!overridePackId ? "bg-slate-200 dark:bg-dark-tertiary text-slate-700 dark:text-dark-text-secondary font-semibold" : "text-muted-foreground dark:text-dark-text-tertiary hover:bg-accent dark:hover:bg-dark-tertiary"}`}
                 onClick={() => onOverride(texturePath, null)}
               >
                 auto
@@ -1637,6 +1630,9 @@ function TextureLightbox({
                   {stripColorCodes(p.name)}
                 </button>
               ))}
+            </div>
+          )}
+              </div>
             </div>
           )}
           </div>
@@ -1782,8 +1778,6 @@ function ImageCropper({
 function SettingsModal({
   texturesPerRow,
   onTexturesPerRowChange,
-  darkMode,
-  onDarkModeChange,
   defaultPackName,
   defaultPackDescription,
   defaultPackIcon,
@@ -1797,8 +1791,6 @@ function SettingsModal({
 }: {
   texturesPerRow: number;
   onTexturesPerRowChange: (n: number) => void;
-  darkMode: boolean;
-  onDarkModeChange: (v: boolean) => void;
   defaultPackName: string;
   defaultPackDescription: string;
   defaultPackIcon: string | null;
@@ -1811,6 +1803,8 @@ function SettingsModal({
   onClose: () => void;
 }) {
   const iconInputRef = useRef<HTMLInputElement>(null);
+  const { theme } = useTheme();
+  const darkMode = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -1832,70 +1826,58 @@ function SettingsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className={`w-76 rounded-xl shadow-2xl flex flex-col overflow-hidden ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}
+        className="w-76 rounded-xl shadow-2xl flex flex-col overflow-hidden bg-white border-slate-200 dark:bg-dark-secondary dark:border-dark-border"
         style={{ width: 288 }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className={`flex items-center justify-between px-4 py-3 border-b ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
-          <span className={`font-semibold text-sm ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Settings</span>
-          <button onClick={onClose} className={`text-lg leading-none ${darkMode ? "text-slate-400 hover:text-slate-100" : "text-slate-400 hover:text-slate-700"}`}>✕</button>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-dark-border">
+          <span className="font-semibold text-sm text-slate-700 dark:text-dark-text">Settings</span>
+          <button onClick={onClose} className="text-lg leading-none text-slate-400 hover:text-slate-700 dark:hover:text-dark-text">✕</button>
         </div>
 
         {/* Display */}
-        <div className={`px-4 py-3 flex flex-col gap-3 border-b ${darkMode ? "border-slate-700" : "border-slate-200"}`}>
-          <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Display</span>
+        <div className="px-4 py-3 flex flex-col gap-3 border-b border-slate-200 dark:border-dark-border">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-dark-text-tertiary">Display</span>
 
           <div className="flex items-center gap-2">
-            <span className={`text-sm flex-1 ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Textures per row</span>
+            <span className="text-sm flex-1 text-slate-700 dark:text-dark-text-secondary">Textures per row</span>
             <button
               onClick={() => onTexturesPerRowChange(clampCols(texturesPerRow - 1))}
-              className={`w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}
+              className="w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700 dark:bg-dark-tertiary dark:hover:bg-dark-border dark:border-dark-border dark:text-dark-text-secondary"
             >−</button>
             <input
               type="number"
               value={texturesPerRow}
               onChange={(e) => onTexturesPerRowChange(clampCols(parseInt(e.target.value) || 6))}
-              className={`w-10 text-center rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+              className="w-10 text-center rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 bg-white border-slate-200 text-slate-700 dark:bg-dark-tertiary dark:border-dark-border dark:text-dark-text-secondary"
               min={1} max={12}
             />
             <button
               onClick={() => onTexturesPerRowChange(clampCols(texturesPerRow + 1))}
-              className={`w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}
+              className="w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700 dark:bg-dark-tertiary dark:hover:bg-dark-border dark:border-dark-border dark:text-dark-text-secondary"
             >+</button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className={`text-sm flex-1 ${darkMode ? "text-slate-300" : "text-slate-700"}`}>{darkMode ? "Dark mode" : "Light mode"}</span>
-            <button
-              onClick={() => onDarkModeChange(!darkMode)}
-              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${darkMode ? "bg-black dark:bg-white" : "bg-slate-200"}`}
-            >
-              <span
-                className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${darkMode ? "right-0.5" : "left-0.5"}`}
-              />
-            </button>
           </div>
 
         </div>
 
 {/* Upload defaults */}
         <div className="px-4 py-3 flex flex-col gap-3">
-          <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Upload defaults</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-dark-text-tertiary">Upload defaults</span>
 
           {/* Copy from top pack */}
           <div className="flex items-center gap-2">
-            <span className={`text-sm flex-1 ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Copy from top imported pack</span>
+            <span className="text-sm flex-1 text-slate-700 dark:text-dark-text-secondary">Copy from top imported pack</span>
             <button
               onClick={() => onCopyFromTopPackChange(!copyFromTopPack)}
-              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${copyFromTopPack ? "bg-black dark:bg-white" : "bg-slate-200"}`}
+              className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${copyFromTopPack ? "bg-black dark:bg-dark-text" : "bg-slate-200 dark:bg-dark-tertiary"}`}
             >
               <span
                 className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${copyFromTopPack ? "right-0.5" : "left-0.5"}`}
               />
             </button>
           </div>
-          <div className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+          <div className="text-xs text-slate-500 dark:text-dark-text-tertiary">
             When enabled, copies icon, name, and description from the top imported pack. When disabled, uses manual defaults.
           </div>
 
@@ -1903,14 +1885,14 @@ function SettingsModal({
           <div className="flex items-center gap-3">
             <div className="relative flex-shrink-0">
               <button
-                className={`w-14 h-14 rounded border overflow-hidden checkered transition-colors cursor-pointer ${darkMode ? "border-slate-600 hover:border-white" : "border-slate-200 hover:border-white"}`}
+                className="w-14 h-14 rounded border overflow-hidden checkered transition-colors cursor-pointer border-slate-200 dark:border-dark-border hover:border-white dark:hover:border-dark-text"
                 onClick={() => iconInputRef.current?.click()}
                 title="Click to set pack icon"
               >
                 {defaultPackIcon ? (
                   <img src={defaultPackIcon} className="w-full h-full object-cover texture-preview" />
                 ) : (
-                  <svg className="w-6 h-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" /></svg>
+                  <svg className="w-6 h-6 text-slate-400 dark:text-dark-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" /></svg>
                 )}
               </button>
               {defaultPackIcon && (
@@ -1922,7 +1904,7 @@ function SettingsModal({
               )}
             </div>
             <input ref={iconInputRef} type="file" accept="image/*" className="hidden" onChange={handleIconFile} />
-            <div className={`flex-1 text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+            <div className="flex-1 text-xs text-slate-500 dark:text-dark-text-tertiary">
               {defaultPackIcon ? "Click icon to replace" : "Click icon to upload"}
               <br />These values are used as defaults for new uploads.
             </div>
@@ -1930,24 +1912,24 @@ function SettingsModal({
 
           {/* Name */}
           <div className="flex flex-col gap-1">
-            <label className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Default pack name</label>
+            <label className="text-xs text-slate-500 dark:text-dark-text-tertiary">Default pack name</label>
             <input
               type="text"
               value={defaultPackName}
               onChange={(e) => onDefaultNameChange(e.target.value)}
-              className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+              className="rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 bg-white border-slate-200 text-slate-700 dark:bg-dark-tertiary dark:border-dark-border dark:text-dark-text-secondary"
               placeholder="My Resource Pack"
             />
           </div>
 
           {/* Description */}
           <div className="flex flex-col gap-1">
-            <label className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Default description (pack.mcmeta)</label>
+            <label className="text-xs text-slate-500 dark:text-dark-text-tertiary">Default description (pack.mcmeta)</label>
             <input
               type="text"
               value={defaultPackDescription}
               onChange={(e) => onDefaultDescriptionChange(e.target.value)}
-              className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+              className="rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 bg-white border-slate-200 text-slate-700 dark:bg-dark-tertiary dark:border-dark-border dark:text-dark-text-secondary"
               placeholder="A Minecraft resource pack"
             />
           </div>
@@ -1955,7 +1937,7 @@ function SettingsModal({
           {/* Save button */}
           <button
             onClick={onClose}
-            className={`mt-2 w-full py-2.5 rounded-lg text-sm font-semibold transition-colors ${darkMode ? "bg-black dark:bg-white hover:bg-black dark:bg-white600 text-white shadow-lg" : "bg-black dark:bg-white hover:bg-black dark:bg-white600 text-white shadow-lg"}`}
+            className="mt-2 w-full py-2.5 rounded-lg text-sm font-semibold transition-colors bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 shadow-lg"
           >
             Save Settings
           </button>
@@ -1978,7 +1960,7 @@ function AnalyzePackModal({
   onClose: () => void;
   darkMode: boolean;
 }) {
-  const cardBase = `rounded-lg border p-3 shadow-sm ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`;
+  const cardBase = `rounded-lg border p-3 shadow-sm ${darkMode ? "border-dark-border bg-dark-secondary" : "border-slate-200 bg-white"}`;
   const toneClasses: Record<string, string> = {
     info: `border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300`,
     warning: `border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300`,
@@ -1987,7 +1969,7 @@ function AnalyzePackModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className={`max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-lg border p-5 shadow-2xl ${darkMode ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`} onClick={(e) => e.stopPropagation()}>
+      <div className={`max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-lg border p-5 shadow-2xl ${darkMode ? "border-dark-border bg-dark-secondary" : "border-slate-200 bg-white"}`} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className={`text-xs font-semibold uppercase tracking-[0.24em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Pack analysis</p>
@@ -2377,9 +2359,9 @@ function TextureEditorModal({
   };
   
   const getRgbGradient = (channel: number, rgb: [number, number, number]) => {
-    if (channel === 0) return `linear-gradient(to right, rgb(0, ${rgb[1]}, ${rgb[2]}), rgb(255, ${rgb[1]}, ${rgb[2]}))`;
-    if (channel === 1) return `linear-gradient(to right, rgb(${rgb[0]}, 0, ${rgb[2]}), rgb(${rgb[0]}, 255, ${rgb[2]}))`;
-    return `linear-gradient(to right, rgb(${rgb[0]}, ${rgb[1]}, 0), rgb(${rgb[0]}, ${rgb[1]}, 255))`;
+    if (channel === 0) return `linear-gradient(to right, rgb(100, 0, 0), rgb(255, 0, 0))`;
+    if (channel === 1) return `linear-gradient(to right, rgb(0, 100, 0), rgb(0, 255, 0))`;
+    return `linear-gradient(to right, rgb(0, 0, 100), rgb(0, 0, 255))`;
   };
 
   const handleCanvasPointer = (e: PointerEvent<HTMLCanvasElement>) => {
@@ -2493,37 +2475,37 @@ function TextureEditorModal({
 
   return (
     <div className={`fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm ${darkMode ? "dark" : ""}`} onClick={onClose}>
-      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 px-4 py-3">
+      <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-dark-border dark:bg-dark-bg shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-dark-border px-4 py-3">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{displayName}</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-dark-text">{displayName}</h3>
           </div>
           <div className="flex items-center gap-2">
             {!isTextFile && (
               <>
-                <button type="button" className="rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 text-lg leading-none text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40" onClick={undoEdit} disabled={!canUndo} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
-                <button type="button" className="rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 text-lg leading-none text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-200 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40" onClick={redoEdit} disabled={!canRedo} title="Redo (Ctrl/Cmd+Y)" aria-label="Redo">↷</button>
+                <button type="button" className="rounded-lg border border-slate-200 dark:border-dark-border bg-slate-100 dark:bg-dark-secondary px-2.5 py-1.5 text-lg leading-none text-slate-700 dark:text-dark-text-secondary transition-colors hover:bg-slate-200 dark:hover:bg-dark-tertiary disabled:cursor-not-allowed disabled:opacity-40" onClick={undoEdit} disabled={!canUndo} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
+                <button type="button" className="rounded-lg border border-slate-200 dark:border-dark-border bg-slate-100 dark:bg-dark-secondary px-2.5 py-1.5 text-lg leading-none text-slate-700 dark:text-dark-text-secondary transition-colors hover:bg-slate-200 dark:hover:bg-dark-tertiary disabled:cursor-not-allowed disabled:opacity-40" onClick={redoEdit} disabled={!canRedo} title="Redo (Ctrl/Cmd+Y)" aria-label="Redo">↷</button>
               </>
             )}
-            <button onClick={onClose} className="rounded-full border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700">✕</button>
+            <button onClick={onClose} className="rounded-full border border-slate-200 dark:border-dark-border bg-slate-100 dark:bg-dark-secondary px-2.5 py-1 text-sm text-slate-700 dark:text-dark-text-secondary hover:bg-slate-200 dark:hover:bg-dark-tertiary">✕</button>
           </div>
         </div>
 
         <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="min-w-0 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-3">
+          <div className="min-w-0 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-secondary p-3">
             <div className="mb-3 flex items-center justify-between">
               {!isTextFile && atlasDef && (
-                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1 text-sm text-slate-700 dark:text-slate-200">
+                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-tertiary px-2 py-1 text-sm text-slate-700 dark:text-dark-text-secondary">
                   {regionOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
                 </select>
               )}
             </div>
             <div
               ref={canvasFrameRef}
-              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-3"
+              className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-secondary p-3"
             >
               {isLoading ? (
-                <div className="flex h-80 items-center justify-center text-sm text-slate-500 dark:text-slate-400">Loading {isTextFile ? "text" : "texture"}…</div>
+                <div className="flex h-80 items-center justify-center text-sm text-slate-500 dark:text-dark-text-tertiary">Loading {isTextFile ? "text" : "texture"}…</div>
               ) : isTextFile ? (
                 <textarea
                   value={textContent}
@@ -2531,11 +2513,11 @@ function TextureEditorModal({
                     setTextContent(e.target.value);
                     setHasChanges(true);
                   }}
-                  className="w-full h-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 p-3 font-mono text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-slate-600 resize-none"
+                  className="w-full h-full rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-tertiary p-3 font-mono text-sm text-slate-900 dark:text-dark-text-secondary focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-dark-border resize-none"
                   spellCheck={false}
                 />
               ) : canEdit ? (
-                <div className={`checkered relative inline-block rounded-lg border border-slate-200 dark:border-slate-600 p-1`}>
+                <div className={`checkered relative inline-block rounded-lg border border-slate-200 dark:border-dark-border p-1`}>
                   <canvas
                     ref={canvasRef}
                     className="mx-auto block"
@@ -2585,13 +2567,13 @@ function TextureEditorModal({
                   )}
                 </div>
               ) : (
-                <div className="flex h-80 items-center justify-center text-sm text-slate-500 dark:text-slate-400">This {isTextFile ? "text" : "texture"} could not be loaded for editing.</div>
+                <div className="flex h-80 items-center justify-center text-sm text-slate-500 dark:text-dark-text-tertiary">This {isTextFile ? "text" : "texture"} could not be loaded for editing.</div>
               )}
             </div>
           </div>
 
           {!isTextFile && (
-            <div className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-4 space-y-4">
+            <div className="w-full rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-secondary p-4 space-y-4">
               <div className="flex gap-2">
                 {[
                   { id: "pencil", label: "Brush", icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z" /><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /><path d="M2 2l7.586 7.586" /><circle cx="11" cy="11" r="2" /></svg> },
@@ -2601,7 +2583,7 @@ function TextureEditorModal({
                 ].map((item) => (
                   <button
                     key={item.id}
-                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border px-3 py-3 text-sm transition-all ${tool === item.id ? "border-slate-400 bg-slate-200 text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100" : "border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
+                    className={`flex-1 flex flex-col items-center gap-1.5 rounded-lg border px-3 py-3 text-sm transition-all ${tool === item.id ? "border-slate-400 bg-slate-200 text-slate-900 dark:border-dark-border dark:bg-dark-tertiary dark:text-dark-text" : "border-slate-200 dark:border-dark-border bg-white dark:bg-dark-secondary text-slate-700 dark:text-dark-text-secondary hover:bg-slate-100 dark:hover:bg-dark-tertiary"}`}
                     onClick={() => setTool(item.id as EditorTool)}
                   >
                     <span className="text-lg flex items-center justify-center">{item.icon}</span>
@@ -2613,15 +2595,15 @@ function TextureEditorModal({
               {tool === "pixel-select" && selectedPixels.size > 0 && (
                 <button
                   onClick={clearPixelSelection}
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                  className="w-full rounded-lg border border-slate-200 dark:border-dark-border bg-slate-100 dark:bg-dark-tertiary px-3 py-2 text-sm text-slate-700 dark:text-dark-text-secondary hover:bg-slate-200 dark:hover:bg-dark-border"
                 >
                   Clear selection ({selectedPixels.size} pixels)
                 </button>
               )}
 
-              <div className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 p-3">
+              <div className="rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-tertiary p-3">
                 <div className="flex items-center gap-3 mb-3">
-                  <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-10 w-10 cursor-pointer rounded border border-slate-200 dark:border-slate-600 bg-transparent p-1" aria-label="Color picker" />
+                  <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-10 w-10 cursor-pointer rounded border border-slate-200 dark:border-dark-border bg-transparent p-1" aria-label="Color picker" />
                   <input
                     type="text"
                     value={hexInput}
@@ -2629,14 +2611,14 @@ function TextureEditorModal({
                     onBlur={() => setHexInput(color.toUpperCase())}
                     maxLength={7}
                     spellCheck={false}
-                    className="flex-1 rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-1.5 font-mono text-sm text-slate-900 dark:text-slate-100"
+                    className="flex-1 rounded border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-secondary px-2 py-1.5 font-mono text-sm text-slate-900 dark:text-dark-text-secondary"
                     aria-label="Hex color code"
                   />
                 </div>
                 <div className="space-y-2">
                   {(["Red", "Green", "Blue"] as const).map((label, index) => (
                     <div key={label} className="flex items-center gap-2">
-                      <span className="text-xs text-slate-600 dark:text-slate-400 w-3">{label[0]}</span>
+                      <span className="text-xs text-slate-600 dark:text-dark-text-tertiary w-3">{label[0]}</span>
                       <input
                         type="range"
                         min="0"
@@ -2647,51 +2629,51 @@ function TextureEditorModal({
                         className="flex-1 h-1 appearance-none cursor-pointer"
                         style={{ background: getRgbGradient(index, rgbColor) }}
                       />
-                      <span className="text-xs text-slate-600 dark:text-slate-400 w-6 text-right font-mono">{rgbColor[index]}</span>
+                      <span className="text-xs text-slate-600 dark:text-dark-text-tertiary w-6 text-right font-mono">{rgbColor[index]}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {tool !== "pixel-select" && (
-                <div className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 p-3">
-                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Brush size: {brushSize}px</label>
+                <div className="rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-tertiary p-3">
+                  <label className="text-xs font-medium text-slate-700 dark:text-dark-text-secondary">Brush size: {brushSize}px</label>
                   <input type="range" min="1" max="24" value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="mt-2 w-full" />
                 </div>
               )}
 
-              <div className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 p-3">
-                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Recolor mode</label>
-                <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-1 text-sm text-slate-900 dark:text-slate-100">
+              <div className="rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-tertiary p-3">
+                <label className="text-xs font-medium text-slate-700 dark:text-dark-text-secondary">Recolor mode</label>
+                <select value={recolorMode} onChange={(e) => setRecolorMode(e.target.value as RecolorMode)} className="mt-2 w-full rounded border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-secondary px-2 py-1 text-sm text-slate-900 dark:text-dark-text-secondary">
                   <option value="tint">Tint</option>
                   <option value="hue-shift">Hue shift</option>
                   <option value="colorize">Colorize</option>
                   <option value="multiply">Multiply</option>
                   <option value="overlay">Overlay</option>
                 </select>
-                <label className="mt-3 text-xs font-medium text-slate-700 dark:text-slate-300">Intensity: {recolorIntensity.toFixed(2)}</label>
+                <label className="mt-3 text-xs font-medium text-slate-700 dark:text-dark-text-secondary">Intensity: {recolorIntensity.toFixed(2)}</label>
                 <input type="range" min="0" max="1" step="0.01" value={recolorIntensity} onChange={(e) => setRecolorIntensity(Number(e.target.value))} className="mt-2 w-full" />
-                <button className="mt-3 w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600" onClick={handleApplyRecolor}>
+                <button className="mt-3 w-full rounded-lg border border-slate-200 dark:border-dark-border bg-slate-100 dark:bg-dark-tertiary px-3 py-2 text-sm font-medium text-slate-700 dark:text-dark-text-secondary hover:bg-slate-200 dark:hover:bg-dark-border" onClick={handleApplyRecolor}>
                   {selectedPixels.size > 0 ? `Apply to ${selectedPixels.size} pixels` : "Apply to entire texture"}
                 </button>
               </div>
 
               <div className="flex gap-2">
-                <button className="flex-1 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600" onClick={onClose}>Cancel</button>
-                <button className="flex-1 rounded-lg bg-slate-900 dark:bg-slate-100 px-3 py-2 text-sm font-semibold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200" onClick={handleSave}>Save</button>
+                <button className="flex-1 rounded-lg border border-slate-200 dark:border-dark-border bg-slate-100 dark:bg-dark-tertiary px-3 py-2 text-sm font-medium text-slate-700 dark:text-dark-text-secondary hover:bg-slate-200 dark:hover:bg-dark-border" onClick={onClose}>Cancel</button>
+                <button className="flex-1 rounded-lg bg-slate-900 dark:bg-dark-text px-3 py-2 text-sm font-semibold text-white dark:text-dark-bg hover:bg-slate-800 dark:hover:bg-dark-tertiary" onClick={handleSave}>Save</button>
               </div>
             </div>
           )}
 
           {isTextFile && (
-            <div className="w-full rounded-[24px] border-2 border-border bg-white dark:bg-slate-900 p-4">
+            <div className="w-full rounded-[24px] border-2 border-border bg-white dark:bg-dark-bg p-4">
               <p className="text-sm font-semibold text-foreground">Text File Info</p>
               <div className="mt-3 text-xs text-muted-foreground">
                 <p>This is a text file that can be edited directly in the editor above.</p>
                 <p className="mt-2">Changes will be saved back to the selected pack on export.</p>
               </div>
 
-              <div className="mt-4 flex items-center justify-between rounded-2xl border-2 border-border bg-white dark:bg-slate-900 px-3 py-2 text-sm text-muted-foreground">
+              <div className="mt-4 flex items-center justify-between rounded-2xl border-2 border-border bg-white dark:bg-dark-bg px-3 py-2 text-sm text-muted-foreground">
                 <span>{hasChanges ? "Unsaved changes" : "No changes yet"}</span>
               </div>
 
@@ -2875,7 +2857,7 @@ function FileViewerModal({
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className={`flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-[28px] border border-border bg-white dark:bg-slate-950 shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+      <div className={`flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-[28px] border border-border bg-white dark:bg-dark-secondary shadow-2xl`} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>
@@ -2926,6 +2908,7 @@ function FileViewerModal({
 
 export default function EditorApp() {
   const { user } = useAuth();
+  const { checkerboardStyle, setCheckerboardStyle } = useTheme();
   
   // Helper function to strip Minecraft color codes
   const stripColorCodes = (name: string): string => {
@@ -2958,12 +2941,25 @@ export default function EditorApp() {
     const saved = window.localStorage.getItem("mc-pack-editor-font");
     return saved || "montserrat";
   });
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window === "undefined") return true;
-    const saved = window.localStorage.getItem("mc-pack-editor-theme");
-    return saved ? saved === "dark" : true;
-  });
+  const { theme, setTheme } = useTheme();
+  const darkMode = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   const layoutMode: LayoutMode = "modern";
+
+  // Save font preference to localStorage
+  useEffect(() => {
+    window.localStorage.setItem("mc-pack-editor-font", selectedFont);
+  }, [selectedFont]);
+
+  // Apply font to document
+  useEffect(() => {
+    const fontMap: Record<string, string> = {
+      "montserrat": "'Montserrat', sans-serif",
+      "quicksand": "'Quicksand', sans-serif",
+      "jetbrains-mono": "'JetBrains Mono', monospace",
+    };
+    document.body.style.fontFamily = fontMap[selectedFont] || fontMap["montserrat"];
+  }, [selectedFont]);
+
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
@@ -3107,21 +3103,6 @@ export default function EditorApp() {
       setPackName(topPack.name);
     }
   }, [packs, uploadDefaults.copyFromTopPack, uploadDefaults.name, uploadDefaults.description]);
-
-  // Save font preference to localStorage
-  useEffect(() => {
-    window.localStorage.setItem("mc-pack-editor-font", selectedFont);
-  }, [selectedFont]);
-
-  // Apply font to document
-  useEffect(() => {
-    const fontMap: Record<string, string> = {
-      "montserrat": "'Montserrat', sans-serif",
-      "quicksand": "'Quicksand', sans-serif",
-      "jetbrains-mono": "'JetBrains Mono', monospace",
-    };
-    document.body.style.fontFamily = fontMap[selectedFont] || fontMap["montserrat"];
-  }, [selectedFont]);
 
   const removePack = useCallback((id: string) => {
     setPacks((prev) => prev.filter((p) => p.id !== id));
@@ -3431,95 +3412,83 @@ export default function EditorApp() {
   };
 
   return (
-    <div className={`flex flex-col h-screen overflow-hidden ${darkMode ? "dark bg-slate-900 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
+    <div className={`flex flex-col h-screen overflow-hidden ${darkMode ? "dark bg-dark-bg text-dark-text" : "bg-slate-50 text-slate-900"}`}>
       {/* ── Top Navigation Bar ── */}
-      <nav className={`flex-shrink-0 px-6 py-3 border-b ${darkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`} style={{ position: 'relative', zIndex: 50 }}>
+      <nav className={`flex-shrink-0 px-6 py-3 border-b ${darkMode ? "border-dark-border bg-dark-secondary" : "border-slate-200 bg-white"}`} style={{ position: 'relative', zIndex: 50 }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="relative" ref={settingsMenuRef}>
                 <button
                   onClick={() => setSettingsMenuOpen(!settingsMenuOpen)}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? "text-slate-300 hover:text-slate-100" : "text-slate-600 hover:text-slate-700"}`}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${darkMode ? "text-dark-text-secondary hover:text-dark-text" : "text-slate-600 hover:text-slate-700"}`}
                   title="Settings"
                 >
                   ⚙️
                 </button>
                 {settingsMenuOpen && (
-                  <div className={`absolute top-full left-0 mt-2 w-64 rounded-lg shadow-xl border z-[9999] ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
+                  <div className={`absolute top-full left-0 mt-2 w-64 rounded-lg shadow-xl border z-[9999] bg-white dark:bg-dark-secondary border-slate-200 dark:border-dark-border`}>
                     <div className="p-3">
                       <div className="flex items-center justify-between mb-3">
-                        <span className={`text-sm font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Settings</span>
-                        <button onClick={() => setSettingsMenuOpen(false)} className={`text-lg leading-none ${darkMode ? "text-slate-400 hover:text-slate-100" : "text-slate-400 hover:text-slate-700"}`}>✕</button>
+                        <span className="text-sm font-semibold text-slate-700 dark:text-dark-text">Settings</span>
+                        <button onClick={() => setSettingsMenuOpen(false)} className="text-lg leading-none text-slate-400 hover:text-slate-700 dark:hover:text-dark-text">✕</button>
                       </div>
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between">
-                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>{darkMode ? "Dark mode" : "Light mode"}</span>
-                          <button
-                            onClick={() => setDarkMode(!darkMode)}
-                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${darkMode ? "bg-black dark:bg-white" : "bg-slate-200"}`}
-                          >
-                            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${darkMode ? "right-0.5" : "left-0.5"}`} />
-                          </button>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Textures per row</span>
+                          <span className="text-sm text-slate-700 dark:text-dark-text-secondary">Textures per row</span>
                           <div className="flex items-center gap-1">
-                            <button onClick={() => setTexturesPerRow(Math.max(1, texturesPerRow - 1))} className={`w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}>−</button>
-                            <span className={`w-6 text-center text-sm ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{texturesPerRow}</span>
-                            <button onClick={() => setTexturesPerRow(Math.min(12, texturesPerRow + 1))} className={`w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}>+</button>
+                            <button onClick={() => setTexturesPerRow(Math.max(1, texturesPerRow - 1))} className="w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700 dark:bg-dark-tertiary dark:hover:bg-dark-border dark:border-dark-border dark:text-dark-text-secondary">−</button>
+                            <span className="w-6 text-center text-sm text-slate-700 dark:text-dark-text-secondary">{texturesPerRow}</span>
+                            <button onClick={() => setTexturesPerRow(Math.min(12, texturesPerRow + 1))} className="w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700 dark:bg-dark-tertiary dark:hover:bg-dark-border dark:border-dark-border dark:text-dark-text-secondary">+</button>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Show text files</span>
+                          <span className="text-sm text-slate-700 dark:text-dark-text-secondary">Show text files</span>
                           <button
                             onClick={() => setShowJsonFiles(!showJsonFiles)}
-                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${showJsonFiles ? "bg-black dark:bg-white" : "bg-slate-200"}`}
+                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${showJsonFiles ? "bg-black dark:bg-dark-text" : "bg-slate-200 dark:bg-dark-tertiary"}`}
                           >
                             <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${showJsonFiles ? "right-0.5" : "left-0.5"}`} />
                           </button>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Font</span>
-                          <select
-                            value={selectedFont}
-                            onChange={(e) => setSelectedFont(e.target.value)}
-                            className={`px-2 py-1 text-sm rounded border ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+                          <span className="text-sm text-slate-700 dark:text-dark-text-secondary">Light checkerboard</span>
+                          <button
+                            onClick={() => setCheckerboardStyle(checkerboardStyle === 'dark' ? 'light' : 'dark')}
+                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${checkerboardStyle === 'light' ? "bg-black dark:bg-dark-text" : "bg-slate-200 dark:bg-dark-tertiary"}`}
                           >
-                            <option value="montserrat">Montserrat</option>
-                            <option value="quicksand">Quicksand</option>
-                            <option value="jetbrains-mono">JetBrains Mono</option>
-                          </select>
+                            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${checkerboardStyle === 'light' ? "right-0.5" : "left-0.5"}`} />
+                          </button>
                         </div>
-                        <div className={`border-t ${darkMode ? "border-slate-700" : "border-slate-200"} pt-3`}>
-                          <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Upload defaults</span>
+                        <div className={`border-t border-slate-200 dark:border-dark-border pt-3`}>
+                          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-dark-text-tertiary">Upload defaults</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Copy from top pack</span>
+                          <span className="text-sm text-slate-700 dark:text-dark-text-secondary">Copy from top pack</span>
                           <button
                             onClick={() => setUploadDefaults((prev) => ({ ...prev, copyFromTopPack: !prev.copyFromTopPack }))}
-                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${uploadDefaults.copyFromTopPack ? "bg-black dark:bg-white" : "bg-slate-200"}`}
+                            className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${uploadDefaults.copyFromTopPack ? "bg-black dark:bg-dark-text" : "bg-slate-200 dark:bg-dark-tertiary"}`}
                           >
                             <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${uploadDefaults.copyFromTopPack ? "right-0.5" : "left-0.5"}`} />
                           </button>
                         </div>
                         <div className="flex flex-col gap-1">
-                          <label className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Default pack name</label>
+                          <label className="text-xs text-slate-500 dark:text-dark-text-tertiary">Default pack name</label>
                           <input
                             type="text"
                             value={uploadDefaults.name}
                             onChange={(e) => setUploadDefaults((prev) => ({ ...prev, name: e.target.value }))}
-                            className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+                            className="rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 bg-white border-slate-200 text-slate-700 dark:bg-dark-tertiary dark:border-dark-border dark:text-dark-text-secondary"
                             placeholder="My Resource Pack"
                           />
                         </div>
                         <div className="flex flex-col gap-1">
-                          <label className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Default description</label>
+                          <label className="text-xs text-slate-500 dark:text-dark-text-tertiary">Default description</label>
                           <input
                             type="text"
                             value={uploadDefaults.description}
                             onChange={(e) => setUploadDefaults((prev) => ({ ...prev, description: e.target.value }))}
-                            className={`rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 ${darkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-700"}`}
+                            className="rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 bg-white border-slate-200 text-slate-700 dark:bg-dark-tertiary dark:border-dark-border dark:text-dark-text-secondary"
                             placeholder="A Minecraft resource pack"
                           />
                         </div>
@@ -3528,14 +3497,12 @@ export default function EditorApp() {
                   </div>
                 )}
               </div>
-              <span className={`font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>Resource Pack Editor</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? "bg-slate-700 text-slate-300" : "bg-slate-100 text-slate-500"}`}>1.8</span>
             </div>
-            <div className={`flex items-center gap-2 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+            <div className={`flex items-center gap-2 text-sm ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>
               {packs.length > 0 && (
                 <>
-                  <span className={`px-3 py-1.5 rounded-full ${darkMode ? "bg-slate-700 text-slate-300" : "bg-slate-100 text-slate-600"}`}>{packs.length} pack{packs.length !== 1 ? "s" : ""}</span>
-                  <span className={`px-3 py-1.5 rounded-full ${darkMode ? "bg-slate-700 text-slate-300" : "bg-slate-100 text-slate-600"}`}>{Object.keys(textureOverrides).length + Object.values(atlasRegionOverrides).reduce((sum, r) => sum + Object.keys(r).length, 0)} override{Object.keys(textureOverrides).length + Object.values(atlasRegionOverrides).reduce((sum, r) => sum + Object.keys(r).length, 0) !== 1 ? "s" : ""}</span>
+                  <span className={`px-3 py-1.5 rounded-full ${darkMode ? "bg-dark-tertiary text-dark-text-secondary" : "bg-slate-100 text-slate-600"}`}>{packs.length} pack{packs.length !== 1 ? "s" : ""}</span>
+                  <span className={`px-3 py-1.5 rounded-full ${darkMode ? "bg-dark-tertiary text-dark-text-secondary" : "bg-slate-100 text-slate-600"}`}>{Object.keys(textureOverrides).length + Object.values(atlasRegionOverrides).reduce((sum, r) => sum + Object.keys(r).length, 0)} override{Object.keys(textureOverrides).length + Object.values(atlasRegionOverrides).reduce((sum, r) => sum + Object.keys(r).length, 0) !== 1 ? "s" : ""}</span>
                 </>
               )}
             </div>
@@ -3546,7 +3513,7 @@ export default function EditorApp() {
                 <button
                   onClick={handleAnalyze}
                   disabled={analyzing}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${darkMode ? "text-slate-300 hover:text-slate-100 hover:bg-slate-700" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${darkMode ? "text-dark-text-secondary hover:text-dark-text hover:bg-dark-tertiary" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}
                 >
                   <span className={analyzing ? "animate-pulse" : ""}>✨</span>
                   {analyzing ? "Analyzing…" : "Analyze"}
@@ -3576,23 +3543,23 @@ export default function EditorApp() {
       {/* Open File Prompt */}
       {showOpenFilePrompt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000]" onClick={() => setShowOpenFilePrompt(false)}>
-          <div className={`max-w-md w-full mx-4 rounded-lg p-6 shadow-xl ${darkMode ? "bg-slate-800" : "bg-white"}`} onClick={(e) => e.stopPropagation()}>
-            <h3 className={`text-lg font-semibold mb-3 ${darkMode ? "text-white" : "text-slate-900"}`}>Select Template Pack</h3>
+          <div className={`max-w-md w-full mx-4 rounded-lg p-6 shadow-xl ${darkMode ? "bg-dark-secondary" : "bg-white"}`} onClick={(e) => e.stopPropagation()}>
+            <h3 className={`text-lg font-semibold mb-3 ${darkMode ? "text-dark-text" : "text-slate-900"}`}>Select Template Pack</h3>
             {!waitingForFileSelection ? (
               <>
-                <p className={`text-sm mb-4 ${darkMode ? "text-slate-300" : "text-slate-600"}`}>
+                <p className={`text-sm mb-4 ${darkMode ? "text-dark-text-secondary" : "text-slate-600"}`}>
                   Would you like to select the template pack to load the default textures?
                 </p>
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setShowOpenFilePrompt(false)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? "bg-slate-700 hover:bg-slate-600 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? "bg-dark-tertiary hover:bg-dark-border text-dark-text-secondary" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleConfirmOpenFile}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? "bg-blue-600 hover:bg-slate-600 text-white" : "bg-blue-600 hover:bg-slate-500 text-white"}`}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"}`}
                   >
                     Select File
                   </button>
@@ -3623,13 +3590,13 @@ export default function EditorApp() {
       {/* ── Main Content Area ── */}
       <div className="flex flex-1 overflow-hidden">
         {/* ── Left Sidebar ── */}
-        <aside className={`flex-shrink-0 w-64 border-r overflow-x-hidden overflow-y-auto sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderLeft: 'none', zIndex: 10 }}>
-          <div className={`p-4 border-b`}>
-            <h2 className={`text-sm font-semibold mb-3`}>Packs</h2>
+        <aside className={`flex-shrink-0 w-64 overflow-x-hidden overflow-y-auto sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderLeft: 'none', zIndex: 10 }}>
+          <div className={`p-4`}>
+            <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-dark-text" : "text-slate-700"}`}>Packs</h2>
             <DropZone onLoad={handlePacksLoaded} onTextureImport={handleTextureImport} darkMode={darkMode} />
             <button
               onClick={handleCreateFromScratch}
-              className={`w-full mt-3 px-4 py-3 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2 sleek ${darkMode ? "sleek-dark bg-blue-600 hover:bg-slate-600 text-white" : "bg-blue-600 hover:bg-slate-500 text-white"}`}
+              className={`w-full mt-3 px-4 py-3 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2 sleek ${darkMode ? "sleek-dark bg-[#C2B280] hover:bg-[#D4C390] text-black" : "bg-[#C2B280] hover:bg-[#D4C390] text-black"}`}
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14M5 12h14" />
@@ -3692,7 +3659,7 @@ export default function EditorApp() {
                     placeholder="Search textures..."
                     value={globalSearch}
                     onChange={(e) => setGlobalSearch(e.target.value)}
-                    className={`w-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 disabled:opacity-50 ${darkMode ? "sleek-input" : "sleek-input-light"}`}
+                    className={`w-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:ring-white/20 focus:border-blue-500 disabled:opacity-50 sleek ${darkMode ? "sleek-dark" : "sleek"}`}
                   />
                 </div>
               )}
@@ -3702,23 +3669,23 @@ export default function EditorApp() {
                     {totalOverrideCount > 0 && (
                       <details className="group relative">
                         <summary className="cursor-pointer list-none flex items-center gap-1 hover:text-foreground">
-                          <span className={`text-sm ${darkMode ? "text-slate-300" : "text-slate-600"}`}>🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
+                          <span className={`text-sm ${darkMode ? "text-dark-text-secondary" : "text-slate-600"}`}>🎯 {totalOverrideCount} override{totalOverrideCount !== 1 ? "s" : ""}</span>
                           {(atlasRegionOverrideCount > 0 || folderSourceCount > 0) && (
                             <span className="text-[10px]">({textureOverrideCount} texture, {atlasRegionOverrideCount} atlas, {folderSourceCount} folder{folderSourceCount !== 1 ? "s" : ""})</span>
                           )}
                           <span className="inline-block transition-transform group-open:rotate-180">⌄</span>
                         </summary>
-                        <div className={`absolute right-0 top-full z-[1000] mt-1 max-h-36 w-[400px] overflow-y-auto rounded-lg border p-3 pb-4 shadow-xl ${darkMode ? "border-slate-600 bg-slate-800" : "border-slate-200 bg-white"}`}>
+                        <div className={`absolute right-0 top-full z-[1000] mt-1 max-h-36 w-[400px] overflow-y-auto rounded-lg border p-3 pb-4 shadow-xl ${darkMode ? "border-dark-border bg-dark-secondary" : "border-slate-200 bg-white"}`}>
                           {Object.entries(textureOverrides).map(([path, packId]) => (
                             <div key={path} className="flex items-center gap-2">
-                              <button type="button" onClick={() => jumpToOverriddenTexture(path)} className={`flex-1 rounded px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-700/30 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+                              <button type="button" onClick={() => jumpToOverriddenTexture(path)} className={`flex-1 rounded px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-dark-tertiary ${darkMode ? "text-dark-text-secondary" : "text-slate-700"}`}>
                                 <span className="block truncate">{path.split("/").pop()}</span>
-                                <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Texture override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
+                                <span className={`block truncate text-[10px] ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>Texture override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleOverride(path, null)}
-                                className={`p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 ${darkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-700"}`}
+                                className={`p-2 rounded hover:bg-slate-200 dark:hover:bg-dark-tertiary ${darkMode ? "text-dark-text-tertiary hover:text-dark-text-secondary" : "text-slate-500 hover:text-slate-700"}`}
                                 title="Revert to auto"
                               >
                                 ↺
@@ -3727,14 +3694,14 @@ export default function EditorApp() {
                           ))}
                           {Object.entries(atlasRegionOverrides).flatMap(([path, regions]) => Object.entries(regions).map(([regionId, packId]) => ({ path, regionId, packId }))).map(({ path, regionId, packId }) => (
                             <div key={`${path}-${regionId}`} className="flex items-center gap-2">
-                              <button type="button" onClick={() => jumpToOverriddenTexture(path)} className={`flex-1 rounded px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-700/30 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+                              <button type="button" onClick={() => jumpToOverriddenTexture(path)} className={`flex-1 rounded px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-dark-tertiary ${darkMode ? "text-dark-text-secondary" : "text-slate-700"}`}>
                                 <span className="block truncate">{path.split("/").pop()} · {regionId}</span>
-                                <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Atlas override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
+                                <span className={`block truncate text-[10px] ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>Atlas override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleAtlasRegionOverride(path, regionId, null)}
-                                className={`p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 ${darkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-700"}`}
+                                className={`p-2 rounded hover:bg-slate-200 dark:hover:bg-dark-tertiary ${darkMode ? "text-dark-text-tertiary hover:text-dark-text-secondary" : "text-slate-500 hover:text-slate-700"}`}
                                 title="Revert to auto"
                               >
                                 ↺
@@ -3743,14 +3710,14 @@ export default function EditorApp() {
                           ))}
                           {Object.entries(folderSources).map(([folder, packId]) => (
                             <div key={folder} className="flex items-center gap-2">
-                              <button type="button" onClick={() => jumpToOverriddenFolder(folder)} className={`flex-1 rounded px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-700/30 ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+                              <button type="button" onClick={() => jumpToOverriddenFolder(folder)} className={`flex-1 rounded px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-dark-tertiary ${darkMode ? "text-dark-text-secondary" : "text-slate-700"}`}>
                                 <span className="block truncate">{folder}</span>
-                                <span className={`block truncate text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Folder override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
+                                <span className={`block truncate text-[10px] ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>Folder override · {packs.find((pack) => pack.id === packId) ? stripColorCodes(packs.find((pack) => pack.id === packId)!.name) : "selected pack"}</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleFolderSource(folder, null)}
-                                className={`p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 ${darkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-700"}`}
+                                className={`p-2 rounded hover:bg-slate-200 dark:hover:bg-dark-tertiary ${darkMode ? "text-dark-text-tertiary hover:text-dark-text-secondary" : "text-slate-500 hover:text-slate-700"}`}
                                 title="Revert to auto"
                               >
                                 ↺
@@ -3762,7 +3729,7 @@ export default function EditorApp() {
                     )}
                     <button
                       onClick={() => setSidebarOpen(!sidebarOpen)}
-                      className={`px-3 py-2 text-sm rounded-lg transition-colors ${darkMode ? "text-slate-800 hover:text-slate-900 hover:bg-slate-300" : "text-black hover:text-black hover:bg-slate-200"} ${sidebarOpen && packs.length > 0 ? "bg-slate-200 dark:bg-slate-300" : ""}`}
+                      className={`px-3 py-2 text-sm rounded-lg transition-colors ${darkMode ? "text-dark-text-secondary hover:text-dark-text hover:bg-dark-tertiary" : "text-black hover:text-black hover:bg-slate-200"} ${sidebarOpen && packs.length > 0 ? "bg-slate-200 dark:bg-dark-tertiary" : ""}`}
                       title="Toggle folder panel"
                     >
                       ☰
@@ -3777,25 +3744,25 @@ export default function EditorApp() {
           <div className="flex-1 overflow-auto p-8">
             {packs.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full p-4">
-                <div className={`text-center max-w-4xl w-full rounded-3xl border-2 px-12 py-12 sleek ${darkMode ? "sleek-dark" : "sleek"}`}>
-                  <h1 className={`text-5xl font-bold mb-6 tracking-tight ${darkMode ? "text-white" : "text-slate-800"}`}>
+                <div className={`text-center max-w-4xl w-full rounded-3xl px-12 py-12 ${darkMode ? "bg-dark-secondary" : "bg-white"}`}>
+                  <h1 className={`text-5xl font-bold mb-6 tracking-tight ${darkMode ? "text-dark-text" : "text-slate-800"}`}>
                     MCTextureLab
                   </h1>
-                  <p className={`text-lg leading-relaxed mb-12 ${darkMode ? "text-slate-300" : "text-slate-600"}`}>
+                  <p className={`text-lg leading-relaxed mb-12 ${darkMode ? "text-dark-text-secondary" : "text-slate-600"}`}>
                     Upload resource pack ZIP files above, or import individual PNG textures to create custom packs.
                   </p>
                   <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 text-left mb-12`}>
-                    <div className={`p-6 rounded-xl border ${darkMode ? "bg-slate-700/50 border-slate-600" : "bg-white border-slate-200 shadow-sm"}`}>
-                      <h3 className={`font-semibold mb-2 ${darkMode ? "text-slate-200" : "text-slate-800"}`}>Merge Packs</h3>
-                      <p className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Combine multiple resource packs with smart override management</p>
+                    <div className={`p-6 rounded-xl ${darkMode ? "bg-dark-tertiary" : "bg-white shadow-sm"}`}>
+                      <h3 className={`font-semibold mb-2 ${darkMode ? "text-dark-text" : "text-slate-800"}`}>Merge Packs</h3>
+                      <p className={`text-sm ${darkMode ? "text-dark-text-secondary" : "text-slate-600"}`}>Combine multiple resource packs with smart override management</p>
                     </div>
-                    <div className={`p-6 rounded-xl border ${darkMode ? "bg-slate-700/50 border-slate-600" : "bg-white border-slate-200 shadow-sm"}`}>
-                      <h3 className={`font-semibold mb-2 ${darkMode ? "text-slate-200" : "text-slate-800"}`}>Search & Edit</h3>
-                      <p className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Search across all textures and edit them with a built-in editor</p>
+                    <div className={`p-6 rounded-xl ${darkMode ? "bg-dark-tertiary" : "bg-white shadow-sm"}`}>
+                      <h3 className={`font-semibold mb-2 ${darkMode ? "text-dark-text" : "text-slate-800"}`}>Search & Edit</h3>
+                      <p className={`text-sm ${darkMode ? "text-dark-text-secondary" : "text-slate-600"}`}>Search across all textures and edit them with a built-in editor</p>
                     </div>
-                    <div className={`p-6 rounded-xl border ${darkMode ? "bg-slate-700/50 border-slate-600" : "bg-white border-slate-200 shadow-sm"}`}>
-                      <h3 className={`font-semibold mb-2 ${darkMode ? "text-slate-200" : "text-slate-800"}`}>Export Packs</h3>
-                      <p className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>Export your custom pack with all overrides preserved</p>
+                    <div className={`p-6 rounded-xl ${darkMode ? "bg-dark-tertiary" : "bg-white shadow-sm"}`}>
+                      <h3 className={`font-semibold mb-2 ${darkMode ? "text-dark-text" : "text-slate-800"}`}>Export Packs</h3>
+                      <p className={`text-sm ${darkMode ? "text-dark-text-secondary" : "text-slate-600"}`}>Export your custom pack with all overrides preserved</p>
                     </div>
                   </div>
                   <div className={`flex items-center justify-center gap-2 text-base ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
@@ -3852,12 +3819,12 @@ export default function EditorApp() {
 
         {/* ── Right Sidebar (Folders) ── */}
         {sidebarOpen && packs.length > 0 && (
-          <aside className={`flex-shrink-0 w-64 border-l overflow-x-hidden overflow-y-auto sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderRight: 'none', zIndex: 10 }}>
-            <div className={`flex items-center justify-between px-4 py-3 border-b`}>
-              <h2 className={`text-sm font-semibold`}>Folders</h2>
+          <aside className={`flex-shrink-0 w-64 overflow-x-hidden overflow-y-auto sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderRight: 'none', zIndex: 10 }}>
+            <div className={`flex items-center justify-between px-4 py-3`}>
+              <h2 className={`text-sm font-semibold ${darkMode ? "text-dark-text" : "text-slate-700"}`}>Folders</h2>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className={`p-1 rounded-lg transition-colors hover:bg-white/10`}
+                className={`p-1 rounded-lg transition-colors hover:bg-white/10 dark:hover:bg-dark-tertiary`}
                 title="Close folder panel"
               >
                 ✕
@@ -3916,19 +3883,19 @@ export default function EditorApp() {
       {/* ── Atlas zoom modal ── */}
       {atlasZoom && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" onClick={() => setAtlasZoom(null)}>
-          <div className="max-w-[90vw] max-h-[90vh] rounded-[28px] border border-border bg-background/95 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div className="max-w-[90vw] max-h-[90vh] rounded-[28px] bg-white dark:bg-dark-bg shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Atlas Preview</p>
-                <h3 className="text-lg font-semibold text-foreground">{atlasZoom.displayName}</h3>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400">Atlas Preview</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-text">{atlasZoom.displayName}</h3>
               </div>
-              <button onClick={() => setAtlasZoom(null)} className="rounded-full border border-border bg-secondary px-2.5 py-1 text-sm text-muted-foreground hover:text-foreground">✕</button>
+              <button onClick={() => setAtlasZoom(null)} className="rounded-full bg-gray-100 dark:bg-dark-secondary px-2.5 py-1 text-sm text-gray-600 dark:text-dark-text-tertiary hover:bg-gray-200 dark:hover:bg-dark-tertiary">✕</button>
             </div>
-            <div className="p-4 flex items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_60%)]">
+            <div className="p-4 flex items-center justify-center">
               <img
                 src={atlasZoom.url}
                 alt={atlasZoom.displayName}
-                className="max-w-full max-h-[70vh] object-contain rounded-lg border border-border"
+                className="max-w-full max-h-[70vh] object-contain rounded-lg"
                 style={{ imageRendering: "pixelated" }}
               />
             </div>
@@ -3978,8 +3945,6 @@ export default function EditorApp() {
         <SettingsModal
           texturesPerRow={texturesPerRow}
           onTexturesPerRowChange={setTexturesPerRow}
-          darkMode={darkMode}
-          onDarkModeChange={setDarkMode}
           defaultPackName={uploadDefaults.name}
           defaultPackDescription={uploadDefaults.description}
           defaultPackIcon={uploadDefaults.icon}
@@ -3990,6 +3955,8 @@ export default function EditorApp() {
           copyFromTopPack={uploadDefaults.copyFromTopPack}
           onCopyFromTopPackChange={(value) => setUploadDefaults((prev) => ({ ...prev, copyFromTopPack: value }))}
           onClose={() => setSettingsOpen(false)}
+          checkerboardStyle={checkerboardStyle}
+          onCheckerboardStyleChange={setCheckerboardStyle}
         />
       )}
 
