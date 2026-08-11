@@ -15,12 +15,7 @@ export default function App() {
         </>
       )} />
       <Route path="/editor" component={EditorPage} />
-      <Route path="/library" component={() => (
-        <>
-          <Navigation />
-          <LibraryPage />
-        </>
-      )} />
+      <Route path="/library" component={LibraryPage} />
       <Route path="/auth" component={() => (
         <>
           <Navigation />

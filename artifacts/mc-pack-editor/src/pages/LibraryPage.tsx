@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { getUserPackLibrary, SavedPack } from "../lib/packLibrary";
 import { loadPackFromFile } from "../lib/zipUtils";
 import { useAuth } from "../contexts/AuthContext";
+import Navigation from "../components/Navigation";
 
 export default function LibraryPage() {
   const { user } = useAuth();
@@ -122,8 +123,10 @@ export default function LibraryPage() {
   const storageUsage = user ? getUserPackLibrary(user.id).getStorageUsage() : { used: 0, total: 5 * 1024 * 1024, percentage: 0 };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-dark-bg">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-white dark:bg-dark-bg">
+        <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-black dark:text-dark-text mb-2">Pack Library</h1>
           <p className="text-gray-600 dark:text-dark-text-secondary">
@@ -225,5 +228,6 @@ export default function LibraryPage() {
         )}
       </div>
     </div>
+    </>
   );
 }
