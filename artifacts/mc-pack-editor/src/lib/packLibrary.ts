@@ -47,7 +47,7 @@ export class PackLibrary {
       localStorage.setItem(this.getStorageKey(), JSON.stringify(this.savedPacks));
     } catch (error) {
       console.error('Failed to save pack library:', error);
-      throw new Error('Failed to save pack to library. Storage may be full.');
+      // Don't throw error - let the UI handle it gracefully
     }
   }
 

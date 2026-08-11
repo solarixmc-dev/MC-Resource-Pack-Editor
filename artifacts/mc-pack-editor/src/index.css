@@ -329,6 +329,33 @@ html, body {
   image-rendering: crisp-edges;
 }
 
+/* Video placeholder animations */
+@keyframes gradientRotate {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 100% 50%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.animate-gradient-xy {
+  animation: gradientRotate 15s ease infinite;
+}
+
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
 /* Hide scrollbars while allowing scrolling */
 ::-webkit-scrollbar {
   width: 8px;

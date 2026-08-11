@@ -19,12 +19,39 @@ import { createCroppedTexturePreviewDataUrl, TEXTURE_THUMBNAIL_SIZE } from "./li
 import { useAuth } from "./contexts/AuthContext";
 import { useTheme } from "./contexts/ThemeContext";
 
+// Notification type
+interface Notification {
+  id: string;
+  message: string;
+  type: 'success' | 'error';
+}
+
 // Fallback library for non-logged-in users
 const fallbackLibrary = {
   savePack: async (name: string, description: string, icon: string | null, packData: ArrayBuffer): Promise<SavedPack> => {
-    console.log('Fallback library save (not logged in)');
-    const base64Data = btoa(String.fromCharCode(...new Uint8Array(packData)));
-    return Promise.resolve({
+    console.log('Saving to fallback library (not logged in)');
+    const STORAGE_KEY = 'mc-pack-editor-library-guest';
+    
+    // Load existing packs
+    let savedPacks: SavedPack[] = [];
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        savedPacks = JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Failed to load fallback library:', error);
+    }
+    
+    // Convert ArrayBuffer to base64 for storage
+    const bytes = new Uint8Array(packData);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64Data = btoa(binary);
+    
+    const savedPack: SavedPack = {
       id: crypto.randomUUID(),
       name,
       description,
@@ -33,7 +60,18 @@ const fallbackLibrary = {
       createdAt: new Date().toISOString(),
       fileSize: packData.byteLength,
       userId: 'guest'
-    });
+    };
+    
+    savedPacks.unshift(savedPack);
+    
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(savedPacks));
+    } catch (error) {
+      console.error('Failed to save to fallback library:', error);
+      // Don't throw error - let the UI handle it gracefully
+    }
+    
+    return savedPack;
   }
 };
 import {
@@ -2928,7 +2966,38 @@ export default function EditorApp() {
   const [waitingForFileSelection, setWaitingForFileSelection] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [exporting, setExporting] = useState(false);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+        setExportDropdownOpen(false);
+      }
+    };
+
+    if (exportDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [exportDropdownOpen]);
+
+  // Add notification
+  const addNotification = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    const id = crypto.randomUUID();
+    setNotifications(prev => [...prev, { id, message, type }]);
+    
+    // Auto-remove after 3 seconds (matches CSS animation)
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 3000);
+  }, []);
   const [globalSearch, setGlobalSearch] = useState("");
   const [jumpTarget, setJumpTarget] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ path: string; displayName: string; folder: string } | null>(null);
@@ -3274,7 +3343,57 @@ export default function EditorApp() {
     } finally {
       setExporting(false);
     }
-  }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles]);
+  }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles, user]);
+
+  const handleSaveToLibrary = useCallback(async () => {
+    if (!packs.length) return;
+    setExporting(true);
+    try {
+      const blob = await exportMergedPack(
+        packs,
+        folderSources,
+        textureOverrides,
+        atlasRegionOverrides,
+        packName,
+        packDescription,
+        packIcon,
+        removedFiles
+      );
+      const arrayBuffer = await blob.arrayBuffer();
+      
+      console.log('Saving to library, user:', user);
+      console.log('User ID:', user?.id);
+      
+      try {
+        // Use user-specific library if logged in
+        if (user) {
+          console.log('Using user library for:', user.id);
+          const userLibrary = getUserPackLibrary(user.id);
+          await userLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
+          console.log('Saved to user library successfully');
+        } else {
+          console.log('Using fallback library (guest)');
+          // Fallback for non-logged-in users
+          await fallbackLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
+          console.log('Saved to guest library successfully');
+        }
+        addNotification("Pack saved to library!", "success");
+      } catch (error) {
+        console.error("Failed to save to library:", error);
+        // Check if it's a quota error
+        if (error instanceof Error && error.message.includes('quota')) {
+          addNotification("Storage quota exceeded. Try deleting some packs from your library first.", "error");
+        } else {
+          addNotification(`Failed to save to library: ${error instanceof Error ? error.message : 'Unknown error'}`, "error");
+        }
+      }
+    } catch (e) {
+      console.error("Save failed:", e);
+      addNotification(`Save failed: ${e instanceof Error ? e.message : 'Unknown error'}`, "error");
+    } finally {
+      setExporting(false);
+    }
+  }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles, user, addNotification]);
 
   const handleAnalyze = useCallback(async () => {
     if (!packs.length) return;
@@ -3518,13 +3637,42 @@ export default function EditorApp() {
                   <span className={analyzing ? "animate-pulse" : ""}>✨</span>
                   {analyzing ? "Analyzing…" : "Analyze"}
                 </button>
-                <button
-                  onClick={handleExport}
-                  disabled={exporting}
-                  className="px-6 py-2 text-sm font-medium text-white dark:text-black bg-black dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 hover:scale-105 hover:shadow-lg transition-all duration-200 rounded-2xl disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
-                >
-                  {exporting ? "Exporting…" : "Export"}
-                </button>
+                <div className="relative" ref={exportDropdownRef}>
+                  <button
+                    onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+                    disabled={exporting}
+                    className="px-6 py-2 text-sm font-medium text-white dark:text-black bg-black dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 hover:scale-105 hover:shadow-lg transition-all duration-200 rounded-2xl disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none flex items-center gap-2"
+                  >
+                    {exporting ? "Exporting…" : "Export"}
+                    <svg className={`w-4 h-4 transition-transform ${exportDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+                  {exportDropdownOpen && (
+                    <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg border z-50 ${darkMode ? "bg-dark-secondary border-dark-border" : "bg-white border-gray-200"}`}>
+                      <button
+                        onClick={() => {
+                          handleExport();
+                          setExportDropdownOpen(false);
+                        }}
+                        disabled={exporting}
+                        className={`w-full text-left px-4 py-3 text-sm rounded-t-lg transition-colors ${darkMode ? "text-dark-text hover:bg-dark-tertiary" : "text-slate-700 hover:bg-gray-100"} disabled:opacity-50`}
+                      >
+                        Download ZIP
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleSaveToLibrary();
+                          setExportDropdownOpen(false);
+                        }}
+                        disabled={exporting}
+                        className={`w-full text-left px-4 py-3 text-sm rounded-b-lg transition-colors ${darkMode ? "text-dark-text hover:bg-dark-tertiary" : "text-slate-700 hover:bg-gray-100"} disabled:opacity-50`}
+                      >
+                        Save to Library
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -3968,6 +4116,28 @@ export default function EditorApp() {
           onCancel={() => setCropSource(null)}
         />
       )}
+
+      {/* ── Notifications ── */}
+      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className="relative bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
+            style={{ width: '300px' }}
+          >
+            <div className="px-4 py-3">
+              <p className="text-sm text-gray-800">{notification.message}</p>
+            </div>
+            <div
+              className="h-1"
+              style={{
+                backgroundColor: notification.type === 'error' ? '#ef4444' : '#22c55e',
+                animation: 'progress 3s linear forwards'
+              }}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

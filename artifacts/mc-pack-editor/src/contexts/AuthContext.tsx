@@ -1,10 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { hashPassword, verifyPassword } from "../lib/crypto";
 
 interface User {
   id: string;
   username: string;
   email: string;
-  password: string; // In production, this should be hashed
+  passwordHash: string;
+  passwordSalt: string;
 }
 
 interface AuthContextType {
@@ -61,7 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser({
           id: savedUserId || existingUser.id,
           username: existingUser.username,
-          email: existingUser.email
+          email: existingUser.email,
+          passwordHash: existingUser.passwordHash,
+          passwordSalt: existingUser.passwordSalt
         });
       } else {
         // User no longer exists, clear session
@@ -84,12 +88,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: 'Email registered' };
     }
     
+    // Validate password strength
+    if (password.length < 8) {
+      return { success: false, error: 'Password must be at least 8 characters' };
+    }
+    
+    // Hash password
+    const { hash: passwordHash, salt: passwordSalt } = await hashPassword(password);
+    
     // Create new user
     const newUser: User = {
       id: crypto.randomUUID(),
       username: username,
       email: email,
-      password: password // In production, hash this!
+      passwordHash,
+      passwordSalt
     };
     
     // Save to user database
@@ -116,8 +129,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: 'Account not found' };
     }
     
-    // Check password
-    if (existingUser.password !== password) {
+    // Verify password using hash
+    const passwordMatch = await verifyPassword(password, existingUser.passwordHash, existingUser.passwordSalt);
+    
+    if (!passwordMatch) {
       return { success: false, error: 'Wrong password' };
     }
     
@@ -152,11 +167,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('username', updatedUser.username);
     localStorage.setItem('email', updatedUser.email);
     
-    // Update in user database
+    // Update in user database (preserve password hash and salt)
     const users = getUsers();
     const userIndex = users.findIndex(u => u.id === updatedUser.id);
     if (userIndex !== -1) {
-      users[userIndex] = updatedUser;
+      users[userIndex] = {
+        ...users[userIndex],
+        username: updatedUser.username,
+        email: updatedUser.email
+      };
       saveUsers(users);
     }
   };
@@ -185,11 +204,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Verify the code
     const storedCode = resetCodes.get(email);
     if (storedCode === code) {
+      // Validate new password strength
+      if (newPassword.length < 8) {
+        return false;
+      }
+      
+      // Hash new password
+      const { hash: passwordHash, salt: passwordSalt } = await hashPassword(newPassword);
+      
       // Update the password in user database
       const users = getUsers();
       const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
       if (userIndex !== -1) {
-        users[userIndex].password = newPassword;
+        users[userIndex].passwordHash = passwordHash;
+        users[userIndex].passwordSalt = passwordSalt;
         saveUsers(users);
       }
       

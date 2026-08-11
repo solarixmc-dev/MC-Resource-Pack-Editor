@@ -134,7 +134,7 @@ export default function AuthPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-2 border-2 border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:border-[#C2B280] text-black dark:text-dark-text bg-white dark:bg-slate-700"
+                    className="w-full px-4 py-2 border-2 border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:border-[#C2B280] text-black dark:text-dark-text bg-white dark:bg-dark-tertiary"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -159,8 +159,8 @@ export default function AuthPage() {
                     onChange={(e) => setResetCode(e.target.value)}
                     required
                     maxLength={6}
-                    className="w-full px-4 py-2 border-2 border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:border-[#C2B280] text-black dark:text-dark-text bg-white dark:bg-slate-700"
-                    placeholder="123456"
+                    className="w-full px-4 py-2 border-2 border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:border-[#C2B280] text-black dark:text-dark-text bg-white dark:bg-dark-tertiary"
+                    placeholder="••••••••"
                   />
                 </div>
 
@@ -173,7 +173,7 @@ export default function AuthPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
-                    className="w-full px-4 py-2 border-2 border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:border-[#C2B280] text-black dark:text-dark-text bg-white dark:bg-slate-700"
+                    className="w-full px-4 py-2 border-2 border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:border-[#C2B280] text-black dark:text-dark-text bg-white dark:bg-dark-tertiary"
                     placeholder="•••••••••"
                   />
                 </div>
@@ -287,7 +287,7 @@ export default function AuthPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 border-2 border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:border-[#C2B280] text-black dark:text-dark-text bg-white dark:bg-slate-700"
+                className="w-full px-4 py-2 border-2 border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:border-[#C2B280] text-black dark:text-dark-text bg-white dark:bg-dark-tertiary"
                 placeholder="•••••••••"
               />
             </div>

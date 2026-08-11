@@ -1,45 +1,81 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { getUserPackLibrary } from "../lib/packLibrary";
+import { getUserPackLibrary, SavedPack } from "../lib/packLibrary";
 import { loadPackFromFile } from "../lib/zipUtils";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function LibraryPage() {
   const { user } = useAuth();
-  const [packs, setPacks] = useState(() => {
-    if (user) {
-      const userLibrary = getUserPackLibrary(user.id);
-      return userLibrary.getAllPacks();
-    }
-    return [];
-  });
+  const [packs, setPacks] = useState<SavedPack[]>([]);
   const [loading, setLoading] = useState(false);
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-dark-bg flex items-center justify-center px-4">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-black dark:text-dark-text mb-4">Pack Library</h1>
-          <p className="text-gray-600 dark:text-dark-text-secondary mb-6">Please log in to access your pack library</p>
-          <Link
-            href="/auth"
-            className="inline-block bg-black dark:bg-dark-text text-white dark:text-dark-bg px-6 py-2 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-dark-tertiary transition-colors"
-          >
-            Login
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // Reload packs when user changes or on mount
+  useEffect(() => {
+    const loadPacks = () => {
+      console.log('Current user state:', user);
+      console.log('User logged in?', !!user);
+      console.log('User ID:', user?.id);
+      
+      if (user) {
+        console.log('Loading from user library for user:', user.id);
+        const userLibrary = getUserPackLibrary(user.id);
+        const userPacks = userLibrary.getAllPacks();
+        console.log('User packs:', userPacks);
+        setPacks(userPacks);
+      } else {
+        // Load from guest library
+        const STORAGE_KEY = 'mc-pack-editor-library-guest';
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          console.log('Guest library data:', stored);
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            console.log('Parsed guest packs:', parsed);
+            setPacks(parsed);
+          } else {
+            console.log('No guest library found');
+            setPacks([]);
+          }
+        } catch (error) {
+          console.error('Failed to load guest library:', error);
+          setPacks([]);
+        }
+      }
+    };
+
+    loadPacks();
+  }, [user]);
 
   const handleLoadPack = async (packId: string) => {
     setLoading(true);
     try {
-      const userLibrary = getUserPackLibrary(user.id);
-      const packData = await userLibrary.loadPack(packId);
-      const pack = await loadPackFromFile(new File([packData], 'library-pack.zip'));
-      // Navigate to editor with the pack loaded
-      window.location.href = `/editor?pack=${encodeURIComponent(pack.name)}`;
+      let packData;
+      if (user) {
+        const userLibrary = getUserPackLibrary(user.id);
+        packData = await userLibrary.loadPack(packId);
+      } else {
+        // Load from guest library
+        const STORAGE_KEY = 'mc-pack-editor-library-guest';
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const savedPacks = JSON.parse(stored);
+          const pack = savedPacks.find((p: any) => p.id === packId);
+          if (pack) {
+            const binary = atob(pack.packData);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+              bytes[i] = binary.charCodeAt(i);
+            }
+            packData = bytes.buffer;
+          }
+        }
+      }
+      
+      if (packData) {
+        const pack = await loadPackFromFile(new File([packData], 'library-pack.zip'));
+        // Navigate to editor with the pack loaded
+        window.location.href = `/editor?pack=${encodeURIComponent(pack.name)}`;
+      }
     } catch (error) {
       console.error("Failed to load pack:", error);
       alert("Failed to load pack from library. Please try again.");
@@ -50,21 +86,40 @@ export default function LibraryPage() {
 
   const handleDeletePack = (packId: string) => {
     if (confirm("Are you sure you want to delete this pack from your library?")) {
-      const userLibrary = getUserPackLibrary(user.id);
-      userLibrary.deletePack(packId);
-      setPacks(userLibrary.getAllPacks());
+      if (user) {
+        const userLibrary = getUserPackLibrary(user.id);
+        userLibrary.deletePack(packId);
+        setPacks(userLibrary.getAllPacks());
+      } else {
+        // Delete from guest library
+        const STORAGE_KEY = 'mc-pack-editor-library-guest';
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const savedPacks = JSON.parse(stored);
+          const updatedPacks = savedPacks.filter((p: any) => p.id !== packId);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPacks));
+          setPacks(updatedPacks);
+        }
+      }
     }
   };
 
   const handleClearAll = () => {
     if (confirm("Are you sure you want to clear all saved packs?")) {
-      const userLibrary = getUserPackLibrary(user.id);
-      userLibrary.clearAll();
-      setPacks([]);
+      if (user) {
+        const userLibrary = getUserPackLibrary(user.id);
+        userLibrary.clearAll();
+        setPacks([]);
+      } else {
+        // Clear guest library
+        const STORAGE_KEY = 'mc-pack-editor-library-guest';
+        localStorage.removeItem(STORAGE_KEY);
+        setPacks([]);
+      }
     }
   };
 
-  const storageUsage = getUserPackLibrary(user.id).getStorageUsage();
+  const storageUsage = user ? getUserPackLibrary(user.id).getStorageUsage() : { used: 0, total: 5 * 1024 * 1024, percentage: 0 };
 
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg">
@@ -85,14 +140,22 @@ export default function LibraryPage() {
               Storage: {storageUsage.percentage.toFixed(1)}% used
             </span>
           </div>
-          {packs.length > 0 && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={handleClearAll}
-              className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+              onClick={() => window.location.reload()}
+              className="text-sm text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-dark-text"
             >
-              Clear All
+              Refresh
             </button>
-          )}
+            {packs.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
         </div>
 
         {packs.length === 0 ? (
