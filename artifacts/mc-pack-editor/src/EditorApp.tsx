@@ -43,6 +43,13 @@ const fallbackLibrary = {
       console.error('Failed to load fallback library:', error);
     }
     
+    // Check if pack would exceed localStorage size
+    const packSize = packData.byteLength;
+    const MAX_PACK_SIZE = 2 * 1024 * 1024; // 2MB limit for localStorage
+    if (packSize > MAX_PACK_SIZE) {
+      throw new Error('Pack is too large for guest storage. Please log in to save larger packs, or download the pack instead.');
+    }
+    
     // Convert ArrayBuffer to base64 for storage
     const bytes = new Uint8Array(packData);
     let binary = '';
@@ -68,7 +75,7 @@ const fallbackLibrary = {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(savedPacks));
     } catch (error) {
       console.error('Failed to save to fallback library:', error);
-      throw new Error('Storage quota exceeded. Please delete some packs from your library first.');
+      throw new Error('Storage quota exceeded. Please delete some packs from your library first, or log in to save larger packs.');
     }
     
     return savedPack;
@@ -965,7 +972,7 @@ function TextureCard({
                 key={pack.id}
                 className={`flex-1 flex items-center justify-center p-2 checkered min-h-[80px] relative transition-all ${
                   packsWithFile.length > 1 ? "cursor-pointer hover:brightness-110" : "cursor-default"
-                } ${isSelected && packsWithFile.length > 1 ? "ring-2 ring-inset ring-black dark:ring-white" : ""}`}
+                } ${isSelected ? "ring-2 ring-inset ring-black dark:ring-white" : ""}`}
                 onClick={() => {
                   if (packsWithFile.length <= 1) return;
                   if (overridePackId === pack.id) {
@@ -3109,6 +3116,47 @@ export default function EditorApp() {
     };
     document.body.style.fontFamily = fontMap[selectedFont] || fontMap["montserrat"];
   }, [selectedFont]);
+
+  // Load pack from library if stored in localStorage
+  useEffect(() => {
+    const tempPackData = localStorage.getItem('mc-pack-editor-temp-pack');
+    if (tempPackData) {
+      try {
+        const packData = JSON.parse(tempPackData);
+        const files = new Map<string, ArrayBuffer>();
+        
+        // Convert files back to Map with ArrayBuffers
+        packData.files.forEach(([path, base64Data]: [string, string]) => {
+          const binary = atob(base64Data);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+          }
+          files.set(path, bytes.buffer);
+        });
+
+        const pack: Pack = {
+          id: `library-${Date.now()}`,
+          name: packData.name,
+          description: packData.description,
+          color: '#3b82f6',
+          files,
+          icon: packData.icon
+        };
+
+        setPacks([pack]);
+        setPackName(pack.name);
+        setPackDescription(pack.description || '');
+        setPackIcon(pack.icon || null);
+
+        // Clear the temp pack data
+        localStorage.removeItem('mc-pack-editor-temp-pack');
+      } catch (error) {
+        console.error('Failed to load pack from library:', error);
+        localStorage.removeItem('mc-pack-editor-temp-pack');
+      }
+    }
+  }, []);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);

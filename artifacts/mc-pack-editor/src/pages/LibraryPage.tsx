@@ -169,8 +169,19 @@ export default function LibraryPage() {
       
       if (packData) {
         const pack = await loadPackFromFile(new File([packData], 'library-pack.zip'));
-        // Navigate to editor with the pack loaded
-        window.location.href = `/editor?pack=${encodeURIComponent(pack.name)}`;
+        // Store pack data in localStorage for editor to load
+        const filesArray = Array.from(pack.files.entries()).map(([path, buffer]) => {
+          const binary = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+          return [path, binary];
+        });
+        localStorage.setItem('mc-pack-editor-temp-pack', JSON.stringify({
+          name: pack.name,
+          description: pack.description,
+          files: filesArray,
+          icon: pack.icon
+        }));
+        // Navigate to editor
+        window.location.href = `/editor`;
       }
     } catch (error) {
       console.error("Failed to load pack:", error);
