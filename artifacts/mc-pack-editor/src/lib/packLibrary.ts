@@ -1,7 +1,7 @@
 /**
  * Pack Library Service
- * Manages storing and retrieving exported packs in localStorage
- * Now user-specific based on login credentials
+ * Manages storing and retrieving exported packs using IndexedDB
+ * User-specific based on login credentials
  */
 
 export interface SavedPack {
@@ -9,46 +9,44 @@ export interface SavedPack {
   name: string;
   description: string;
   icon: string | null;
-  packData: ArrayBuffer;
+  packData: string; // base64 encoded
   createdAt: string;
   fileSize: number;
-  userId: string; // Add user ID to associate packs with users
+  userId: string;
 }
 
-const STORAGE_KEY_PREFIX = 'mc-pack-editor-library-';
-
-export class PackLibrary {
-  private savedPacks: SavedPack[] = [];
+class PackLibraryIndexedDB {
   private userId: string;
+  private db: IDBDatabase | null = null;
+  private readonly DB_NAME = 'MCPackEditorLibrary';
+  private readonly DB_VERSION = 1;
+  private readonly STORE_NAME = 'packs';
 
   constructor(userId: string) {
     this.userId = userId;
-    this.loadFromStorage();
   }
 
-  private getStorageKey(): string {
-    return `${STORAGE_KEY_PREFIX}${this.userId}`;
-  }
+  private async initDB(): Promise<IDBDatabase> {
+    if (this.db) return this.db;
 
-  private loadFromStorage(): void {
-    try {
-      const stored = localStorage.getItem(this.getStorageKey());
-      if (stored) {
-        this.savedPacks = JSON.parse(stored);
-      }
-    } catch (error) {
-      console.error('Failed to load pack library:', error);
-      this.savedPacks = [];
-    }
-  }
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
 
-  private saveToStorage(): void {
-    try {
-      localStorage.setItem(this.getStorageKey(), JSON.stringify(this.savedPacks));
-    } catch (error) {
-      console.error('Failed to save pack library:', error);
-      // Don't throw error - let the UI handle it gracefully
-    }
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve(this.db);
+      };
+
+      request.onupgradeneeded = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains(this.STORE_NAME)) {
+          const store = db.createObjectStore(this.STORE_NAME, { keyPath: 'id' });
+          store.createIndex('userId', 'userId', { unique: false });
+          store.createIndex('createdAt', 'createdAt', { unique: false });
+        }
+      };
+    });
   }
 
   async savePack(
@@ -57,51 +55,113 @@ export class PackLibrary {
     icon: string | null,
     packData: ArrayBuffer
   ): Promise<SavedPack> {
-    // Convert ArrayBuffer to base64 for storage
-    const base64Data = this.arrayBufferToBase64(packData);
-    
+    console.log('=== Saving pack to IndexedDB ===');
+    console.log('User ID:', this.userId);
+    console.log('Pack name:', name);
+    console.log('Pack size:', packData.byteLength);
+
+    const db = await this.initDB();
+
     const savedPack: SavedPack = {
       id: crypto.randomUUID(),
       name,
       description,
       icon,
-      packData: base64Data,
+      packData: this.arrayBufferToBase64(packData),
       createdAt: new Date().toISOString(),
       fileSize: packData.byteLength,
-      userId: this.userId, // Associate with current user
+      userId: this.userId,
     };
 
-    this.savedPacks.unshift(savedPack);
-    this.saveToStorage();
+    console.log('Saved pack object:', savedPack);
 
-    return savedPack;
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const request = store.add(savedPack);
+
+      request.onsuccess = () => {
+        console.log('Successfully saved to IndexedDB');
+        resolve(savedPack);
+      };
+
+      request.onerror = () => reject(request.error);
+    });
   }
 
-  async loadPack(id: string): Promise<ArrayBuffer> {
-    const pack = this.savedPacks.find(p => p.id === id);
-    if (!pack) {
-      throw new Error('Pack not found');
-    }
+  async loadPack(packId: string): Promise<ArrayBuffer> {
+    const db = await this.initDB();
 
-    return this.base64ToArrayBuffer(pack.packData as any);
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.STORE_NAME], 'readonly');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const request = store.get(packId);
+
+      request.onsuccess = () => {
+        const pack = request.result;
+        if (pack) {
+          const arrayBuffer = this.base64ToArrayBuffer(pack.packData);
+          resolve(arrayBuffer);
+        } else {
+          reject(new Error('Pack not found'));
+        }
+      };
+
+      request.onerror = () => reject(request.error);
+    });
   }
 
-  getAllPacks(): SavedPack[] {
-    return [...this.savedPacks];
+  async deletePack(packId: string): Promise<void> {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const request = store.delete(packId);
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
   }
 
-  deletePack(id: string): void {
-    this.savedPacks = this.savedPacks.filter(p => p.id !== id);
-    this.saveToStorage();
+  async clearAll(): Promise<void> {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const request = store.clear();
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
   }
 
-  getPackById(id: string): SavedPack | undefined {
-    return this.savedPacks.find(p => p.id === id);
+  async getAllPacks(): Promise<SavedPack[]> {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.STORE_NAME], 'readonly');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const index = store.index('userId');
+      const request = index.getAll(this.userId);
+
+      request.onsuccess = () => {
+        const packs = request.result || [];
+        // Sort by createdAt descending (newest first)
+        packs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        console.log('Loaded packs from IndexedDB:', packs);
+        resolve(packs);
+      };
+
+      request.onerror = () => reject(request.error);
+    });
   }
 
-  clearAll(): void {
-    this.savedPacks = [];
-    this.saveToStorage();
+  getStorageUsage(): { used: number; total: number; percentage: number } {
+    // IndexedDB doesn't have a reliable way to get storage usage
+    // Return estimated values
+    return { used: 0, total: 500 * 1024 * 1024, percentage: 0 }; // 500MB estimated
   }
 
   private arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -121,24 +181,9 @@ export class PackLibrary {
     }
     return bytes.buffer;
   }
-
-  getStorageUsage(): { used: number; total: number; percentage: number } {
-    const used = JSON.stringify(this.savedPacks).length;
-    const total = 5 * 1024 * 1024; // 5MB typical localStorage limit
-    return {
-      used,
-      total,
-      percentage: (used / total) * 100,
-    };
-  }
-
-  // Static method to get user-specific library instance
-  static forUser(userId: string): PackLibrary {
-    return new PackLibrary(userId);
-  }
 }
 
-// Function to get user-specific library
-export function getUserPackLibrary(userId: string): PackLibrary {
-  return PackLibrary.forUser(userId);
+// Factory function to get user-specific library
+export function getUserPackLibrary(userId: string): PackLibraryIndexedDB {
+  return new PackLibraryIndexedDB(userId);
 }

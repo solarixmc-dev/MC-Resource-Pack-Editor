@@ -1,28 +1,117 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { getUserPackLibrary, SavedPack } from "../lib/packLibrary";
 import { loadPackFromFile } from "../lib/zipUtils";
 import { useAuth } from "../contexts/AuthContext";
 import Navigation from "../components/Navigation";
 
+// Minecraft color code parser
+const parseMinecraftFormatting = (text: string): React.ReactNode => {
+  if (!text) return null;
+
+  const colorMap: Record<string, string> = {
+    '0': '#000000',
+    '1': '#0000AA',
+    '2': '#00AA00',
+    '3': '#00AAAA',
+    '4': '#AA0000',
+    '5': '#AA00AA',
+    '6': '#FFAA00',
+    '7': '#AAAAAA',
+    '8': '#555555',
+    '9': '#5555FF',
+    'a': '#55FF55',
+    'b': '#55FFFF',
+    'c': '#FF5555',
+    'd': '#FF55FF',
+    'e': '#FFFF55',
+    'f': '#FFFFFF',
+  };
+
+  const formatMap: Record<string, string> = {
+    'l': 'bold',
+    'm': 'line-through',
+    'n': 'underline',
+    'o': 'italic',
+  };
+
+  // Split by § or & characters
+  const parts = text.split(/[§&]/);
+  const segments: Array<{ text: string; color?: string; format?: string }> = [];
+  let currentColor = colorMap['f']; // Default white
+  let currentFormat: string[] = [];
+
+  parts.forEach((part, index) => {
+    if (index === 0 && part) {
+      // First part before any color code
+      segments.push({ text: part, color: currentColor });
+      return;
+    }
+
+    if (part.length === 0) return;
+
+    const code = part[0].toLowerCase();
+    const text = part.slice(1);
+
+    if (colorMap[code]) {
+      currentColor = colorMap[code];
+      currentFormat = []; // Reset formats on color change
+    } else if (code === 'r') {
+      currentColor = colorMap['f'];
+      currentFormat = [];
+    } else if (formatMap[code]) {
+      if (!currentFormat.includes(formatMap[code])) {
+        currentFormat.push(formatMap[code]);
+      }
+    }
+
+    if (text) {
+      segments.push({ 
+        text, 
+        color: currentColor,
+        format: currentFormat.join(' ')
+      });
+    }
+  });
+
+  return segments.map((segment, index) => (
+    <span 
+      key={index} 
+      style={{ 
+        color: segment.color,
+        fontWeight: segment.format?.includes('bold') ? 'bold' : 'normal',
+        textDecoration: segment.format?.includes('underline') ? 'underline' : 
+                      segment.format?.includes('line-through') ? 'line-through' : 'none',
+        fontStyle: segment.format?.includes('italic') ? 'italic' : 'normal'
+      }}
+    >
+      {segment.text}
+    </span>
+  ));
+};
+
 export default function LibraryPage() {
   const { user } = useAuth();
   const [packs, setPacks] = useState<SavedPack[]>([]);
   const [loading, setLoading] = useState(false);
+  const [storageUsage, setStorageUsage] = useState({ used: 0, total: 500 * 1024 * 1024, percentage: 0 });
 
-  // Reload packs when user changes or on mount
-  useEffect(() => {
-    const loadPacks = () => {
-      console.log('Current user state:', user);
-      console.log('User logged in?', !!user);
-      console.log('User ID:', user?.id);
-      
+  // Function to load packs (shared between useEffect and refresh button)
+  const loadPacks = useCallback(async () => {
+    console.log('=== Loading packs ===');
+    console.log('User:', user);
+    console.log('User ID:', user?.id);
+    
+    // Check localStorage for debugging
+    console.log('All localStorage keys:', Object.keys(localStorage));
+    
+    try {
       if (user) {
         console.log('Loading from user library for user:', user.id);
         const userLibrary = getUserPackLibrary(user.id);
-        const userPacks = userLibrary.getAllPacks();
+        const userPacks = await userLibrary.getAllPacks();
         console.log('User packs:', userPacks);
-        setPacks(userPacks);
+        setPacks(userPacks || []);
       } else {
         // Load from guest library
         const STORAGE_KEY = 'mc-pack-editor-library-guest';
@@ -32,7 +121,7 @@ export default function LibraryPage() {
           if (stored) {
             const parsed = JSON.parse(stored);
             console.log('Parsed guest packs:', parsed);
-            setPacks(parsed);
+            setPacks(parsed || []);
           } else {
             console.log('No guest library found');
             setPacks([]);
@@ -42,10 +131,16 @@ export default function LibraryPage() {
           setPacks([]);
         }
       }
-    };
-
-    loadPacks();
+    } catch (error) {
+      console.error('Failed to load packs:', error);
+      setPacks([]);
+    }
   }, [user]);
+
+  // Reload packs when user changes or on mount
+  useEffect(() => {
+    loadPacks();
+  }, [loadPacks]);
 
   const handleLoadPack = async (packId: string) => {
     setLoading(true);
@@ -85,42 +180,102 @@ export default function LibraryPage() {
     }
   };
 
-  const handleDeletePack = (packId: string) => {
-    if (confirm("Are you sure you want to delete this pack from your library?")) {
+  const handleDownloadPack = async (packId: string) => {
+    try {
+      let packData;
       if (user) {
         const userLibrary = getUserPackLibrary(user.id);
-        userLibrary.deletePack(packId);
-        setPacks(userLibrary.getAllPacks());
+        packData = await userLibrary.loadPack(packId);
       } else {
-        // Delete from guest library
+        // Load from guest library
         const STORAGE_KEY = 'mc-pack-editor-library-guest';
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
           const savedPacks = JSON.parse(stored);
-          const updatedPacks = savedPacks.filter((p: any) => p.id !== packId);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPacks));
-          setPacks(updatedPacks);
+          const pack = savedPacks.find((p: any) => p.id === packId);
+          if (pack) {
+            const binary = atob(pack.packData);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+              bytes[i] = binary.charCodeAt(i);
+            }
+            packData = bytes.buffer;
+          }
         }
       }
+      
+      if (packData) {
+        const blob = new Blob([packData], { type: 'application/zip' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'resource-pack.zip';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error("Failed to download pack:", error);
+      alert("Failed to download pack. Please try again.");
     }
   };
 
-  const handleClearAll = () => {
-    if (confirm("Are you sure you want to clear all saved packs?")) {
-      if (user) {
-        const userLibrary = getUserPackLibrary(user.id);
-        userLibrary.clearAll();
-        setPacks([]);
-      } else {
-        // Clear guest library
-        const STORAGE_KEY = 'mc-pack-editor-library-guest';
-        localStorage.removeItem(STORAGE_KEY);
-        setPacks([]);
+  const handleDeletePack = async (packId: string) => {
+    if (confirm("Are you sure you want to delete this pack from your library?")) {
+      try {
+        if (user) {
+          const userLibrary = getUserPackLibrary(user.id);
+          await userLibrary.deletePack(packId);
+          await loadPacks();
+        } else {
+          // Delete from guest library
+          const STORAGE_KEY = 'mc-pack-editor-library-guest';
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) {
+            const savedPacks = JSON.parse(stored);
+            const updatedPacks = savedPacks.filter((p: any) => p.id !== packId);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPacks));
+            setPacks(updatedPacks);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to delete pack:', error);
+        alert('Failed to delete pack. Please try again.');
       }
     }
   };
 
-  const storageUsage = user ? getUserPackLibrary(user.id).getStorageUsage() : { used: 0, total: 5 * 1024 * 1024, percentage: 0 };
+  const handleClearAll = async () => {
+    if (confirm("Are you sure you want to clear all saved packs?")) {
+      try {
+        if (user) {
+          const userLibrary = getUserPackLibrary(user.id);
+          await userLibrary.clearAll();
+          setPacks([]);
+        } else {
+          // Clear guest library
+          const STORAGE_KEY = 'mc-pack-editor-library-guest';
+          localStorage.removeItem(STORAGE_KEY);
+          setPacks([]);
+        }
+      } catch (error) {
+        console.error('Failed to clear packs:', error);
+        alert('Failed to clear packs. Please try again.');
+      }
+    }
+  };
+
+  // Update storage usage when packs change
+  useEffect(() => {
+    const totalSize = packs.reduce((sum, pack) => sum + pack.fileSize, 0);
+    const totalLimit = 500 * 1024 * 1024; // 500MB estimated
+    setStorageUsage({
+      used: totalSize,
+      total: totalLimit,
+      percentage: (totalSize / totalLimit) * 100
+    });
+  }, [packs]);
 
   return (
     <>
@@ -145,7 +300,10 @@ export default function LibraryPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => window.location.reload()}
+              onClick={async () => {
+                console.log('Refresh clicked, reloading packs');
+                await loadPacks();
+              }}
               className="text-sm text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:hover:text-dark-text"
             >
               Refresh
@@ -187,27 +345,44 @@ export default function LibraryPage() {
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-black dark:text-dark-text truncate">{pack.name}</h3>
+                    <h3 className="font-semibold text-black dark:text-dark-text truncate">
+                      {parseMinecraftFormatting(pack.name)}
+                    </h3>
                     <p className="text-sm text-gray-500 dark:text-dark-text-tertiary">
                       {new Date(pack.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleDeletePack(pack.id)}
-                    className="ml-2 p-1 rounded hover:bg-gray-200 dark:hover:bg-dark-tertiary text-gray-400 dark:text-dark-text-tertiary hover:text-red-500 dark:hover:text-red-400"
-                    title="Delete pack"
-                  >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleDownloadPack(pack.id)}
+                      className="p-1 rounded hover:bg-gray-200 dark:hover:bg-dark-tertiary text-gray-400 dark:text-dark-text-tertiary hover:text-blue-500 dark:hover:text-blue-400"
+                      title="Download pack"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDeletePack(pack.id)}
+                      className="p-1 rounded hover:bg-gray-200 dark:hover:bg-dark-tertiary text-gray-400 dark:text-dark-text-tertiary hover:text-red-500 dark:hover:text-red-400"
+                      title="Delete pack"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
                 {pack.description && (
-                  <p className="text-sm text-gray-600 dark:text-dark-text-secondary mb-4 line-clamp-2">
-                    {pack.description}
-                  </p>
+                  <div className="text-sm text-gray-600 dark:text-dark-text-secondary mb-4">
+                    <div className="line-clamp-2">
+                      {parseMinecraftFormatting(pack.description)}
+                    </div>
+                  </div>
                 )}
 
                 <div className="flex items-center justify-between">

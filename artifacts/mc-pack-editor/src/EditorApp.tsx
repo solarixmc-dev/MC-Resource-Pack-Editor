@@ -26,7 +26,7 @@ interface Notification {
   type: 'success' | 'error';
 }
 
-// Fallback library for non-logged-in users
+// Fallback library for non-logged-in users (using localStorage)
 const fallbackLibrary = {
   savePack: async (name: string, description: string, icon: string | null, packData: ArrayBuffer): Promise<SavedPack> => {
     console.log('Saving to fallback library (not logged in)');
@@ -68,7 +68,7 @@ const fallbackLibrary = {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(savedPacks));
     } catch (error) {
       console.error('Failed to save to fallback library:', error);
-      // Don't throw error - let the UI handle it gracefully
+      throw new Error('Storage quota exceeded. Please delete some packs from your library first.');
     }
     
     return savedPack;
@@ -2210,6 +2210,7 @@ function TextureEditorModal({
   onSave,
   onClose,
   darkMode,
+  checkerboardStyle,
 }: {
   texturePath: string;
   displayName: string;
@@ -2219,6 +2220,7 @@ function TextureEditorModal({
   onSave: (path: string, packId: string | null, buffer: ArrayBuffer) => void;
   onClose: () => void;
   darkMode: boolean;
+  checkerboardStyle: 'light' | 'dark';
 }) {
   const isTextFile = /\.(json|mcmeta|txt|lang|properties|yml|yaml|toml|cfg|conf|ini)$/i.test(texturePath);
   
@@ -2242,6 +2244,8 @@ function TextureEditorModal({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasFrameRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
+  const [overlayOpacity, setOverlayOpacity] = useState(0);
+  const [defaultImageData, setDefaultImageData] = useState<ImageData | null>(null);
 
   const atlasDef = useMemo(() => getAtlasDefinition(texturePath), [texturePath]);
   const regionOptions = useMemo(() => {
@@ -2257,8 +2261,28 @@ function TextureEditorModal({
     if (!ctx) return;
     canvas.width = imgData.width;
     canvas.height = imgData.height;
+    
+    // Draw the current texture
     ctx.putImageData(imgData, 0, 0);
-  }, [imageData]);
+    
+    // Draw default texture overlay if opacity > 0
+    if (overlayOpacity > 0 && defaultImageData) {
+      // Create a temporary canvas for blending
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = imgData.width;
+      tempCanvas.height = imgData.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      if (!tempCtx) return;
+      
+      // Put default image on temp canvas
+      tempCtx.putImageData(defaultImageData, 0, 0);
+      
+      // Draw temp canvas onto main canvas with opacity
+      ctx.globalAlpha = overlayOpacity;
+      ctx.drawImage(tempCanvas, 0, 0);
+      ctx.globalAlpha = 1.0;
+    }
+  }, [imageData, overlayOpacity, defaultImageData]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2269,6 +2293,33 @@ function TextureEditorModal({
       return;
     }
     setIsLoading(true);
+    
+    // Load default texture for comparison (non-blocking)
+    if (!isTextFile) {
+      fetch('/textures/default-pack.zip')
+        .then(response => {
+          if (!response.ok) throw new Error('Default pack not found');
+          return response.arrayBuffer();
+        })
+        .then(async (arrayBuffer) => {
+          if (cancelled) return;
+          try {
+            const defaultPack = await loadPackFromFile(new File([arrayBuffer], 'default-minecraft-pack.zip'));
+            const defaultBuffer = defaultPack.files.get(texturePath);
+            if (defaultBuffer) {
+              const defaultImgData = await loadImageDataFromBuffer(defaultBuffer, texturePath);
+              if (!cancelled) {
+                setDefaultImageData(defaultImgData);
+              }
+            }
+          } catch (error) {
+            console.log('Default texture not available for comparison:', error);
+          }
+        })
+        .catch(() => {
+          console.log('Default pack not available for comparison');
+        });
+    }
     
     if (isTextFile) {
       // Handle text files
@@ -2303,9 +2354,7 @@ function TextureEditorModal({
   useEffect(() => { drawImage(); }, [drawImage]);
   useEffect(() => { setHexInput(color.toUpperCase()); }, [color]);
 
-  // Keep the backing canvas at the texture's native resolution.  Only its CSS
-  // size changes, and only in whole-pixel increments, so every displayed cell
-  // still maps to exactly one source texture pixel.
+  // Scale texture to fit frame while keeping 1:1 pixel grid
   useEffect(() => {
     const frame = canvasFrameRef.current;
     if (!frame || !imageData) return;
@@ -2532,15 +2581,41 @@ function TextureEditorModal({
         <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
           <div className="min-w-0 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-secondary p-3">
             <div className="mb-3 flex items-center justify-between">
-              {!isTextFile && atlasDef && (
-                <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-tertiary px-2 py-1 text-sm text-slate-700 dark:text-dark-text-secondary">
-                  {regionOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
-                </select>
+              <div className="flex items-center gap-2">
+                {!isTextFile && atlasDef && (
+                  <select value={activeRegionId} onChange={(e) => setActiveRegionId(e.target.value)} className="rounded border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-tertiary px-2 py-1 text-sm text-slate-700 dark:text-dark-text-secondary">
+                    {regionOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+                  </select>
+                )}
+                {!isTextFile && imageData && (
+                  <span className="text-xs text-slate-500 dark:text-dark-text-tertiary">
+                    {imageData.width}x{imageData.height}
+                  </span>
+                )}
+              </div>
+              {!isTextFile && defaultImageData && (
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-slate-600 dark:text-dark-text-secondary">Default overlay:</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={overlayOpacity * 100}
+                    onChange={(e) => setOverlayOpacity(Number(e.target.value) / 100)}
+                    className="w-24 h-1 bg-slate-200 dark:bg-dark-border rounded-lg appearance-none cursor-pointer"
+                  />
+                  <span className="text-xs text-slate-600 dark:text-dark-text-secondary w-8">{Math.round(overlayOpacity * 100)}%</span>
+                </div>
               )}
             </div>
             <div
               ref={canvasFrameRef}
               className="flex h-[clamp(20rem,58vh,39rem)] min-h-[20rem] items-center justify-center overflow-auto rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-secondary p-3"
+              style={{
+                overflow: 'auto',
+                maxWidth: '100%',
+                maxHeight: '100%'
+              }}
             >
               {isLoading ? (
                 <div className="flex h-80 items-center justify-center text-sm text-slate-500 dark:text-dark-text-tertiary">Loading {isTextFile ? "text" : "texture"}…</div>
@@ -2555,7 +2630,13 @@ function TextureEditorModal({
                   spellCheck={false}
                 />
               ) : canEdit ? (
-                <div className={`checkered relative inline-block rounded-lg border border-slate-200 dark:border-dark-border p-1`}>
+                <div 
+                  className={`${checkerboardStyle === 'dark' ? "checkered-dark" : "checkered-light"} relative inline-block rounded-lg border border-slate-200 dark:border-dark-border`}
+                  style={{
+                    backgroundSize: `${canvasScale * 2}px ${canvasScale * 2}px`,
+                    backgroundPosition: `0 0, 0 ${canvasScale}px, ${canvasScale}px -${canvasScale}px, -${canvasScale}px 0px`
+                  }}
+                >
                   <canvas
                     ref={canvasRef}
                     className="mx-auto block"
@@ -3380,12 +3461,8 @@ export default function EditorApp() {
         addNotification("Pack saved to library!", "success");
       } catch (error) {
         console.error("Failed to save to library:", error);
-        // Check if it's a quota error
-        if (error instanceof Error && error.message.includes('quota')) {
-          addNotification("Storage quota exceeded. Try deleting some packs from your library first.", "error");
-        } else {
-          addNotification(`Failed to save to library: ${error instanceof Error ? error.message : 'Unknown error'}`, "error");
-        }
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        addNotification(`Failed to save: ${errorMessage}`, "error");
       }
     } catch (e) {
       console.error("Save failed:", e);
@@ -3456,10 +3533,45 @@ export default function EditorApp() {
     setPacks((prev) => [newPack, ...prev]);
   }, []);
 
-  const handleCreateFromScratch = useCallback(() => {
-    window.open('https://www.curseforge.com/api/v1/mods/690071/files/4370838/download', '_blank');
-    // Wait a moment for the download to start, then show the confirmation prompt
-    setTimeout(() => setShowOpenFilePrompt(true), 1000);
+  const handleCreateFromScratch = useCallback(async () => {
+    console.log('=== Create from Scratch triggered ===');
+    try {
+      // Load default textures from public folder
+      console.log('Attempting to load default pack from /textures/default-pack.zip');
+      const response = await fetch('/textures/default-pack.zip');
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error('Default pack not found');
+      }
+      
+      const arrayBuffer = await response.arrayBuffer();
+      console.log('Default pack loaded, size:', arrayBuffer.byteLength);
+      
+      const pack = await loadPackFromFile(new File([arrayBuffer], 'default-minecraft-pack.zip'));
+      console.log('Pack loaded successfully:', pack.name);
+      
+      setPacks((prev) => [pack, ...prev]);
+      
+      // Set default pack metadata
+      setPackName('Minecraft Default');
+      setPackDescription('Default Minecraft textures');
+      
+      // Try to get pack icon
+      const iconBuffer = pack.files.get("pack.png");
+      if (iconBuffer) {
+        const iconUrl = arrayBufferToDataURL(iconBuffer, "pack.png");
+        setPackIcon(iconUrl);
+      }
+      
+      console.log('=== Create from Scratch completed successfully ===');
+    } catch (error) {
+      console.error("Failed to load default pack:", error);
+      alert("Default textures not found. Please download Minecraft default textures and place them in public/textures/default-pack.zip");
+      // Fallback to old behavior
+      window.open('https://www.curseforge.com/api/v1/mods/690071/files/4370838/download', '_blank');
+      setTimeout(() => setShowOpenFilePrompt(true), 1000);
+    }
   }, []);
 
   const handleConfirmOpenFile = useCallback(() => {
@@ -4006,6 +4118,7 @@ export default function EditorApp() {
           }}
           onClose={() => setEditingTexture(null)}
           darkMode={darkMode}
+          checkerboardStyle={checkerboardStyle}
         />
       )}
 
