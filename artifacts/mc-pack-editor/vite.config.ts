@@ -46,7 +46,11 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
   },
+  assetsInclude: ['**/*.mp4', '**/*.webm', '**/*.ogg'],
   preview: {
     port,
     host: "0.0.0.0",
