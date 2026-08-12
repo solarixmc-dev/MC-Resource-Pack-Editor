@@ -438,9 +438,9 @@ aside {
 }
 
 .animate-spin-slow {
-  animation: spin-slow 60s linear infinite;
+  animation: spin-slow 40s linear infinite;
 }
 
 .animate-spin-slow-reverse {
-  animation: spin-slow-reverse 60s linear infinite;
+  animation: spin-slow-reverse 40s linear infinite;
 }

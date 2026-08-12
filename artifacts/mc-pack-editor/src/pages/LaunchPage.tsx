@@ -83,6 +83,10 @@ export default function LaunchPage() {
         <div className="absolute top-40 right-20 w-96 h-96 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
         <div className="absolute bottom-40 left-1/4 w-48 h-48 border-2 border-gray-300/40 dark:border-gray-600/40 rotate-45 animate-spin-slow"></div>
         <div className="absolute bottom-20 right-1/3 w-32 h-32 border-2 border-[#C2B280]/20 rotate-12 animate-spin-slow-reverse"></div>
+        {/* Small triangles */}
+        <div className="absolute top-1/3 right-1/4 w-0 h-0 border-l-[20px] border-r-[20px] border-b-[35px] border-l-transparent border-r-transparent border-b-[#C2B280]/15 animate-spin-slow"></div>
+        <div className="absolute bottom-1/3 left-1/5 w-0 h-0 border-l-[15px] border-r-[15px] border-b-[26px] border-l-transparent border-r-transparent border-b-gray-300/30 dark:border-gray-600/30 animate-spin-slow-reverse"></div>
+        <div className="absolute top-1/2 left-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[21px] border-l-transparent border-r-transparent border-b-[#C2B280]/10 animate-spin-slow"></div>
       </div>
 
       {/* Content Overlay */}
