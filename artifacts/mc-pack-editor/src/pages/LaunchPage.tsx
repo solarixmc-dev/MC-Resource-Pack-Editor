@@ -100,9 +100,9 @@ export default function LaunchPage() {
       {/* Features Grid */}
       <div className="max-w-4xl mx-auto px-4">
           {hasScrolled && (
-            <div className={`grid md:grid-cols-3 gap-6 mb-16 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className={`grid md:grid-cols-2 gap-6 mb-16 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               {/* Texture Editor Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-96">
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
                 <VideoPlaceholder type="editor" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
                 <div className="relative z-10 flex items-center p-8 h-full">
@@ -124,7 +124,7 @@ export default function LaunchPage() {
               </div>
 
               {/* Pack Management Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-96">
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
                 <VideoPlaceholder type="pack" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
                 <div className="relative z-10 flex items-center p-8 h-full">
@@ -145,7 +145,7 @@ export default function LaunchPage() {
               </div>
 
               {/* Local Library Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-96">
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
                 <VideoPlaceholder type="library" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
                 <div className="relative z-10 flex items-center p-8 h-full">
@@ -165,7 +165,7 @@ export default function LaunchPage() {
               </div>
 
               {/* Texture Atlas Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-96">
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
                 <VideoPlaceholder type="atlas" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
                 <div className="relative z-10 flex items-center p-8 h-full">
@@ -186,7 +186,7 @@ export default function LaunchPage() {
               </div>
 
               {/* Color Code Support Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-96">
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
                 <VideoPlaceholder type="colors" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
                 <div className="relative z-10 flex items-center p-8 h-full">
@@ -207,7 +207,7 @@ export default function LaunchPage() {
               </div>
 
               {/* Texture Preview Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-96">
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
                 <VideoPlaceholder type="preview" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
                 <div className="relative z-10 flex items-center p-8 h-full">
