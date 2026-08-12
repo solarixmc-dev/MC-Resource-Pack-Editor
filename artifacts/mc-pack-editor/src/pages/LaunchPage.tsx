@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 // Animated video placeholder components
 function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atlas' | 'colors' | 'preview' }) {
@@ -21,12 +21,21 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atl
     preview: '/videos/texture-preview.mp4'
   };
 
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 2;
+    }
+  }, []);
+
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden">
-      <video 
-        autoPlay 
-        muted 
-        loop 
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        loop
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
         style={{ opacity: 0.8 }}
@@ -40,7 +49,7 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atl
       <div className="absolute inset-0 animate-gradient-xy" style={{
         background: `linear-gradient(45deg, ${colors[type][0]}66, ${colors[type][1]}66, ${colors[type][2]}66, ${colors[type][0]}66)`,
         backgroundSize: '400% 400%',
-        animation: 'gradientRotate 15s ease infinite',
+        animation: 'gradientRotate 7.5s ease infinite',
         opacity: 0.3
       }}></div>
     </div>
