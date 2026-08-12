@@ -112,6 +112,10 @@ export default function LaunchPage() {
         <div className="absolute top-1/4 left-1/4 w-36 h-36 border-2 border-gray-300/30 dark:border-gray-600/30 rotate-45 animate-spin-slow"></div>
         <div className="absolute top-1/3 right-1/3 w-24 h-24 border-2 border-[#C2B280]/18 rotate-12 animate-spin-slow-reverse"></div>
         <div className="absolute top-1/2 left-1/6 w-40 h-40 border-2 border-[#C2B280]/12 rounded-lg rotate-6 animate-spin-slow"></div>
+        {/* Pentagons in top area */}
+        <div className="absolute top-1/4 left-1/2 w-32 h-32 border-2 border-[#C2B280]/15 animate-spin-slow" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
+        <div className="absolute top-1/3 right-1/6 w-28 h-28 border-2 border-gray-300/25 dark:border-gray-600/25 animate-spin-slow-reverse" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
+        <div className="absolute top-1/6 right-1/4 w-24 h-24 border-2 border-[#C2B280]/12 animate-spin-slow" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
         {/* Small triangles in top area */}
         <div className="absolute top-1/4 right-1/5 w-0 h-0 border-l-[16px] border-r-[16px] border-b-[28px] border-l-transparent border-r-transparent border-b-[#C2B280]/12 animate-spin-slow"></div>
         <div className="absolute top-1/3 left-1/6 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[20px] border-l-transparent border-r-transparent border-b-gray-300/25 dark:border-gray-600/25 animate-spin-slow-reverse"></div>
@@ -120,6 +124,9 @@ export default function LaunchPage() {
         <div className="absolute bottom-24 right-1/3 w-32 h-32 border-2 border-[#C2B280]/20 rotate-12 animate-spin-slow-reverse"></div>
         <div className="absolute bottom-1/3 right-1/4 w-40 h-40 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow"></div>
         <div className="absolute bottom-1/4 left-1/6 w-28 h-28 border-2 border-gray-300/35 dark:border-gray-600/35 rotate-30 animate-spin-slow-reverse"></div>
+        {/* Pentagons in bottom area */}
+        <div className="absolute bottom-1/3 left-1/3 w-36 h-36 border-2 border-[#C2B280]/18 animate-spin-slow-reverse" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
+        <div className="absolute bottom-1/4 right-1/6 w-32 h-32 border-2 border-gray-300/30 dark:border-gray-600/30 animate-spin-slow" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
         {/* Small triangles in bottom area */}
         <div className="absolute bottom-1/3 left-1/5 w-0 h-0 border-l-[15px] border-r-[15px] border-b-[26px] border-l-transparent border-r-transparent border-b-gray-300/30 dark:border-gray-600/30 animate-spin-slow-reverse"></div>
         <div className="absolute bottom-1/4 right-1/5 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[21px] border-l-transparent border-r-transparent border-b-[#C2B280]/10 animate-spin-slow"></div>
@@ -141,8 +148,8 @@ export default function LaunchPage() {
             <h2 className="text-5xl text-gray-600 dark:text-dark-text-secondary mt-8 mb-4">
               <span className="border-b-4 border-[#C2B280] pb-2">The</span> ultimate Minecraft <span className="text-[#C2B280] font-bold text-5xl">Texture Editor</span>
             </h2>
-            <p className="text-gray-600 dark:text-dark-text-secondary text-2xl mt-6 max-w-2xl mx-auto leading-relaxed">
-              Edit resource packs directly in your browser
+            <p className="text-gray-600 dark:text-dark-text-secondary text-lg mt-6 max-w-2xl mx-auto leading-relaxed">
+              Create, edit, organize, and customize Minecraft resource packs — all in your browser.
             </p>
           </div>
 
@@ -158,11 +165,14 @@ export default function LaunchPage() {
 
           {/* Scroll Arrow */}
           <div className={`text-center mt-8 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <div className="animate-bounce inline-block">
+            <button
+              onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+              className="animate-bounce inline-block cursor-pointer hover:scale-110 transition-transform"
+            >
               <svg className="w-8 h-8 text-gray-400 dark:text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14M19 12l-7 7-7-7" />
               </svg>
-            </div>
+            </button>
           </div>
         </div>
       </div>
