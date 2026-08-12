@@ -3,23 +3,32 @@ import { useEffect, useState } from "react";
 
 // Full background video component
 function BackgroundVideo() {
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden">
-      <video 
-        autoPlay 
-        muted 
-        loop 
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ opacity: 0.3 }}
-        onError={(e) => {
-          console.log('Background video failed to load:', e);
-          e.currentTarget.style.display = 'none';
-        }}
-      >
-        <source src="/videos/background.mp4" type="video/mp4" />
-      </video>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40"></div>
+      {videoLoaded ? (
+        <>
+          <video 
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ opacity: 0.3 }}
+            onLoadedData={() => setVideoLoaded(true)}
+            onError={(e) => {
+              console.log('Background video failed to load:', e);
+              setVideoLoaded(false);
+            }}
+          >
+            <source src="/videos/background.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40"></div>
+        </>
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"></div>
+      )}
     </div>
   );
 }
