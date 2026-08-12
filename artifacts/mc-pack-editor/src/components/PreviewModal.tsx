@@ -1,0 +1,123 @@
+import { Pack } from "../types";
+import { arrayBufferToDataURL } from "../lib/zipUtils";
+
+interface PreviewModalProps {
+  packs: Pack[];
+  onClose: () => void;
+  darkMode: boolean;
+}
+
+const PREVIEW_ITEMS = [
+  { name: "Wooden Sword", path: "assets/minecraft/textures/item/wooden_sword.png" },
+  { name: "Red Wool", path: "assets/minecraft/textures/block/red_wool.png" },
+  { name: "Green Wool", path: "assets/minecraft/textures/block/green_wool.png" },
+  { name: "Glass", path: "assets/minecraft/textures/block/glass.png" },
+  { name: "Fireball", path: "assets/minecraft/textures/item/fire_charge.png" },
+  { name: "Emerald", path: "assets/minecraft/textures/item/emerald.png" },
+  { name: "Diamond", path: "assets/minecraft/textures/item/diamond.png" },
+  { name: "Iron Ingot", path: "assets/minecraft/textures/item/iron_ingot.png" },
+  { name: "Gold Ingot", path: "assets/minecraft/textures/item/gold_ingot.png" },
+  { name: "TNT", path: "assets/minecraft/textures/block/tnt.png" },
+  { name: "Golden Apple", path: "assets/minecraft/textures/item/golden_apple.png" },
+];
+
+function getSkyTexture(packs: Pack[]): string | null {
+  for (const pack of packs) {
+    // Try different possible sky texture paths
+    const skyPaths = [
+      "assets/minecraft/textures/environment/end_sky.png",
+      "assets/minecraft/textures/environment/sky.png",
+      "assets/minecraft/textures/block/end_sky.png",
+    ];
+    for (const path of skyPaths) {
+      const buffer = pack.files.get(path);
+      if (buffer) {
+        return arrayBufferToDataURL(buffer, path);
+      }
+    }
+  }
+  return null;
+}
+
+function getItemTexture(packs: Pack[], path: string): string | null {
+  for (const pack of packs) {
+    const buffer = pack.files.get(path);
+    if (buffer) {
+      return arrayBufferToDataURL(buffer, path);
+    }
+  }
+  return null;
+}
+
+export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalProps) {
+  const skyTexture = getSkyTexture(packs);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className={`relative w-full max-w-4xl max-h-[80vh] rounded-2xl overflow-hidden shadow-2xl ${darkMode ? "bg-dark-secondary border-dark-border" : "bg-white border-gray-200"} border`}>
+        {/* Header */}
+        <div className={`flex items-center justify-between p-4 border-b ${darkMode ? "border-dark-border" : "border-gray-200"}`}>
+          <h2 className={`text-xl font-semibold ${darkMode ? "text-dark-text" : "text-gray-900"}`}>Preview Loadout</h2>
+          <button
+            onClick={onClose}
+            className={`text-lg leading-none ${darkMode ? "text-dark-text-secondary hover:text-dark-text" : "text-slate-400 hover:text-slate-700"}`}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Preview Area */}
+        <div
+          className="relative w-full h-[500px] overflow-hidden"
+          style={{
+            backgroundImage: skyTexture ? `url(${skyTexture})` : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundColor: skyTexture ? undefined : (darkMode ? '#1a1a2e' : '#87CEEB'),
+          }}
+        >
+          {/* Grid of items */}
+          <div className="absolute inset-0 flex items-center justify-center p-8">
+            <div className="grid grid-cols-4 gap-6">
+              {PREVIEW_ITEMS.map((item) => {
+                const textureUrl = getItemTexture(packs, item.path);
+                return (
+                  <div
+                    key={item.path}
+                    className="flex flex-col items-center gap-2"
+                  >
+                    <div
+                      className="w-20 h-20 rounded-lg checkered flex items-center justify-center border-2 border-black/20"
+                      style={{ imageRendering: 'pixelated' }}
+                    >
+                      {textureUrl ? (
+                        <img
+                          src={textureUrl}
+                          alt={item.name}
+                          className="w-16 h-16 object-contain"
+                          style={{ imageRendering: 'pixelated' }}
+                        />
+                      ) : (
+                        <span className="text-xs text-center text-gray-500">Missing</span>
+                      )}
+                    </div>
+                    <span className={`text-xs font-medium ${darkMode ? "text-dark-text" : "text-gray-900"}`}>
+                      {item.name}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className={`p-4 border-t ${darkMode ? "border-dark-border" : "border-gray-200"}`}>
+          <p className={`text-sm ${darkMode ? "text-dark-text-secondary" : "text-gray-600"}`}>
+            Preview displays textures from your resource pack. Background uses the pack's sky texture if available.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

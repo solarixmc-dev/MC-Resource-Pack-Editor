@@ -142,7 +142,7 @@ export default function LaunchPage() {
                   <div>
                     <h3 className="text-xl font-semibold text-white mb-2">Texture Editor</h3>
                     <p className="text-gray-200 text-base">
-                      Edit textures with pixel-perfect precision, brush tools, and atlas support
+                      Edit textures with pixel-perfect precision and brush tools
                     </p>
                   </div>
                 </div>
@@ -245,7 +245,7 @@ export default function LaunchPage() {
                   <div>
                     <h3 className="text-xl font-semibold text-white mb-2">Texture Preview</h3>
                     <p className="text-gray-200 text-base">
-                      3D texture preview to see how textures look in-game
+                      Generate preview loadouts with key items to see textures in your pack's sky
                     </p>
                   </div>
                 </div>

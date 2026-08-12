@@ -17,6 +17,7 @@ import { getAtlasDefinition, AtlasDefinition } from "./lib/atlasRegions";
 import { SavedPack, getLocalPackLibrary, EditorState } from "./lib/packLibrary";
 import { createCroppedTexturePreviewDataUrl, TEXTURE_THUMBNAIL_SIZE } from "./lib/texturePreview";
 import { useTheme } from "./contexts/ThemeContext";
+import PreviewModal from "./components/PreviewModal";
 
 // Notification type
 interface Notification {
@@ -3062,6 +3063,7 @@ export default function EditorApp() {
   const [exporting, setExporting] = useState(false);
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -3579,6 +3581,11 @@ export default function EditorApp() {
     }
   }, [packs]);
 
+  const handleGeneratePreview = useCallback(() => {
+    if (!packs.length) return;
+    setPreviewOpen(true);
+  }, [packs]);
+
   const reorderPacks = useCallback((newOrder: Pack[]) => {
     setPacks(newOrder);
   }, []);
@@ -3833,6 +3840,12 @@ export default function EditorApp() {
                 >
                   <span className={analyzing ? "animate-pulse" : ""}>✨</span>
                   {analyzing ? "Analyzing…" : "Analyze"}
+                </button>
+                <button
+                  onClick={handleGeneratePreview}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${darkMode ? "text-dark-text-secondary hover:text-dark-text hover:bg-dark-tertiary" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}
+                >
+                  👁 Preview
                 </button>
                 <div className="relative" ref={exportDropdownRef}>
                   <button
@@ -4254,6 +4267,14 @@ export default function EditorApp() {
           analysis={analysis}
           isAnalyzing={analyzing}
           onClose={() => setAnalysisOpen(false)}
+          darkMode={darkMode}
+        />
+      )}
+
+      {previewOpen && (
+        <PreviewModal
+          packs={packs}
+          onClose={() => setPreviewOpen(false)}
           darkMode={darkMode}
         />
       )}
