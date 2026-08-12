@@ -18,6 +18,52 @@ import { SavedPack, getLocalPackLibrary } from "./lib/packLibrary";
 import { createCroppedTexturePreviewDataUrl, TEXTURE_THUMBNAIL_SIZE } from "./lib/texturePreview";
 import { useTheme } from "./contexts/ThemeContext";
 
+// Editor state persistence key
+const EDITOR_STATE_KEY = 'mc-pack-editor-state';
+
+// Save editor state to localStorage
+const saveEditorState = (packs: Pack[], packName: string, packDescription: string, packIcon: string | null) => {
+  try {
+    const state = {
+      packs: packs.map(p => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        icon: p.icon,
+        fileCount: p.files.size
+      })),
+      packName,
+      packDescription,
+      packIcon
+    };
+    localStorage.setItem(EDITOR_STATE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.error('Failed to save editor state:', error);
+  }
+};
+
+// Load editor state from localStorage
+const loadEditorState = () => {
+  try {
+    const stored = localStorage.getItem(EDITOR_STATE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error('Failed to load editor state:', error);
+  }
+  return null;
+};
+
+// Clear editor state
+const clearEditorState = () => {
+  try {
+    localStorage.removeItem(EDITOR_STATE_KEY);
+  } catch (error) {
+    console.error('Failed to clear editor state:', error);
+  }
+};
+
 // Notification type
 interface Notification {
   id: string;
@@ -3065,6 +3111,13 @@ export default function EditorApp() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  // Save editor state to localStorage whenever packs or metadata changes
+  useEffect(() => {
+    if (packs.length > 0) {
+      saveEditorState(packs, packName, packDescription, packIcon);
+    }
+  }, [packs, packName, packDescription, packIcon]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -3081,6 +3134,19 @@ export default function EditorApp() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [exportDropdownOpen]);
+
+  // Restore editor state on mount
+  useEffect(() => {
+    const savedState = loadEditorState();
+    if (savedState && savedState.packs && savedState.packs.length > 0) {
+      // Only restore metadata, not the actual pack data (too large for localStorage)
+      setPackName(savedState.packName || uploadDefaults.name);
+      setPackDescription(savedState.packDescription || uploadDefaults.description);
+      setPackIcon(savedState.packIcon || null);
+      // Note: We can't restore the actual pack data from localStorage due to size limits
+      // The user will need to reload their pack, but at least the metadata is preserved
+    }
+  }, []);
 
   // Add notification
   const addNotification = useCallback((message: string, type: 'success' | 'error' = 'success') => {
@@ -3351,6 +3417,7 @@ export default function EditorApp() {
     setLightbox(null);
     setEditingTexture(null);
     setAnalysis(null);
+    clearEditorState();
   }, [uploadDefaults.name, uploadDefaults.description, uploadDefaults.icon]);
 
   const handleViewFiles = useCallback((packId: string) => {
