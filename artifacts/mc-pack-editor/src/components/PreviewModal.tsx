@@ -8,32 +8,32 @@ interface PreviewModalProps {
 }
 
 const PREVIEW_ITEMS = [
-  { name: "Wooden Sword", filename: "wooden_sword.png" },
-  { name: "Red Wool", filename: "red_wool.png" },
-  { name: "Green Wool", filename: "green_wool.png" },
-  { name: "Glass", filename: "glass.png" },
-  { name: "Fireball", filename: "fire_charge.png" },
-  { name: "Emerald", filename: "emerald.png" },
-  { name: "Diamond", filename: "diamond.png" },
-  { name: "Iron Ingot", filename: "iron_ingot.png" },
-  { name: "Gold Ingot", filename: "gold_ingot.png" },
-  { name: "TNT", filename: "tnt.png" },
-  { name: "Golden Apple", filename: "golden_apple.png" },
+  { name: "Wooden Sword", filenames: ["wooden_sword.png", "sword_wood.png"] },
+  { name: "Red Wool", filenames: ["wool_colored_red.png", "red_wool.png"] },
+  { name: "Green Wool", filenames: ["wool_colored_green.png", "green_wool.png"] },
+  { name: "Glass", filenames: ["glass.png"] },
+  { name: "Fireball", filenames: ["fire_charge.png", "fireball.png"] },
+  { name: "Emerald", filenames: ["emerald.png"] },
+  { name: "Diamond", filenames: ["diamond.png"] },
+  { name: "Iron Ingot", filenames: ["iron_ingot.png"] },
+  { name: "Gold Ingot", filenames: ["gold_ingot.png"] },
+  { name: "TNT", filenames: ["tnt.png", "tnt_side.png"] },
+  { name: "Golden Apple", filenames: ["golden_apple.png", "apple_golden.png"] },
 ];
 
 // Search for a file by filename across all packs
-function getItemTexture(packs: Pack[], filename: string): string | null {
+function getItemTexture(packs: Pack[], filenames: string[]): string | null {
   for (const pack of packs) {
     for (const [path, buffer] of pack.files.entries()) {
       const parts = path.split('/');
       const actualFilename = parts[parts.length - 1];
-      if (actualFilename === filename) {
-        console.log(`Found texture: ${filename} at ${path}`);
+      if (filenames.includes(actualFilename)) {
+        console.log(`Found texture: ${actualFilename} at ${path}`);
         return arrayBufferToDataURL(buffer, path);
       }
     }
   }
-  console.log(`Missing texture: ${filename}`);
+  console.log(`Missing texture: ${filenames.join(', ')}`);
   return null;
 }
 
@@ -85,10 +85,10 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
           <div className="absolute inset-0 flex items-center justify-center p-8">
             <div className="grid grid-cols-4 gap-6">
               {PREVIEW_ITEMS.map((item) => {
-                const textureUrl = getItemTexture(packs, item.filename);
+                const textureUrl = getItemTexture(packs, item.filenames);
                 return (
                   <div
-                    key={item.filename}
+                    key={item.filenames[0]}
                     className="flex flex-col items-center gap-2"
                   >
                     <div
