@@ -13,68 +13,6 @@ export default function Navigation() {
     { path: "/library", label: "Pack Library" },
   ];
 
-  if (showSettings) {
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70]" onClick={() => setShowSettings(false)}>
-        <div className="bg-white dark:bg-dark-secondary rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
-          <h2 className="text-xl font-bold text-black dark:text-dark-text mb-4">Settings</h2>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-black dark:text-dark-text mb-2">Theme</label>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setTheme('light')}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${theme === 'light' ? 'bg-black dark:bg-dark-text text-white dark:text-dark-bg' : 'bg-gray-100 dark:bg-dark-tertiary text-black dark:text-dark-text hover:bg-gray-200 dark:hover:bg-dark-border'}`}
-                >
-                  Light
-                </button>
-                <button
-                  onClick={() => setTheme('dark')}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${theme === 'dark' ? 'bg-black dark:bg-dark-text text-white dark:text-dark-bg' : 'bg-gray-100 dark:bg-dark-tertiary text-black dark:text-dark-text hover:bg-gray-200 dark:hover:bg-dark-border'}`}
-                >
-                  Dark
-                </button>
-                <button
-                  onClick={() => setTheme('system')}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${theme === 'system' ? 'bg-black dark:bg-dark-text text-white dark:text-dark-bg' : 'bg-gray-100 dark:bg-dark-tertiary text-black dark:text-dark-text hover:bg-gray-200 dark:hover:bg-dark-border'}`}
-                >
-                  System
-                </button>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-black dark:text-dark-text mb-2">Font</label>
-              <select
-                value={font}
-                onChange={(e) => setFont(e.target.value as any)}
-                className="w-full px-4 py-2 border-2 border-gray-300 dark:border-dark-border rounded-lg focus:outline-none focus:border-[#C2B280] text-black dark:text-dark-text bg-white dark:bg-dark-tertiary"
-              >
-                <option value="arial">Arial</option>
-                <option value="montserrat">Montserrat</option>
-                <option value="quicksand">Quicksand</option>
-                <option value="inter">Inter</option>
-                <option value="comfortaa">Comfortaa</option>
-                <option value="jetbrains-mono">JetBrains Mono</option>
-                <option value="pixel-sans">Pixel Sans</option>
-              </select>
-            </div>
-          </div>
-          
-          <div className="flex justify-end mt-6">
-            <button
-              onClick={() => setShowSettings(false)}
-              className="px-4 py-2 rounded-lg font-medium bg-black dark:bg-dark-text text-white dark:text-dark-bg hover:bg-gray-800 dark:hover:bg-dark-tertiary transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <nav className="bg-white dark:bg-dark-bg border-b border-gray-200 dark:border-dark-border pl-0 pr-0">
       <div className="w-full px-0">
@@ -110,9 +48,9 @@ export default function Navigation() {
           </div>
 
           {/* Settings Button - absolutely positioned to right edge */}
-          <div className="absolute right-6 flex-shrink-0">
+          <div className="absolute right-6 flex-shrink-0 relative">
             <button
-              onClick={() => setShowSettings(true)}
+              onClick={() => setShowSettings(!showSettings)}
               className="w-10 h-10 bg-black dark:bg-dark-text rounded-lg flex items-center justify-center hover:bg-gray-800 dark:hover:bg-dark-tertiary transition-colors"
               title="Settings"
             >
@@ -129,6 +67,55 @@ export default function Navigation() {
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
               </svg>
             </button>
+
+            {showSettings && (
+              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-dark-secondary rounded-lg shadow-lg border border-gray-200 dark:border-dark-border py-4 z-[70]">
+                <h3 className="text-sm font-semibold text-black dark:text-dark-text px-4 mb-3">Settings</h3>
+                
+                {/* Theme */}
+                <div className="px-4 mb-4">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-dark-text-tertiary mb-2">Theme</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setTheme('light')}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${theme === 'light' ? 'bg-black dark:bg-dark-text text-white dark:text-dark-bg' : 'bg-gray-100 dark:bg-dark-tertiary text-black dark:text-dark-text hover:bg-gray-200 dark:hover:bg-dark-border'}`}
+                    >
+                      Light
+                    </button>
+                    <button
+                      onClick={() => setTheme('dark')}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${theme === 'dark' ? 'bg-black dark:bg-dark-text text-white dark:text-dark-bg' : 'bg-gray-100 dark:bg-dark-tertiary text-black dark:text-dark-text hover:bg-gray-200 dark:hover:bg-dark-border'}`}
+                    >
+                      Dark
+                    </button>
+                    <button
+                      onClick={() => setTheme('system')}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${theme === 'system' ? 'bg-black dark:bg-dark-text text-white dark:text-dark-bg' : 'bg-gray-100 dark:bg-dark-tertiary text-black dark:text-dark-text hover:bg-gray-200 dark:hover:bg-dark-border'}`}
+                    >
+                      System
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Font */}
+                <div className="px-4">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-dark-text-tertiary mb-2">Font</label>
+                  <select
+                    value={font}
+                    onChange={(e) => setFont(e.target.value as any)}
+                    className="w-full px-3 py-1.5 border border-gray-300 dark:border-dark-border rounded-md focus:outline-none focus:border-[#C2B280] text-black dark:text-dark-text bg-white dark:bg-dark-tertiary text-xs"
+                  >
+                    <option value="arial">Arial</option>
+                    <option value="montserrat">Montserrat</option>
+                    <option value="quicksand">Quicksand</option>
+                    <option value="inter">Inter</option>
+                    <option value="comfortaa">Comfortaa</option>
+                    <option value="jetbrains-mono">JetBrains Mono</option>
+                    <option value="pixel-sans">Pixel Sans</option>
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

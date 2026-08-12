@@ -45,7 +45,7 @@ export default function ProfileDropdown() {
 
   if (showSettings) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowSettings(false)}>
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70]" onClick={() => setShowSettings(false)}>
         <div className="bg-white dark:bg-dark-secondary rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
           <h2 className="text-xl font-bold text-black dark:text-dark-text mb-4">Account Settings</h2>
           
@@ -111,7 +111,7 @@ export default function ProfileDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-secondary rounded-lg shadow-lg border border-gray-200 dark:border-dark-border py-2 z-50" style={{ top: '100%' }}>
+        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-secondary rounded-lg shadow-lg border border-gray-200 dark:border-dark-border py-2 z-[70]" style={{ top: '100%' }}>
           {/* Theme Toggle with Dropdown */}
           <div className="px-4 py-2 border-b border-gray-100 dark:border-dark-border">
             <div className="flex items-center justify-between">
@@ -130,7 +130,7 @@ export default function ProfileDropdown() {
             </div>
             
             {showThemeDropdown && (
-              <div className="absolute top-0 right-full mr-1 w-32 bg-white dark:bg-dark-secondary rounded-lg shadow-lg border border-gray-200 dark:border-dark-border py-1 z-50">
+              <div className="absolute top-0 right-full mr-1 w-32 bg-white dark:bg-dark-secondary rounded-lg shadow-lg border border-gray-200 dark:border-dark-border py-1 z-[70]">
                 <button
                   onClick={() => { setTheme('light'); setShowThemeDropdown(false); }}
                   className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-dark-tertiary transition-colors"
@@ -175,7 +175,7 @@ export default function ProfileDropdown() {
             </div>
             
             {showFontDropdown && (
-              <div className="absolute top-0 right-full mr-1 w-40 bg-white dark:bg-dark-secondary rounded-lg shadow-lg border border-gray-200 dark:border-dark-border py-1 z-50 max-h-64 overflow-y-auto">
+              <div className="absolute top-0 right-full mr-1 w-40 bg-white dark:bg-dark-secondary rounded-lg shadow-lg border border-gray-200 dark:border-dark-border py-1 z-[70] max-h-64 overflow-y-auto">
                 <button
                   onClick={() => { setFont('arial'); setShowFontDropdown(false); }}
                   className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-dark-tertiary transition-colors"

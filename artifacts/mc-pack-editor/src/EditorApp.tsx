@@ -3469,7 +3469,7 @@ export default function EditorApp() {
     } finally {
       setExporting(false);
     }
-  }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles, user]);
+  }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles]);
 
   const handleSaveToLibrary = useCallback(async () => {
     if (!packs.length) return;
@@ -3505,7 +3505,7 @@ export default function EditorApp() {
     } finally {
       setExporting(false);
     }
-  }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles, user, addNotification]);
+  }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles, addNotification]);
 
   const handleAnalyze = useCallback(async () => {
     if (!packs.length) return;
