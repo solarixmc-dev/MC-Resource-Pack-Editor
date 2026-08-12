@@ -25,7 +25,7 @@ function BackgroundVideo() {
         animation: 'gradientRotate 15s ease infinite',
         opacity: 0.3
       }}></div>
-      <div className="absolute inset-0 bg-black/50"></div>
+      <div className="absolute inset-0 bg-black/55"></div>
     </div>
   );
 }
