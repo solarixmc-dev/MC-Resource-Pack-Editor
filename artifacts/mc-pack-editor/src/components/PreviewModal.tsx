@@ -8,9 +8,9 @@ interface PreviewModalProps {
 }
 
 const PREVIEW_ITEMS = [
-  { name: "Wooden Sword", filenames: ["wood_sword.png", "wooden_sword.png", "sword_wood.png"] },
+  { name: "Wooden Sword", filenames: ["wood_sword.png", "sword_wood.png"] },
   { name: "Red Wool", filenames: ["wool_colored_red.png", "red_wool.png"] },
-  { name: "Green Wool", filenames: ["wool_colored_green.png", "green_wool.png"] },
+  { name: "Green Wool", filenames: ["wool_colored_lime.png", "wool_colored_green.png", "green_wool.png"] },
   { name: "Glass", filenames: ["glass.png"] },
   { name: "Fireball", filenames: ["fireball.png", "fire_charge.png"] },
   { name: "Emerald", filenames: ["emerald.png"] },
