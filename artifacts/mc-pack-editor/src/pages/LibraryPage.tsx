@@ -123,10 +123,11 @@ export default function LibraryPage() {
     
     try {
       // Clean up old editor state entries
-      await (localLibrary as any).cleanupOldEditorStateEntries();
+      const library = getLocalPackLibrary();
+      await (library as any).cleanupOldEditorStateEntries();
       
       // Load from IndexedDB library
-      const allPacks = await localLibrary.getAllPacks();
+      const allPacks = await library.getAllPacks();
       console.log('Loaded packs:', allPacks);
       setPacks(allPacks || []);
     } catch (error) {
@@ -134,7 +135,7 @@ export default function LibraryPage() {
       setPacks([]);
       addNotification('Failed to load packs from library', 'error');
     }
-  }, [localLibrary, addNotification]);
+  }, [addNotification]);
 
   // Reload packs when component mounts
   useEffect(() => {
