@@ -216,6 +216,32 @@ class PackLibraryIndexedDB {
     });
   }
 
+  // Clean up old editor state entries from packs store (public method)
+  async cleanupOldEditorStateEntries(): Promise<void> {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const request = store.openCursor();
+
+      request.onsuccess = (e) => {
+        const cursor = (e.target as IDBRequest).result;
+        if (cursor) {
+          const pack = cursor.value;
+          if (pack.id && pack.id.startsWith('editor-state-')) {
+            cursor.delete();
+          }
+          cursor.continue();
+        } else {
+          resolve();
+        }
+      };
+
+      request.onerror = () => reject(request.error);
+    });
+  }
+
   async getAllPacks(): Promise<SavedPack[]> {
     const db = await this.initDB();
 
