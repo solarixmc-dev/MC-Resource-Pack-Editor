@@ -3,32 +3,29 @@ import { useEffect, useState } from "react";
 
 // Full background video component
 function BackgroundVideo() {
-  const [videoLoaded, setVideoLoaded] = useState(false);
-
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden">
-      {videoLoaded ? (
-        <>
-          <video 
-            autoPlay 
-            muted 
-            loop 
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ opacity: 0.7 }}
-            onLoadedData={() => setVideoLoaded(true)}
-            onError={(e) => {
-              console.log('Background video failed to load:', e);
-              setVideoLoaded(false);
-            }}
-          >
-            <source src="/videos/background.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/30"></div>
-        </>
-      ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"></div>
-      )}
+      <video 
+        autoPlay 
+        muted 
+        loop 
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ opacity: 0.7 }}
+        onError={(e) => {
+          console.log('Background video failed to load or not found at /videos/background.mp4:', e);
+          e.currentTarget.style.display = 'none';
+        }}
+      >
+        <source src="/videos/background.mp4" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 animate-gradient-xy" style={{
+        background: 'linear-gradient(45deg, #3b82f666, #8b5cf666, #a855f766, #3b82f666)',
+        backgroundSize: '400% 400%',
+        animation: 'gradientRotate 15s ease infinite',
+        opacity: 0.3
+      }}></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/30"></div>
     </div>
   );
 }
