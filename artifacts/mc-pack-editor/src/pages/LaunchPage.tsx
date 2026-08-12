@@ -108,42 +108,51 @@ export default function LaunchPage() {
           <rect width="100%" height="100%" fill="url(#diagonal)" className="text-gray-300 dark:text-gray-700"/>
         </svg>
         {/* Decorative geometric shapes */}
-        <div className="absolute top-20 left-10 w-64 h-64 border-2 border-[#C2B280]/20 rounded-full animate-spin-slow"></div>
-        <div className="absolute top-40 right-20 w-96 h-96 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
-        <div className="absolute bottom-40 left-1/4 w-48 h-48 border-2 border-gray-300/40 dark:border-gray-600/40 rotate-45 animate-spin-slow"></div>
-        <div className="absolute bottom-20 right-1/3 w-32 h-32 border-2 border-[#C2B280]/20 rotate-12 animate-spin-slow-reverse"></div>
-        {/* Small triangles */}
-        <div className="absolute top-1/3 right-1/4 w-0 h-0 border-l-[20px] border-r-[20px] border-b-[35px] border-l-transparent border-r-transparent border-b-[#C2B280]/15 animate-spin-slow"></div>
+        {/* Top area shapes */}
+        <div className="absolute top-10 left-10 w-48 h-48 border-2 border-[#C2B280]/20 rounded-full animate-spin-slow"></div>
+        <div className="absolute top-20 right-16 w-72 h-72 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
+        <div className="absolute top-1/4 left-1/4 w-36 h-36 border-2 border-gray-300/30 dark:border-gray-600/30 rotate-45 animate-spin-slow"></div>
+        <div className="absolute top-1/3 right-1/3 w-24 h-24 border-2 border-[#C2B280]/18 rotate-12 animate-spin-slow-reverse"></div>
+        <div className="absolute top-1/2 left-1/6 w-40 h-40 border-2 border-[#C2B280]/12 rounded-lg rotate-6 animate-spin-slow"></div>
+        {/* Small triangles in top area */}
+        <div className="absolute top-1/4 right-1/5 w-0 h-0 border-l-[16px] border-r-[16px] border-b-[28px] border-l-transparent border-r-transparent border-b-[#C2B280]/12 animate-spin-slow"></div>
+        <div className="absolute top-1/3 left-1/6 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[20px] border-l-transparent border-r-transparent border-b-gray-300/25 dark:border-gray-600/25 animate-spin-slow-reverse"></div>
+        {/* Bottom area shapes */}
+        <div className="absolute bottom-32 left-1/4 w-48 h-48 border-2 border-gray-300/40 dark:border-gray-600/40 rotate-45 animate-spin-slow"></div>
+        <div className="absolute bottom-24 right-1/3 w-32 h-32 border-2 border-[#C2B280]/20 rotate-12 animate-spin-slow-reverse"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-40 h-40 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow"></div>
+        <div className="absolute bottom-1/4 left-1/6 w-28 h-28 border-2 border-gray-300/35 dark:border-gray-600/35 rotate-30 animate-spin-slow-reverse"></div>
+        {/* Small triangles in bottom area */}
         <div className="absolute bottom-1/3 left-1/5 w-0 h-0 border-l-[15px] border-r-[15px] border-b-[26px] border-l-transparent border-r-transparent border-b-gray-300/30 dark:border-gray-600/30 animate-spin-slow-reverse"></div>
-        <div className="absolute top-1/2 left-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[21px] border-l-transparent border-r-transparent border-b-[#C2B280]/10 animate-spin-slow"></div>
+        <div className="absolute bottom-1/4 right-1/5 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[21px] border-l-transparent border-r-transparent border-b-[#C2B280]/10 animate-spin-slow"></div>
       </div>
 
       {/* Content Overlay */}
       <div className="relative z-10">
       {/* Hero Section */}
       <div className="relative h-screen flex items-center justify-center px-4 py-24">
-        <div className="max-w-4xl w-full text-center">
+        <div className="max-w-5xl w-full text-center">
           {/* Logo */}
           <div className={`transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <div className="inline-flex items-center gap-4 mb-8">
-              <div className="w-20 h-20 bg-black dark:bg-dark-text rounded-lg flex items-center justify-center">
-                <span className="text-white dark:text-dark-bg text-3xl font-bold">MC</span>
+            <div className="inline-flex items-center gap-6 mb-16">
+              <div className="w-24 h-24 bg-black dark:bg-dark-text rounded-2xl flex items-center justify-center shadow-2xl">
+                <span className="text-white dark:text-dark-bg text-4xl font-bold">MC</span>
               </div>
-              <h1 className="text-6xl font-bold text-black dark:text-dark-text">TextureLab</h1>
+              <h1 className="text-7xl font-bold text-black dark:text-dark-text tracking-tight">TextureLab</h1>
             </div>
-            <h2 className="text-4xl text-gray-600 dark:text-dark-text-secondary mt-12">
-              <span className="border-b-2 border-[#C2B280] pb-1">The</span> ultimate Minecraft <span className="text-[#C2B280] font-bold text-4xl">Texture Editor</span>
+            <h2 className="text-5xl text-gray-600 dark:text-dark-text-secondary mt-16 mb-4">
+              <span className="border-b-4 border-[#C2B280] pb-2">The</span> ultimate Minecraft <span className="text-[#C2B280] font-bold text-5xl">Texture Editor</span>
             </h2>
-            <p className="text-gray-600 dark:text-dark-text-secondary text-xl mt-12">
+            <p className="text-gray-600 dark:text-dark-text-secondary text-2xl mt-8 max-w-2xl mx-auto leading-relaxed">
               Create, edit, organize, and customize Minecraft resource packs — all in your browser.
             </p>
           </div>
 
           {/* Get Started Button */}
-          <div className={`text-center mt-16 transition-all duration-1000 ease-out delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`text-center mt-20 transition-all duration-1000 ease-out delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <Link
               href="/editor"
-              className="inline-block bg-black dark:bg-white text-white dark:text-black px-16 py-5 rounded-full font-semibold text-xl hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="inline-block bg-black dark:bg-white text-white dark:text-black px-20 py-6 rounded-full font-semibold text-2xl hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl"
             >
               Get Started
             </Link>
