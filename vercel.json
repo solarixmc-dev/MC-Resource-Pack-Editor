@@ -1,0 +1,10 @@
+{
+  "buildCommand": "cd artifacts/mc-pack-editor && npm run build",
+  "outputDirectory": "artifacts/mc-pack-editor/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
