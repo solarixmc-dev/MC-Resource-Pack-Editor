@@ -63,7 +63,28 @@ export default function LaunchPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-dark-bg flex flex-col relative">
+    <div className="min-h-screen bg-white dark:bg-dark-bg flex flex-col relative overflow-hidden">
+      {/* Geometric Background Pattern */}
+      <div className="absolute inset-0 pointer-events-none">
+        <svg className="w-full h-full opacity-5 dark:opacity-10" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+            </pattern>
+            <pattern id="diagonal" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="30" stroke="currentColor" strokeWidth="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" className="text-gray-400 dark:text-gray-600"/>
+          <rect width="100%" height="100%" fill="url(#diagonal)" className="text-gray-300 dark:text-gray-700"/>
+        </svg>
+        {/* Decorative geometric shapes */}
+        <div className="absolute top-20 left-10 w-64 h-64 border-2 border-[#C2B280]/10 rounded-full"></div>
+        <div className="absolute top-40 right-20 w-96 h-96 border-2 border-[#C2B280]/5 rounded-full"></div>
+        <div className="absolute bottom-40 left-1/4 w-48 h-48 border-2 border-gray-300/20 dark:border-gray-600/20 rotate-45"></div>
+        <div className="absolute bottom-20 right-1/3 w-32 h-32 border-2 border-[#C2B280]/10 rotate-12"></div>
+      </div>
+
       {/* Content Overlay */}
       <div className="relative z-10">
       {/* Hero Section */}
