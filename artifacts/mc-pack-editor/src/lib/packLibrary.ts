@@ -1,7 +1,7 @@
 /**
  * Pack Library Service
  * Manages storing and retrieving exported packs using IndexedDB
- * User-specific based on login credentials
+ * Local storage without authentication requirement
  */
 
 export interface SavedPack {
@@ -183,7 +183,7 @@ class PackLibraryIndexedDB {
   }
 }
 
-// Factory function to get user-specific library
-export function getUserPackLibrary(userId: string): PackLibraryIndexedDB {
-  return new PackLibraryIndexedDB(userId);
+// Factory function to get local library
+export function getLocalPackLibrary(): PackLibraryIndexedDB {
+  return new PackLibraryIndexedDB('local-user');
 }

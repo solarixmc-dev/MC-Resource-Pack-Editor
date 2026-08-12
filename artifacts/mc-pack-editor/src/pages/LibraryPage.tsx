@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
-import { SavedPack } from "../lib/packLibrary";
+import { SavedPack, getLocalPackLibrary } from "../lib/packLibrary";
 import { loadPackFromFile } from "../lib/zipUtils";
 import Navigation from "../components/Navigation";
 
@@ -90,6 +90,7 @@ const parseMinecraftFormatting = (text: string): React.ReactNode => {
 };
 
 export default function LibraryPage() {
+  const localLibrary = getLocalPackLibrary();
   const [packs, setPacks] = useState<SavedPack[]>([]);
   const [loading, setLoading] = useState(false);
   const [storageUsage, setStorageUsage] = useState({ used: 0, total: 500 * 1024 * 1024, percentage: 0 });
@@ -98,32 +99,16 @@ export default function LibraryPage() {
   const loadPacks = useCallback(async () => {
     console.log('=== Loading packs ===');
     
-    // Check localStorage for debugging
-    console.log('All localStorage keys:', Object.keys(localStorage));
-    
     try {
-      // Always load from guest library (no login required)
-      const STORAGE_KEY = 'mc-pack-editor-library-guest';
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        console.log('Library data:', stored);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          console.log('Parsed packs:', parsed);
-          setPacks(parsed || []);
-        } else {
-          console.log('No library found');
-          setPacks([]);
-        }
-      } catch (error) {
-        console.error('Failed to load library:', error);
-        setPacks([]);
-      }
+      // Load from IndexedDB library
+      const allPacks = await localLibrary.getAllPacks();
+      console.log('Loaded packs:', allPacks);
+      setPacks(allPacks || []);
     } catch (error) {
       console.error('Failed to load packs:', error);
       setPacks([]);
     }
-  }, []);
+  }, [localLibrary]);
 
   // Reload packs when user changes or on mount
   useEffect(() => {
@@ -133,27 +118,8 @@ export default function LibraryPage() {
   const handleLoadPack = async (packId: string) => {
     setLoading(true);
     try {
-      let packData;
-      if (user) {
-        const userLibrary = getUserPackLibrary(user.id);
-        packData = await userLibrary.loadPack(packId);
-      } else {
-        // Load from guest library
-        const STORAGE_KEY = 'mc-pack-editor-library-guest';
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const savedPacks = JSON.parse(stored);
-          const pack = savedPacks.find((p: any) => p.id === packId);
-          if (pack) {
-            const binary = atob(pack.packData);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) {
-              bytes[i] = binary.charCodeAt(i);
-            }
-            packData = bytes.buffer;
-          }
-        }
-      }
+      // Load from IndexedDB library
+      const packData = await localLibrary.loadPack(packId);
       
       if (packData) {
         const pack = await loadPackFromFile(new File([packData], 'library-pack.zip'));
@@ -181,23 +147,8 @@ export default function LibraryPage() {
 
   const handleDownloadPack = async (packId: string) => {
     try {
-      // Always load from guest library (no login required)
-      const STORAGE_KEY = 'mc-pack-editor-library-guest';
-      const stored = localStorage.getItem(STORAGE_KEY);
-      let packData;
-      
-      if (stored) {
-        const savedPacks = JSON.parse(stored);
-        const pack = savedPacks.find((p: any) => p.id === packId);
-        if (pack) {
-          const binary = atob(pack.packData);
-          const bytes = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
-          }
-          packData = bytes.buffer;
-        }
-      }
+      // Load from IndexedDB library
+      const packData = await localLibrary.loadPack(packId);
       
       if (packData) {
         const blob = new Blob([packData], { type: 'application/zip' });
@@ -219,15 +170,9 @@ export default function LibraryPage() {
   const handleDeletePack = async (packId: string) => {
     if (confirm("Are you sure you want to delete this pack from your library?")) {
       try {
-        // Always delete from guest library (no login required)
-        const STORAGE_KEY = 'mc-pack-editor-library-guest';
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const savedPacks = JSON.parse(stored);
-          const updatedPacks = savedPacks.filter((p: any) => p.id !== packId);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPacks));
-          setPacks(updatedPacks);
-        }
+        // Delete from IndexedDB library
+        await localLibrary.deletePack(packId);
+        await loadPacks();
       } catch (error) {
         console.error('Failed to delete pack:', error);
         alert('Failed to delete pack. Please try again.');
@@ -238,9 +183,8 @@ export default function LibraryPage() {
   const handleClearAll = async () => {
     if (confirm("Are you sure you want to clear all saved packs?")) {
       try {
-        // Always clear guest library (no login required)
-        const STORAGE_KEY = 'mc-pack-editor-library-guest';
-        localStorage.removeItem(STORAGE_KEY);
+        // Clear IndexedDB library
+        await localLibrary.clearAll();
         setPacks([]);
       } catch (error) {
         console.error('Failed to clear packs:', error);
