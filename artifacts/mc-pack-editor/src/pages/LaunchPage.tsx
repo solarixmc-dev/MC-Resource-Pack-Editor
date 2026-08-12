@@ -49,17 +49,31 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atl
 
 export default function LaunchPage() {
   const [isVisible, setIsVisible] = useState(false);
-  const [hasScrolled, setHasScrolled] = useState(false);
+  const [visibleSections, setVisibleSections] = useState<Set<number>>(new Set([0]));
 
   useEffect(() => {
     setIsVisible(true);
 
-    const handleScroll = () => {
-      setHasScrolled(window.scrollY > 100);
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.3
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const index = parseInt(entry.target.getAttribute('data-index') || '0');
+        if (entry.isIntersecting) {
+          setVisibleSections(prev => new Set([...prev, index]));
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('[data-section]').forEach(section => {
+      observer.observe(section);
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -92,10 +106,10 @@ export default function LaunchPage() {
       {/* Content Overlay */}
       <div className="relative z-10">
       {/* Hero Section */}
-      <div className="flex-1 flex items-center justify-center px-4 py-24">
-        <div className="max-w-4xl w-full">
+      <div className="relative h-screen flex items-center justify-center px-4 py-24">
+        <div className="max-w-4xl w-full text-center">
           {/* Logo */}
-          <div className={`text-center mb-20 transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <div className="inline-flex items-center gap-4 mb-8">
               <div className="w-20 h-20 bg-black dark:bg-dark-text rounded-lg flex items-center justify-center">
                 <span className="text-white dark:text-dark-bg text-3xl font-bold">MC</span>
@@ -111,7 +125,7 @@ export default function LaunchPage() {
           </div>
 
           {/* Get Started Button */}
-          <div className={`text-center mb-24 transition-all duration-1000 ease-out delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`text-center mt-16 transition-all duration-1000 ease-out delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <Link
               href="/editor"
               className="inline-block bg-black dark:bg-white text-white dark:text-black px-16 py-5 rounded-full font-semibold text-xl hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -122,194 +136,36 @@ export default function LaunchPage() {
         </div>
       </div>
 
-      {/* Features Grid */}
-      <div className="max-w-7xl mx-auto px-4">
-          {hasScrolled && (
-            <div className={`grid md:grid-cols-3 gap-6 mb-16 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-              {/* Texture Editor Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
-                <VideoPlaceholder type="editor" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
-                <div className="relative z-10 flex items-center p-8 h-full">
-                  <div className="w-14 h-14 bg-[#C2B280] rounded-lg flex items-center justify-center mr-6 flex-shrink-0">
-                    <svg className="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 19l7-7 3 3-7 7-3-3z" />
-                      <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
-                      <path d="M2 2l7.586 7.586" />
-                      <circle cx="11" cy="11" r="2" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Texture Editor</h3>
-                    <p className="text-gray-200 text-base">
-                      Edit textures with pixel-perfect precision and brush tools
-                    </p>
-                  </div>
-                </div>
+      {/* Features Full-Screen Sections */}
+      {[
+        { type: 'editor' as const, title: 'Texture Editor', description: 'Edit textures with pixel-perfect precision and brush tools', icon: 'M12 19l7-7 3 3-7 7-3-3z M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z M2 2l7.586 7.586 M11 11a2 2 0 1 1-4 0 2 2 0 0 1 4 0' },
+        { type: 'pack' as const, title: 'Pack Management', description: 'Merge multiple packs, organize by folders, and export with custom metadata', icon: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96 12 12.01 20.73 6.96 M12 22.08 12 12' },
+        { type: 'library' as const, title: 'Local Library', description: 'Save your exported packs locally and reload them anytime', icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z' },
+        { type: 'atlas' as const, title: 'Texture Atlas Support', description: 'Work with texture atlases and atlas regions for optimized textures', icon: 'M3 3h18v18H3V3z M3 9h18 M9 21V9' },
+        { type: 'colors' as const, title: 'Color Code Support', description: 'Full Minecraft formatting codes support for colors and text styles', icon: 'M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z M12 2.69V22 M12 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0' },
+        { type: 'preview' as const, title: 'Texture Preview', description: 'Generate preview loadouts with key items to see textures in your pack\'s sky', icon: 'M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z M2.5 7c0 1.5.5 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3' },
+      ].map((feature, index) => (
+        <div
+          key={feature.type}
+          data-section
+          data-index={index}
+          className={`relative h-screen w-full overflow-hidden transition-all duration-1000 ${visibleSections.has(index) ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <VideoPlaceholder type={feature.type} />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
+          <div className="relative z-10 flex items-center h-full px-8 md:px-16">
+            <div className="max-w-2xl">
+              <div className="w-20 h-20 bg-[#C2B280] rounded-xl flex items-center justify-center mb-6 shadow-lg">
+                <svg className="w-10 h-10 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d={feature.icon} />
+                </svg>
               </div>
-
-              {/* Pack Management Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
-                <VideoPlaceholder type="pack" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
-                <div className="relative z-10 flex items-center p-8 h-full">
-                  <div className="w-14 h-14 bg-[#C2B280] rounded-lg flex items-center justify-center mr-6 flex-shrink-0">
-                    <svg className="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                      <line x1="12" y1="22.08" x2="12" y2="12" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Pack Management</h3>
-                    <p className="text-gray-200 text-base">
-                      Merge multiple packs, organize by folders, and export with custom metadata
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Local Library Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
-                <VideoPlaceholder type="library" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
-                <div className="relative z-10 flex items-center p-8 h-full">
-                  <div className="w-14 h-14 bg-[#C2B280] rounded-lg flex items-center justify-center mr-6 flex-shrink-0">
-                    <svg className="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Local Library</h3>
-                    <p className="text-gray-200 text-base">
-                      Save your exported packs locally and reload them anytime
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Texture Atlas Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
-                <VideoPlaceholder type="atlas" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
-                <div className="relative z-10 flex items-center p-8 h-full">
-                  <div className="w-14 h-14 bg-[#C2B280] rounded-lg flex items-center justify-center mr-6 flex-shrink-0">
-                    <svg className="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                      <line x1="3" y1="9" x2="21" y2="9" />
-                      <line x1="9" y1="21" x2="9" y2="9" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Texture Atlas Support</h3>
-                    <p className="text-gray-200 text-base">
-                      Work with texture atlases and atlas regions for optimized textures
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Color Code Support Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
-                <VideoPlaceholder type="colors" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
-                <div className="relative z-10 flex items-center p-8 h-full">
-                  <div className="w-14 h-14 bg-[#C2B280] rounded-lg flex items-center justify-center mr-6 flex-shrink-0">
-                    <svg className="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
-                      <path d="M12 2.69V22" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Color Code Support</h3>
-                    <p className="text-gray-200 text-base">
-                      Full Minecraft formatting codes support for colors and text styles
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Texture Preview Card */}
-              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
-                <VideoPlaceholder type="preview" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
-                <div className="relative z-10 flex items-center p-8 h-full">
-                  <div className="w-14 h-14 bg-[#C2B280] rounded-lg flex items-center justify-center mr-6 flex-shrink-0">
-                    <svg className="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 1 6 0 3 3 0 0 1 6 0z" />
-                      <path d="M2.5 7c0 1.5.5 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Texture Preview</h3>
-                    <p className="text-gray-200 text-base">
-                      Generate preview loadouts with key items to see textures in your pack's sky
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Quick Start Guide */}
-          {hasScrolled && (
-            <div className={`bg-gray-50 dark:bg-dark-secondary rounded-xl p-10 border-2 border-gray-200 dark:border-dark-border transition-all duration-1000 ease-out delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <h2 className="text-3xl font-bold text-black dark:text-dark-text mb-8">Quick Start Guide</h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="flex gap-5">
-                <div className="w-10 h-10 bg-[#C2B280] rounded-full flex items-center justify-center flex-shrink-0 text-black font-bold text-lg">
-                  1
-                </div>
-                <div>
-                  <h4 className="font-semibold text-black dark:text-dark-text mb-2 text-lg">Import Resource Pack</h4>
-                  <p className="text-gray-600 dark:text-dark-text-secondary text-base">
-                    Drag & drop your ZIP file or use the "Create from Scratch" button
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-5">
-                <div className="w-10 h-10 bg-[#C2B280] rounded-full flex items-center justify-center flex-shrink-0 text-black font-bold text-lg">
-                  2
-                </div>
-                <div>
-                  <h4 className="font-semibold text-black dark:text-dark-text mb-2 text-lg">Browse Textures</h4>
-                  <p className="text-gray-600 dark:text-dark-text-secondary text-base">
-                    Navigate through folders like blocks, items, and environment
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-5">
-                <div className="w-10 h-10 bg-[#C2B280] rounded-full flex items-center justify-center flex-shrink-0 text-black font-bold text-lg">
-                  3
-                </div>
-                <div>
-                  <h4 className="font-semibold text-black dark:text-dark-text mb-2 text-lg">Edit & Customize</h4>
-                  <p className="text-gray-600 dark:text-dark-text-secondary text-base">
-                    Use the editor to modify textures with brushes and colors
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-5">
-                <div className="w-10 h-10 bg-[#C2B280] rounded-full flex items-center justify-center flex-shrink-0 text-black font-bold text-lg">
-                  4
-                </div>
-                <div>
-                  <h4 className="font-semibold text-black dark:text-dark-text mb-2 text-lg">Export Your Pack</h4>
-                  <p className="text-gray-600 dark:text-dark-text-secondary text-base">
-                    Save your creation to your local library or download as ZIP
-                  </p>
-                </div>
-              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">{feature.title}</h2>
+              <p className="text-xl text-gray-200">{feature.description}</p>
             </div>
           </div>
-          )}
-      </div>
-      </div>
+        </div>
+      ))}
 
       {/* Footer */}
       <footer className="border-t border-gray-200 dark:border-dark-border py-10 px-4">
@@ -319,6 +175,7 @@ export default function LaunchPage() {
           </p>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
