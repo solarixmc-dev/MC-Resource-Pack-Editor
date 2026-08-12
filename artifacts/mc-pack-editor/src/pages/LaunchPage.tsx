@@ -100,9 +100,9 @@ export default function LaunchPage() {
               <div className="w-20 h-20 bg-black dark:bg-dark-text rounded-lg flex items-center justify-center">
                 <span className="text-white dark:text-dark-bg text-3xl font-bold">MC</span>
               </div>
-              <h1 className="text-6xl font-bold text-black dark:text-dark-text">TextureLab</h1>
+              <h1 className="text-6xl font-bold text-white">TextureLab</h1>
             </div>
-            <h2 className="text-4xl text-gray-600 dark:text-dark-text-secondary mt-12">
+            <h2 className="text-4xl text-white mt-12">
               <span className="border-b-2 border-[#C2B280] pb-1">The</span> ultimate Minecraft <span className="text-[#C2B280] font-bold text-4xl">Texture Editor</span>
             </h2>
             <p className="text-white text-xl mt-12">
