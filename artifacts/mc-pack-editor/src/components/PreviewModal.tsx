@@ -8,58 +8,44 @@ interface PreviewModalProps {
 }
 
 const PREVIEW_ITEMS = [
-  { name: "Wooden Sword", path: "assets/minecraft/textures/item/wooden_sword.png" },
-  { name: "Red Wool", path: "assets/minecraft/textures/block/red_wool.png" },
-  { name: "Green Wool", path: "assets/minecraft/textures/block/green_wool.png" },
-  { name: "Glass", path: "assets/minecraft/textures/block/glass.png" },
-  { name: "Fireball", path: "assets/minecraft/textures/item/fire_charge.png" },
-  { name: "Emerald", path: "assets/minecraft/textures/item/emerald.png" },
-  { name: "Diamond", path: "assets/minecraft/textures/item/diamond.png" },
-  { name: "Iron Ingot", path: "assets/minecraft/textures/item/iron_ingot.png" },
-  { name: "Gold Ingot", path: "assets/minecraft/textures/item/gold_ingot.png" },
-  { name: "TNT", path: "assets/minecraft/textures/block/tnt.png" },
-  { name: "Golden Apple", path: "assets/minecraft/textures/item/golden_apple.png" },
+  { name: "Wooden Sword", filename: "wooden_sword.png" },
+  { name: "Red Wool", filename: "red_wool.png" },
+  { name: "Green Wool", filename: "green_wool.png" },
+  { name: "Glass", filename: "glass.png" },
+  { name: "Fireball", filename: "fire_charge.png" },
+  { name: "Emerald", filename: "emerald.png" },
+  { name: "Diamond", filename: "diamond.png" },
+  { name: "Iron Ingot", filename: "iron_ingot.png" },
+  { name: "Gold Ingot", filename: "gold_ingot.png" },
+  { name: "TNT", filename: "tnt.png" },
+  { name: "Golden Apple", filename: "golden_apple.png" },
 ];
 
-// Try multiple possible paths for each item
-function getItemTexture(packs: Pack[], primaryPath: string): string | null {
-  const possiblePaths = [
-    primaryPath,
-    primaryPath.replace("assets/minecraft/textures/", ""),
-    primaryPath.replace("assets/minecraft/textures/", "textures/"),
-  ];
-
+// Search for a file by filename across all packs
+function getItemTexture(packs: Pack[], filename: string): string | null {
   for (const pack of packs) {
-    for (const path of possiblePaths) {
-      const buffer = pack.files.get(path);
-      if (buffer) {
-        console.log(`Found texture: ${path}`);
+    for (const [path, buffer] of pack.files.entries()) {
+      const parts = path.split('/');
+      const actualFilename = parts[parts.length - 1];
+      if (actualFilename === filename) {
+        console.log(`Found texture: ${filename} at ${path}`);
         return arrayBufferToDataURL(buffer, path);
       }
     }
   }
-  console.log(`Missing texture: ${primaryPath}`);
+  console.log(`Missing texture: ${filename}`);
   return null;
 }
 
 function getSkyTexture(packs: Pack[]): string | null {
+  const skyFilenames = ["cloud1.png", "cloud2.png", "clouds.png", "sky.png"];
+
   for (const pack of packs) {
-    // Try cloud1.png and cloud2.png for sky
-    const skyPaths = [
-      "assets/minecraft/textures/environment/clouds.png",
-      "assets/minecraft/textures/environment/cloud1.png",
-      "assets/minecraft/textures/environment/cloud2.png",
-      "assets/minecraft/textures/block/clouds.png",
-      "assets/minecraft/textures/block/cloud1.png",
-      "assets/minecraft/textures/block/cloud2.png",
-      "textures/environment/clouds.png",
-      "textures/environment/cloud1.png",
-      "textures/environment/cloud2.png",
-    ];
-    for (const path of skyPaths) {
-      const buffer = pack.files.get(path);
-      if (buffer) {
-        console.log(`Found sky texture: ${path}`);
+    for (const [path, buffer] of pack.files.entries()) {
+      const parts = path.split('/');
+      const filename = parts[parts.length - 1].toLowerCase();
+      if (skyFilenames.includes(filename)) {
+        console.log(`Found sky texture: ${filename} at ${path}`);
         return arrayBufferToDataURL(buffer, path);
       }
     }
@@ -99,10 +85,10 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
           <div className="absolute inset-0 flex items-center justify-center p-8">
             <div className="grid grid-cols-4 gap-6">
               {PREVIEW_ITEMS.map((item) => {
-                const textureUrl = getItemTexture(packs, item.path);
+                const textureUrl = getItemTexture(packs, item.filename);
                 return (
                   <div
-                    key={item.path}
+                    key={item.filename}
                     className="flex flex-col items-center gap-2"
                   >
                     <div
