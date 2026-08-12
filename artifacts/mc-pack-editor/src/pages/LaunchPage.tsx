@@ -1,5 +1,4 @@
 import { Link } from "wouter";
-import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
 
 // Animated video placeholder components
@@ -43,7 +42,6 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' }) {
 }
 
 export default function LaunchPage() {
-  const { isLoggedIn } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
 
@@ -82,7 +80,7 @@ export default function LaunchPage() {
           {/* Get Started Button */}
           <div className={`text-center mb-24 transition-all duration-1000 ease-out delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <Link
-              href={isLoggedIn ? "/editor" : "/auth"}
+              href="/editor"
               className="inline-block bg-black dark:bg-white text-white dark:text-black px-16 py-5 rounded-full font-semibold text-xl hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               Get Started
