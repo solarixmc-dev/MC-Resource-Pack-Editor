@@ -3396,7 +3396,7 @@ export default function EditorApp() {
     library.clearEditorState().catch(err => {
       console.error('Failed to clear editor state:', err);
     });
-  }, []);
+  }, [uploadDefaults.name, uploadDefaults.description, uploadDefaults.icon]);
 
   const handleViewFiles = useCallback((packId: string) => {
     const pack = packs.find(p => p.id === packId);
