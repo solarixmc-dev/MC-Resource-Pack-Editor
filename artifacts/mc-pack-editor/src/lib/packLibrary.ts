@@ -32,8 +32,9 @@ class PackLibraryIndexedDB {
   private userId: string;
   private db: IDBDatabase | null = null;
   private readonly DB_NAME = 'MCPackEditorLibrary';
-  private readonly DB_VERSION = 1;
+  private readonly DB_VERSION = 2; // Incremented to add new store
   private readonly STORE_NAME = 'packs';
+  private readonly EDITOR_STATE_STORE = 'editorState';
 
   constructor(userId: string) {
     this.userId = userId;
@@ -53,10 +54,17 @@ class PackLibraryIndexedDB {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
+        
+        // Create packs store if it doesn't exist
         if (!db.objectStoreNames.contains(this.STORE_NAME)) {
           const store = db.createObjectStore(this.STORE_NAME, { keyPath: 'id' });
           store.createIndex('userId', 'userId', { unique: false });
           store.createIndex('createdAt', 'createdAt', { unique: false });
+        }
+        
+        // Create editor state store if it doesn't exist
+        if (!db.objectStoreNames.contains(this.EDITOR_STATE_STORE)) {
+          const editorStore = db.createObjectStore(this.EDITOR_STATE_STORE, { keyPath: 'userId' });
         }
       };
     });
@@ -155,18 +163,12 @@ class PackLibraryIndexedDB {
     const db = await this.initDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.STORE_NAME], 'readwrite');
-      const store = transaction.objectStore(this.STORE_NAME);
-      const key = `editor-state-${this.userId}`;
+      const transaction = db.transaction([this.EDITOR_STATE_STORE], 'readwrite');
+      const store = transaction.objectStore(this.EDITOR_STATE_STORE);
       const request = store.put({
-        id: key,
         userId: this.userId,
-        packData: JSON.stringify(state),
-        createdAt: new Date().toISOString(),
-        fileSize: 0,
-        name: 'Editor State',
-        description: 'Temporary editor state',
-        icon: null
+        state: JSON.stringify(state),
+        updatedAt: new Date().toISOString()
       });
 
       request.onsuccess = () => resolve();
@@ -178,16 +180,15 @@ class PackLibraryIndexedDB {
     const db = await this.initDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.STORE_NAME], 'readonly');
-      const store = transaction.objectStore(this.STORE_NAME);
-      const key = `editor-state-${this.userId}`;
-      const request = store.get(key);
+      const transaction = db.transaction([this.EDITOR_STATE_STORE], 'readonly');
+      const store = transaction.objectStore(this.EDITOR_STATE_STORE);
+      const request = store.get(this.userId);
 
       request.onsuccess = () => {
         const result = request.result;
         if (result) {
           try {
-            const state = JSON.parse(result.packData) as EditorState;
+            const state = JSON.parse(result.state) as EditorState;
             resolve(state);
           } catch (error) {
             console.error('Failed to parse editor state:', error);
@@ -206,10 +207,9 @@ class PackLibraryIndexedDB {
     const db = await this.initDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.STORE_NAME], 'readwrite');
-      const store = transaction.objectStore(this.STORE_NAME);
-      const key = `editor-state-${this.userId}`;
-      const request = store.delete(key);
+      const transaction = db.transaction([this.EDITOR_STATE_STORE], 'readwrite');
+      const store = transaction.objectStore(this.EDITOR_STATE_STORE);
+      const request = store.delete(this.userId);
 
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
@@ -227,10 +227,12 @@ class PackLibraryIndexedDB {
 
       request.onsuccess = () => {
         const packs = request.result || [];
+        // Filter out any old editor state entries
+        const filteredPacks = packs.filter(pack => !pack.id.startsWith('editor-state-'));
         // Sort by createdAt descending (newest first)
-        packs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        console.log('Loaded packs from IndexedDB:', packs);
-        resolve(packs);
+        filteredPacks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        console.log('Loaded packs from IndexedDB:', filteredPacks);
+        resolve(filteredPacks);
       };
 
       request.onerror = () => reject(request.error);

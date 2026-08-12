@@ -5,6 +5,8 @@ import { loadPackFromFile } from "../lib/zipUtils";
 import Navigation from "../components/Navigation";
 
 // Notification type
+
+// Notification type
 interface Notification {
   id: string;
   message: string;
