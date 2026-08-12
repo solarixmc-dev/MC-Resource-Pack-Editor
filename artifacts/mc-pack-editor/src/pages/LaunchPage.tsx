@@ -15,7 +15,7 @@ function BackgroundVideo() {
             loop 
             playsInline
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ opacity: 0.3 }}
+            style={{ opacity: 0.7 }}
             onLoadedData={() => setVideoLoaded(true)}
             onError={(e) => {
               console.log('Background video failed to load:', e);
@@ -24,7 +24,7 @@ function BackgroundVideo() {
           >
             <source src="/videos/background.mp4" type="video/mp4" />
           </video>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/30"></div>
         </>
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"></div>
