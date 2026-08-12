@@ -11,7 +11,7 @@ function BackgroundVideo() {
         loop 
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
-        style={{ opacity: 0.3 }}
+        style={{ opacity: 0.4 }}
         onError={(e) => {
           console.log('Background video failed to load or not found at /videos/background.mp4:', e);
           e.currentTarget.style.display = 'none';
@@ -25,7 +25,7 @@ function BackgroundVideo() {
         animation: 'gradientRotate 15s ease infinite',
         opacity: 0.3
       }}></div>
-      <div className="absolute inset-0 bg-black/80"></div>
+      <div className="absolute inset-0 bg-black/50"></div>
     </div>
   );
 }
@@ -86,7 +86,7 @@ export default function LaunchPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col relative">
+    <div className="min-h-screen bg-white dark:bg-dark-bg flex flex-col relative">
       {/* Content Overlay */}
       <div className="relative z-10">
       {/* Hero Section */}
@@ -100,12 +100,12 @@ export default function LaunchPage() {
               <div className="w-20 h-20 bg-black dark:bg-dark-text rounded-lg flex items-center justify-center">
                 <span className="text-white dark:text-dark-bg text-3xl font-bold">MC</span>
               </div>
-              <h1 className="text-6xl font-bold text-white">TextureLab</h1>
+              <h1 className="text-6xl font-bold text-black dark:text-dark-text">TextureLab</h1>
             </div>
-            <h2 className="text-4xl text-gray-200 mt-12">
+            <h2 className="text-4xl text-gray-600 dark:text-dark-text-secondary mt-12">
               <span className="border-b-2 border-[#C2B280] pb-1">The</span> ultimate Minecraft <span className="text-[#C2B280] font-bold text-4xl">Texture Editor</span>
             </h2>
-            <p className="text-gray-300 text-xl mt-12">
+            <p className="text-white text-xl mt-12">
               Create, edit, organize, and customize Minecraft resource packs — all in your browser.
             </p>
           </div>
@@ -114,7 +114,7 @@ export default function LaunchPage() {
           <div className={`text-center mb-24 transition-all duration-1000 ease-out delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <Link
               href="/editor"
-              className="inline-block bg-white text-black px-16 py-5 rounded-full font-semibold text-xl hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="inline-block bg-black dark:bg-white text-white dark:text-black px-16 py-5 rounded-full font-semibold text-xl hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               Get Started
             </Link>
@@ -127,7 +127,7 @@ export default function LaunchPage() {
           {hasScrolled && (
             <div className={`flex flex-col gap-8 mb-16 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               {/* Texture Editor Card */}
-              <div className="relative bg-gray-800 rounded-xl overflow-hidden border-2 border-gray-700 hover:border-[#C2B280] transition-colors group h-64">
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
                 <VideoPlaceholder type="editor" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
                 <div className="relative z-10 flex items-center p-8 h-full">
@@ -140,8 +140,8 @@ export default function LaunchPage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-black mb-2" style={{ textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6)' }}>Texture Editor</h3>
-                    <p className="text-white text-base">
+                    <h3 className="text-xl font-semibold text-white mb-2">Texture Editor</h3>
+                    <p className="text-gray-200 text-base">
                       Edit textures with pixel-perfect precision, brush tools, and atlas support
                     </p>
                   </div>
@@ -149,7 +149,7 @@ export default function LaunchPage() {
               </div>
 
               {/* Pack Management Card */}
-              <div className="relative bg-gray-800 rounded-xl overflow-hidden border-2 border-gray-700 hover:border-[#C2B280] transition-colors group h-64">
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
                 <VideoPlaceholder type="pack" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
                 <div className="relative z-10 flex items-center p-8 h-full">
@@ -161,8 +161,8 @@ export default function LaunchPage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-black mb-2" style={{ textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6)' }}>Pack Management</h3>
-                    <p className="text-white text-base">
+                    <h3 className="text-xl font-semibold text-white mb-2">Pack Management</h3>
+                    <p className="text-gray-200 text-base">
                       Merge multiple packs, organize by folders, and export with custom metadata
                     </p>
                   </div>
@@ -170,7 +170,7 @@ export default function LaunchPage() {
               </div>
 
               {/* Local Library Card */}
-              <div className="relative bg-gray-800 rounded-xl overflow-hidden border-2 border-gray-700 hover:border-[#C2B280] transition-colors group h-64">
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
                 <VideoPlaceholder type="library" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
                 <div className="relative z-10 flex items-center p-8 h-full">
@@ -181,8 +181,8 @@ export default function LaunchPage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-black mb-2" style={{ textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6)' }}>Local Library</h3>
-                    <p className="text-white text-base">
+                    <h3 className="text-xl font-semibold text-white mb-2">Local Library</h3>
+                    <p className="text-gray-200 text-base">
                       Save your exported packs locally and reload them anytime
                     </p>
                   </div>
@@ -193,16 +193,16 @@ export default function LaunchPage() {
 
           {/* Quick Start Guide */}
           {hasScrolled && (
-            <div className={`bg-gray-800 rounded-xl p-10 border-2 border-gray-700 transition-all duration-1000 ease-out delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <h2 className="text-3xl font-bold text-white mb-8">Quick Start Guide</h2>
+            <div className={`bg-gray-50 dark:bg-dark-secondary rounded-xl p-10 border-2 border-gray-200 dark:border-dark-border transition-all duration-1000 ease-out delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <h2 className="text-3xl font-bold text-black dark:text-dark-text mb-8">Quick Start Guide</h2>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="flex gap-5">
                 <div className="w-10 h-10 bg-[#C2B280] rounded-full flex items-center justify-center flex-shrink-0 text-black font-bold text-lg">
                   1
                 </div>
                 <div>
-                  <h4 className="font-semibold text-white mb-2 text-lg">Import Resource Pack</h4>
-                  <p className="text-gray-300 text-base">
+                  <h4 className="font-semibold text-black dark:text-dark-text mb-2 text-lg">Import Resource Pack</h4>
+                  <p className="text-gray-600 dark:text-dark-text-secondary text-base">
                     Drag & drop your ZIP file or use the "Create from Scratch" button
                   </p>
                 </div>
@@ -213,8 +213,8 @@ export default function LaunchPage() {
                   2
                 </div>
                 <div>
-                  <h4 className="font-semibold text-white mb-2 text-lg">Browse Textures</h4>
-                  <p className="text-gray-300 text-base">
+                  <h4 className="font-semibold text-black dark:text-dark-text mb-2 text-lg">Browse Textures</h4>
+                  <p className="text-gray-600 dark:text-dark-text-secondary text-base">
                     Navigate through folders like blocks, items, and environment
                   </p>
                 </div>
@@ -225,8 +225,8 @@ export default function LaunchPage() {
                   3
                 </div>
                 <div>
-                  <h4 className="font-semibold text-white mb-2 text-lg">Edit & Customize</h4>
-                  <p className="text-gray-300 text-base">
+                  <h4 className="font-semibold text-black dark:text-dark-text mb-2 text-lg">Edit & Customize</h4>
+                  <p className="text-gray-600 dark:text-dark-text-secondary text-base">
                     Use the editor to modify textures with brushes and colors
                   </p>
                 </div>
@@ -237,8 +237,8 @@ export default function LaunchPage() {
                   4
                 </div>
                 <div>
-                  <h4 className="font-semibold text-white mb-2 text-lg">Export Your Pack</h4>
-                  <p className="text-gray-300 text-base">
+                  <h4 className="font-semibold text-black dark:text-dark-text mb-2 text-lg">Export Your Pack</h4>
+                  <p className="text-gray-600 dark:text-dark-text-secondary text-base">
                     Save your creation to your local library or download as ZIP
                   </p>
                 </div>
@@ -250,9 +250,9 @@ export default function LaunchPage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-700 py-10 px-4">
+      <footer className="border-t border-gray-200 dark:border-dark-border py-10 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-gray-400 text-base">
+          <p className="text-gray-600 dark:text-dark-text-secondary text-base">
             © 2026 MC TextureLab. All rights reserved.
           </p>
         </div>
