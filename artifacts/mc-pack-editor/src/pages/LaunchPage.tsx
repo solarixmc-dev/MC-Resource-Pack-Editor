@@ -106,16 +106,19 @@ export default function LaunchPage() {
           <rect width="100%" height="100%" fill="url(#diagonal)" className="text-gray-300 dark:text-gray-700"/>
         </svg>
         {/* Decorative geometric shapes */}
-        {/* Top area shapes */}
+        {/* Top area shapes - visible on initial hero section */}
         <div className="absolute top-10 left-10 w-48 h-48 border-2 border-[#C2B280]/20 rounded-full animate-spin-slow"></div>
         <div className="absolute top-20 right-16 w-72 h-72 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
         <div className="absolute top-1/4 left-1/4 w-36 h-36 border-2 border-gray-300/30 dark:border-gray-600/30 rotate-45 animate-spin-slow"></div>
         <div className="absolute top-1/3 right-1/3 w-24 h-24 border-2 border-[#C2B280]/18 rotate-12 animate-spin-slow-reverse"></div>
         <div className="absolute top-1/2 left-1/6 w-40 h-40 border-2 border-[#C2B280]/12 rounded-lg rotate-6 animate-spin-slow"></div>
-        {/* Squares in top area */}
-        <div className="absolute top-1/5 left-1/3 w-32 h-32 border-2 border-[#C2B280]/15 rotate-12 animate-spin-slow"></div>
-        <div className="absolute top-1/4 right-1/5 w-28 h-28 border-2 border-gray-300/25 dark:border-gray-600/25 rotate-45 animate-spin-slow-reverse"></div>
-        <div className="absolute top-1/6 left-1/4 w-24 h-24 border-2 border-[#C2B280]/12 rotate-30 animate-spin-slow"></div>
+        {/* More squares prominently in top/hero area */}
+        <div className="absolute top-12 left-1/5 w-36 h-36 border-2 border-[#C2B280]/18 rotate-15 animate-spin-slow"></div>
+        <div className="absolute top-16 right-1/4 w-40 h-40 border-2 border-gray-300/35 dark:border-gray-600/35 rotate-30 animate-spin-slow-reverse"></div>
+        <div className="absolute top-1/3 left-1/2 w-32 h-32 border-2 border-[#C2B280]/15 rotate-45 animate-spin-slow"></div>
+        <div className="absolute top-1/4 right-1/2 w-28 h-28 border-2 border-gray-300/30 dark:border-gray-600/30 rotate-60 animate-spin-slow-reverse"></div>
+        <div className="absolute top-1/5 left-1/3 w-24 h-24 border-2 border-[#C2B280]/12 rotate-90 animate-spin-slow"></div>
+        <div className="absolute top-1/6 right-1/3 w-20 h-20 border-2 border-gray-300/25 dark:border-gray-600/25 rotate-75 animate-spin-slow-reverse"></div>
         {/* Pentagons in top area */}
         <div className="absolute top-1/4 left-1/2 w-32 h-32 border-2 border-[#C2B280]/15 animate-spin-slow" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
         <div className="absolute top-1/3 right-1/6 w-28 h-28 border-2 border-gray-300/25 dark:border-gray-600/25 animate-spin-slow-reverse" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
