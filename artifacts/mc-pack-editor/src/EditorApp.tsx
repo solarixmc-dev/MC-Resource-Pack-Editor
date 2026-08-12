@@ -3162,44 +3162,29 @@ export default function EditorApp() {
     document.body.style.fontFamily = fontMap[selectedFont] || fontMap["montserrat"];
   }, [selectedFont]);
 
-  // Load pack from library if stored in localStorage
+  // Load pack from library if stored in localStorage flag
   useEffect(() => {
-    const tempPackData = localStorage.getItem('mc-pack-editor-temp-pack');
-    if (tempPackData) {
-      try {
-        const packData = JSON.parse(tempPackData);
-        const files = new Map<string, ArrayBuffer>();
-        
-        // Convert files back to Map with ArrayBuffers
-        packData.files.forEach(([path, base64Data]: [string, string]) => {
-          const binary = atob(base64Data);
-          const bytes = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
+    const loadPackId = localStorage.getItem('mc-pack-editor-load-pack-id');
+    if (loadPackId) {
+      const library = getLocalPackLibrary();
+      library.loadPack(loadPackId).then(async (packData) => {
+        if (packData) {
+          try {
+            const pack = await loadPackFromFile(new File([packData], 'library-pack.zip'));
+            setPacks([pack]);
+            setPackName(pack.name);
+            setPackDescription(pack.description || '');
+            setPackIcon(pack.icon || null);
+            localStorage.removeItem('mc-pack-editor-load-pack-id');
+          } catch (error) {
+            console.error('Failed to load pack from library:', error);
+            localStorage.removeItem('mc-pack-editor-load-pack-id');
           }
-          files.set(path, bytes.buffer);
-        });
-
-        const pack: Pack = {
-          id: `library-${Date.now()}`,
-          name: packData.name,
-          description: packData.description,
-          color: '#3b82f6',
-          files,
-          icon: packData.icon
-        };
-
-        setPacks([pack]);
-        setPackName(pack.name);
-        setPackDescription(pack.description || '');
-        setPackIcon(pack.icon || null);
-
-        // Clear the temp pack data
-        localStorage.removeItem('mc-pack-editor-temp-pack');
-      } catch (error) {
-        console.error('Failed to load pack from library:', error);
-        localStorage.removeItem('mc-pack-editor-temp-pack');
-      }
+        }
+      }).catch(error => {
+        console.error('Failed to load pack from IndexedDB:', error);
+        localStorage.removeItem('mc-pack-editor-load-pack-id');
+      });
     }
   }, []);
 

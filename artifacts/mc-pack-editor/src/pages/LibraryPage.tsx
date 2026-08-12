@@ -160,33 +160,13 @@ export default function LibraryPage() {
     setLoading(true);
     try {
       console.log('Loading pack with ID:', packId);
-      // Load from IndexedDB library
-      const packData = await localLibrary.loadPack(packId);
-      console.log('Pack data loaded:', packData ? 'Success' : 'No data');
       
-      if (packData) {
-        console.log('Converting pack data to file...');
-        const pack = await loadPackFromFile(new File([packData], 'library-pack.zip'));
-        console.log('Pack loaded successfully:', pack.name);
-        
-        // Store pack data in localStorage for editor to load
-        const filesArray = Array.from(pack.files.entries()).map(([path, buffer]) => {
-          const binary = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-          return [path, binary];
-        });
-        localStorage.setItem('mc-pack-editor-temp-pack', JSON.stringify({
-          name: pack.name,
-          description: pack.description,
-          files: filesArray,
-          icon: pack.icon
-        }));
-        console.log('Pack data stored in localStorage');
-        addNotification("Pack loaded successfully!", "success");
-        // Navigate to editor
-        window.location.href = `/editor`;
-      } else {
-        throw new Error('Pack data not found in database');
-      }
+      // Set flag in localStorage to indicate which pack to load
+      localStorage.setItem('mc-pack-editor-load-pack-id', packId);
+      console.log('Pack load flag set in localStorage');
+      addNotification("Pack loaded successfully!", "success");
+      // Navigate to editor
+      window.location.href = `/editor`;
     } catch (error) {
       console.error("Failed to load pack:", error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
