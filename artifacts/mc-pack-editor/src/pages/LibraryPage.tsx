@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "wouter";
 import { SavedPack, getLocalPackLibrary } from "../lib/packLibrary";
 import { loadPackFromFile } from "../lib/zipUtils";
@@ -97,7 +97,7 @@ const parseMinecraftFormatting = (text: string): React.ReactNode => {
 };
 
 export default function LibraryPage() {
-  const localLibrary = getLocalPackLibrary();
+  const localLibrary = useMemo(() => getLocalPackLibrary(), []);
   const [packs, setPacks] = useState<SavedPack[]>([]);
   const [loading, setLoading] = useState(false);
   const [storageUsage, setStorageUsage] = useState({ used: 0, total: 500 * 1024 * 1024, percentage: 0 });
@@ -126,8 +126,9 @@ export default function LibraryPage() {
     } catch (error) {
       console.error('Failed to load packs:', error);
       setPacks([]);
+      addNotification('Failed to load packs from library', 'error');
     }
-  }, [localLibrary]);
+  }, [localLibrary, addNotification]);
 
   // Reload packs when component mounts
   useEffect(() => {
