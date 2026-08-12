@@ -80,9 +80,13 @@ const parseMinecraftFormatting = (text: string): React.ReactNode => {
     }
   });
 
-  return segments.map((segment, index) => (
+  // Limit the number of segments to prevent infinite loops
+  const maxSegments = 50;
+  const limitedSegments = segments.slice(0, maxSegments);
+
+  return limitedSegments.map((segment, index) => (
     <span 
-      key={index} 
+      key={`${index}-${segment.text}`}
       style={{ 
         color: segment.color,
         fontWeight: segment.format?.includes('bold') ? 'bold' : 'normal',
