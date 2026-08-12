@@ -12,7 +12,7 @@ interface Notification {
 }
 
 // Minecraft color code parser
-const parseMinecraftFormatting = (text: string): React.ReactNode => {
+const parseMinecraftFormatting = (text: string, addOutline = false): React.ReactNode => {
   if (!text) return null;
 
   const colorMap: Record<string, string> = {
@@ -88,7 +88,8 @@ const parseMinecraftFormatting = (text: string): React.ReactNode => {
         fontWeight: segment.format?.includes('bold') ? 'bold' : 'normal',
         textDecoration: segment.format?.includes('underline') ? 'underline' : 
                       segment.format?.includes('line-through') ? 'line-through' : 'none',
-        fontStyle: segment.format?.includes('italic') ? 'italic' : 'normal'
+        fontStyle: segment.format?.includes('italic') ? 'italic' : 'normal',
+        textShadow: addOutline && segment.color === '#FFFFFF' ? '1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.8), 1px -1px 2px rgba(0,0,0,0.8), -1px 1px 2px rgba(0,0,0,0.8)' : 'none'
       }}
     >
       {segment.text}
@@ -349,7 +350,7 @@ export default function LibraryPage() {
                   {pack.description && (
                     <div className="text-sm text-gray-600 dark:text-dark-text-secondary mb-4">
                       <div className="line-clamp-2">
-                        {parseMinecraftFormatting(pack.description)}
+                        {parseMinecraftFormatting(pack.description, true)}
                       </div>
                     </div>
                   )}

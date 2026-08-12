@@ -4,9 +4,9 @@ import EditorPage from "./pages/EditorPage";
 import LibraryPage from "./pages/LibraryPage";
 import Navigation from "./components/Navigation";
 
-export default function App() {
+function AppContent() {
   return (
-    <Router>
+    <>
       <Route path="/" component={() => (
         <>
           <Navigation />
@@ -15,6 +15,14 @@ export default function App() {
       )} />
       <Route path="/editor" component={EditorPage} />
       <Route path="/library" component={LibraryPage} />
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
