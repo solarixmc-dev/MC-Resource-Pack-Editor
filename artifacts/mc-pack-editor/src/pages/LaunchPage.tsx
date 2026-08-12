@@ -100,7 +100,7 @@ export default function LaunchPage() {
       {/* Features Grid */}
       <div className="max-w-4xl mx-auto px-4">
           {hasScrolled && (
-            <div className={`grid md:grid-cols-2 gap-6 mb-16 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className={`grid md:grid-cols-3 gap-6 mb-16 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               {/* Texture Editor Card */}
               <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-80">
                 <VideoPlaceholder type="editor" />
