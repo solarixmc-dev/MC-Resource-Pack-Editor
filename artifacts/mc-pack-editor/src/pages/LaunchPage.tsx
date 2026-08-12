@@ -2,13 +2,12 @@ import { Link } from "wouter";
 import { useEffect, useState, useRef } from "react";
 
 // Animated video placeholder components
-function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atlas' | 'colors' | 'preview' }) {
+function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atlas' | 'preview' }) {
   const colors = {
     editor: ['#3b82f6', '#8b5cf6', '#a855f7'],
     pack: ['#10b981', '#14b8a6', '#06b6d4'],
     library: ['#f59e0b', '#f97316', '#ef4444'],
     atlas: ['#ec4899', '#f43f5e', '#fb7185'],
-    colors: ['#8b5cf6', '#a855f7', '#6366f1'],
     preview: ['#14b8a6', '#06b6d4', '#0891b2']
   };
 
@@ -17,7 +16,6 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atl
     pack: '/videos/pack-management.mp4',
     library: '/videos/local-library.mp4',
     atlas: '/videos/texture-atlas.mp4',
-    colors: '/videos/color-codes.mp4',
     preview: '/videos/texture-preview.mp4'
   };
 
@@ -140,22 +138,31 @@ export default function LaunchPage() {
               </div>
               <h1 className="text-7xl font-bold text-black dark:text-dark-text tracking-tight">TextureLab</h1>
             </div>
-            <h2 className="text-5xl text-gray-600 dark:text-dark-text-secondary mt-16 mb-4">
+            <h2 className="text-5xl text-gray-600 dark:text-dark-text-secondary mt-8 mb-4">
               <span className="border-b-4 border-[#C2B280] pb-2">The</span> ultimate Minecraft <span className="text-[#C2B280] font-bold text-5xl">Texture Editor</span>
             </h2>
-            <p className="text-gray-600 dark:text-dark-text-secondary text-2xl mt-8 max-w-2xl mx-auto leading-relaxed">
-              Create, edit, organize, and customize Minecraft resource packs — all in your browser.
+            <p className="text-gray-600 dark:text-dark-text-secondary text-2xl mt-6 max-w-2xl mx-auto leading-relaxed">
+              Edit resource packs directly in your browser
             </p>
           </div>
 
           {/* Get Started Button */}
-          <div className={`text-center mt-20 transition-all duration-1000 ease-out delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`text-center mt-12 transition-all duration-1000 ease-out delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <Link
               href="/editor"
               className="inline-block bg-black dark:bg-white text-white dark:text-black px-20 py-6 rounded-full font-semibold text-2xl hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl"
             >
               Get Started
             </Link>
+          </div>
+
+          {/* Scroll Arrow */}
+          <div className={`text-center mt-8 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className="animate-bounce inline-block">
+              <svg className="w-8 h-8 text-gray-400 dark:text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M19 12l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -166,7 +173,6 @@ export default function LaunchPage() {
         { type: 'pack' as const, title: 'Pack Management', description: 'Merge multiple packs, organize by folders, and export with custom metadata', icon: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96 12 12.01 20.73 6.96 M12 22.08 12 12' },
         { type: 'library' as const, title: 'Local Library', description: 'Save your exported packs locally and reload them anytime', icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z' },
         { type: 'atlas' as const, title: 'Texture Atlas Support', description: 'Work with texture atlases and atlas regions for optimized textures', icon: 'M3 3h18v18H3V3z M3 9h18 M9 21V9' },
-        { type: 'colors' as const, title: 'Color Code Support', description: 'Full Minecraft formatting codes support for colors and text styles', icon: 'M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z M12 2.69V22 M12 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0' },
         { type: 'preview' as const, title: 'Texture Preview', description: 'Generate preview loadouts with key items to see textures in your pack\'s sky', icon: 'M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z M2.5 7c0 1.5.5 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3' },
       ].map((feature, index) => (
         <div
