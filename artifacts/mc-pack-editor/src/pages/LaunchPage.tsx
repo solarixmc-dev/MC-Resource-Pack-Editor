@@ -2,17 +2,23 @@ import { Link } from "wouter";
 import { useEffect, useState } from "react";
 
 // Animated video placeholder components
-function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' }) {
+function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atlas' | 'colors' | 'preview' }) {
   const colors = {
     editor: ['#3b82f6', '#8b5cf6', '#a855f7'],
     pack: ['#10b981', '#14b8a6', '#06b6d4'],
-    library: ['#f59e0b', '#f97316', '#ef4444']
+    library: ['#f59e0b', '#f97316', '#ef4444'],
+    atlas: ['#ec4899', '#f43f5e', '#fb7185'],
+    colors: ['#8b5cf6', '#a855f7', '#6366f1'],
+    preview: ['#14b8a6', '#06b6d4', '#0891b2']
   };
 
   const videoFiles = {
     editor: '/videos/texture-editor.mp4',
     pack: '/videos/pack-management.mp4',
-    library: '/videos/local-library.mp4'
+    library: '/videos/local-library.mp4',
+    atlas: '/videos/texture-atlas.mp4',
+    colors: '/videos/color-codes.mp4',
+    preview: '/videos/texture-preview.mp4'
   };
 
   return (
@@ -94,7 +100,7 @@ export default function LaunchPage() {
       {/* Features Grid */}
       <div className="max-w-4xl mx-auto px-4">
           {hasScrolled && (
-            <div className={`flex flex-col gap-8 mb-16 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className={`grid md:grid-cols-3 gap-6 mb-16 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               {/* Texture Editor Card */}
               <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
                 <VideoPlaceholder type="editor" />
@@ -153,6 +159,68 @@ export default function LaunchPage() {
                     <h3 className="text-xl font-semibold text-white mb-2">Local Library</h3>
                     <p className="text-gray-200 text-base">
                       Save your exported packs locally and reload them anytime
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Texture Atlas Card */}
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
+                <VideoPlaceholder type="atlas" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
+                <div className="relative z-10 flex items-center p-8 h-full">
+                  <div className="w-14 h-14 bg-[#C2B280] rounded-lg flex items-center justify-center mr-6 flex-shrink-0">
+                    <svg className="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <line x1="3" y1="9" x2="21" y2="9" />
+                      <line x1="9" y1="21" x2="9" y2="9" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Texture Atlas Support</h3>
+                    <p className="text-gray-200 text-base">
+                      Work with texture atlases and atlas regions for optimized textures
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Color Code Support Card */}
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
+                <VideoPlaceholder type="colors" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
+                <div className="relative z-10 flex items-center p-8 h-full">
+                  <div className="w-14 h-14 bg-[#C2B280] rounded-lg flex items-center justify-center mr-6 flex-shrink-0">
+                    <svg className="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                      <path d="M12 2.69V22" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Color Code Support</h3>
+                    <p className="text-gray-200 text-base">
+                      Full Minecraft formatting codes support for colors and text styles
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Texture Preview Card */}
+              <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
+                <VideoPlaceholder type="preview" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
+                <div className="relative z-10 flex items-center p-8 h-full">
+                  <div className="w-14 h-14 bg-[#C2B280] rounded-lg flex items-center justify-center mr-6 flex-shrink-0">
+                    <svg className="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 1 6 0 3 3 0 0 1 6 0z" />
+                      <path d="M2.5 7c0 1.5.5 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Texture Preview</h3>
+                    <p className="text-gray-200 text-base">
+                      3D texture preview to see how textures look in-game
                     </p>
                   </div>
                 </div>

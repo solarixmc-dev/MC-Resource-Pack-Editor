@@ -3170,11 +3170,17 @@ export default function EditorApp() {
       library.loadPack(loadPackId).then(async (packData) => {
         if (packData) {
           try {
-            const pack = await loadPackFromFile(new File([packData], 'library-pack.zip'));
+            // First get the pack metadata to get the original name
+            const allPacks = await library.getAllPacks();
+            const packInfo = allPacks.find(p => p.id === loadPackId);
+            const originalName = packInfo?.name || 'library-pack.zip';
+            
+            const pack = await loadPackFromFile(new File([packData], originalName));
             setPacks([pack]);
-            setPackName(pack.name);
-            setPackDescription(pack.description || '');
-            setPackIcon(pack.icon || null);
+            // Use the original pack name from library, not from loaded pack
+            setPackName(packInfo?.name || pack.name);
+            setPackDescription(packInfo?.description || pack.description || '');
+            setPackIcon(packInfo?.icon || pack.icon || null);
             localStorage.removeItem('mc-pack-editor-load-pack-id');
           } catch (error) {
             console.error('Failed to load pack from library:', error);
