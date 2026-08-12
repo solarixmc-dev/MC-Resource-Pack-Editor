@@ -105,24 +105,6 @@ export default function LibraryPage() {
   const [loading, setLoading] = useState(false);
   const [storageUsage, setStorageUsage] = useState({ used: 0, total: 500 * 1024 * 1024, percentage: 0 });
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [cleanupDone, setCleanupDone] = useState(false);
-
-  // One-time cleanup of old editor state entries from packs store
-  useEffect(() => {
-    if (cleanupDone) return;
-    
-    const cleanupOldEntries = async () => {
-      try {
-        await (localLibrary as any).cleanupOldEditorStateEntries();
-        setCleanupDone(true);
-      } catch (err) {
-        console.error('Failed to cleanup old editor state:', err);
-        setCleanupDone(true);
-      }
-    };
-    
-    cleanupOldEntries();
-  }, [cleanupDone]);
 
   // Add notification
   const addNotification = useCallback((message: string, type: 'success' | 'error' = 'success') => {
@@ -140,6 +122,9 @@ export default function LibraryPage() {
     console.log('=== Loading packs ===');
     
     try {
+      // Clean up old editor state entries
+      await (localLibrary as any).cleanupOldEditorStateEntries();
+      
       // Load from IndexedDB library
       const allPacks = await localLibrary.getAllPacks();
       console.log('Loaded packs:', allPacks);
