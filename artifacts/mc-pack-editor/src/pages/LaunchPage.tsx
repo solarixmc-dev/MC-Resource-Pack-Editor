@@ -66,7 +66,7 @@ export default function LaunchPage() {
     <div className="min-h-screen bg-white dark:bg-dark-bg flex flex-col relative overflow-hidden">
       {/* Geometric Background Pattern */}
       <div className="absolute inset-0 pointer-events-none">
-        <svg className="w-full h-full opacity-5 dark:opacity-10" xmlns="http://www.w3.org/2000/svg">
+        <svg className="w-full h-full opacity-[0.12] dark:opacity-[0.18]" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
               <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="0.5"/>
@@ -79,10 +79,10 @@ export default function LaunchPage() {
           <rect width="100%" height="100%" fill="url(#diagonal)" className="text-gray-300 dark:text-gray-700"/>
         </svg>
         {/* Decorative geometric shapes */}
-        <div className="absolute top-20 left-10 w-64 h-64 border-2 border-[#C2B280]/10 rounded-full"></div>
-        <div className="absolute top-40 right-20 w-96 h-96 border-2 border-[#C2B280]/5 rounded-full"></div>
-        <div className="absolute bottom-40 left-1/4 w-48 h-48 border-2 border-gray-300/20 dark:border-gray-600/20 rotate-45"></div>
-        <div className="absolute bottom-20 right-1/3 w-32 h-32 border-2 border-[#C2B280]/10 rotate-12"></div>
+        <div className="absolute top-20 left-10 w-64 h-64 border-2 border-[#C2B280]/20 rounded-full animate-spin-slow"></div>
+        <div className="absolute top-40 right-20 w-96 h-96 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
+        <div className="absolute bottom-40 left-1/4 w-48 h-48 border-2 border-gray-300/40 dark:border-gray-600/40 rotate-45 animate-spin-slow"></div>
+        <div className="absolute bottom-20 right-1/3 w-32 h-32 border-2 border-[#C2B280]/20 rotate-12 animate-spin-slow-reverse"></div>
       </div>
 
       {/* Content Overlay */}
