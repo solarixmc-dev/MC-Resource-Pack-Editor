@@ -15,6 +15,19 @@ export interface SavedPack {
   userId: string;
 }
 
+export interface EditorState {
+  packs: Array<{
+    id: string;
+    name: string;
+    description: string;
+    icon: string | null;
+    fileCount: number;
+  }>;
+  packName: string;
+  packDescription: string;
+  packIcon: string | null;
+}
+
 class PackLibraryIndexedDB {
   private userId: string;
   private db: IDBDatabase | null = null;
@@ -131,6 +144,72 @@ class PackLibraryIndexedDB {
       const transaction = db.transaction([this.STORE_NAME], 'readwrite');
       const store = transaction.objectStore(this.STORE_NAME);
       const request = store.clear();
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Editor state persistence
+  async saveEditorState(state: EditorState): Promise<void> {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const key = `editor-state-${this.userId}`;
+      const request = store.put({
+        id: key,
+        userId: this.userId,
+        packData: JSON.stringify(state),
+        createdAt: new Date().toISOString(),
+        fileSize: 0,
+        name: 'Editor State',
+        description: 'Temporary editor state',
+        icon: null
+      });
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async loadEditorState(): Promise<EditorState | null> {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.STORE_NAME], 'readonly');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const key = `editor-state-${this.userId}`;
+      const request = store.get(key);
+
+      request.onsuccess = () => {
+        const result = request.result;
+        if (result) {
+          try {
+            const state = JSON.parse(result.packData) as EditorState;
+            resolve(state);
+          } catch (error) {
+            console.error('Failed to parse editor state:', error);
+            resolve(null);
+          }
+        } else {
+          resolve(null);
+        }
+      };
+
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async clearEditorState(): Promise<void> {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const key = `editor-state-${this.userId}`;
+      const request = store.delete(key);
 
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
