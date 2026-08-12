@@ -8,17 +8,17 @@ interface PreviewModalProps {
 }
 
 const PREVIEW_ITEMS = [
-  { name: "Wooden Sword", filenames: ["wooden_sword.png", "sword_wood.png"] },
+  { name: "Wooden Sword", filenames: ["wood_sword.png", "wooden_sword.png", "sword_wood.png"] },
   { name: "Red Wool", filenames: ["wool_colored_red.png", "red_wool.png"] },
   { name: "Green Wool", filenames: ["wool_colored_green.png", "green_wool.png"] },
   { name: "Glass", filenames: ["glass.png"] },
-  { name: "Fireball", filenames: ["fire_charge.png", "fireball.png"] },
+  { name: "Fireball", filenames: ["fireball.png", "fire_charge.png"] },
   { name: "Emerald", filenames: ["emerald.png"] },
   { name: "Diamond", filenames: ["diamond.png"] },
   { name: "Iron Ingot", filenames: ["iron_ingot.png"] },
   { name: "Gold Ingot", filenames: ["gold_ingot.png"] },
-  { name: "TNT", filenames: ["tnt.png", "tnt_side.png"] },
-  { name: "Golden Apple", filenames: ["golden_apple.png", "apple_golden.png"] },
+  { name: "TNT", filenames: ["tnt_side.png", "tnt.png"] },
+  { name: "Golden Apple", filenames: ["apple_golden.png", "golden_apple.png"] },
 ];
 
 // Search for a file by filename across all packs
