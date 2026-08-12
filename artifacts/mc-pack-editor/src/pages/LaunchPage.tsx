@@ -72,9 +72,15 @@ export default function LaunchPage() {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         const index = parseInt(entry.target.getAttribute('data-index') || '0');
-        if (entry.isIntersecting) {
-          setVisibleSections(prev => new Set([...prev, index]));
-        }
+        setVisibleSections(prev => {
+          const newSet = new Set(prev);
+          if (entry.isIntersecting) {
+            newSet.add(index);
+          } else {
+            newSet.delete(index);
+          }
+          return newSet;
+        });
       });
     }, observerOptions);
 
