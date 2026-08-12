@@ -21,31 +21,50 @@ const PREVIEW_ITEMS = [
   { name: "Golden Apple", path: "assets/minecraft/textures/item/golden_apple.png" },
 ];
 
-function getSkyTexture(packs: Pack[]): string | null {
+// Try multiple possible paths for each item
+function getItemTexture(packs: Pack[], primaryPath: string): string | null {
+  const possiblePaths = [
+    primaryPath,
+    primaryPath.replace("assets/minecraft/textures/", ""),
+    primaryPath.replace("assets/minecraft/textures/", "textures/"),
+  ];
+
   for (const pack of packs) {
-    // Try different possible sky texture paths
-    const skyPaths = [
-      "assets/minecraft/textures/environment/end_sky.png",
-      "assets/minecraft/textures/environment/sky.png",
-      "assets/minecraft/textures/block/end_sky.png",
-    ];
-    for (const path of skyPaths) {
+    for (const path of possiblePaths) {
       const buffer = pack.files.get(path);
       if (buffer) {
+        console.log(`Found texture: ${path}`);
         return arrayBufferToDataURL(buffer, path);
       }
     }
   }
+  console.log(`Missing texture: ${primaryPath}`);
   return null;
 }
 
-function getItemTexture(packs: Pack[], path: string): string | null {
+function getSkyTexture(packs: Pack[]): string | null {
   for (const pack of packs) {
-    const buffer = pack.files.get(path);
-    if (buffer) {
-      return arrayBufferToDataURL(buffer, path);
+    // Try cloud1.png and cloud2.png for sky
+    const skyPaths = [
+      "assets/minecraft/textures/environment/clouds.png",
+      "assets/minecraft/textures/environment/cloud1.png",
+      "assets/minecraft/textures/environment/cloud2.png",
+      "assets/minecraft/textures/block/clouds.png",
+      "assets/minecraft/textures/block/cloud1.png",
+      "assets/minecraft/textures/block/cloud2.png",
+      "textures/environment/clouds.png",
+      "textures/environment/cloud1.png",
+      "textures/environment/cloud2.png",
+    ];
+    for (const path of skyPaths) {
+      const buffer = pack.files.get(path);
+      if (buffer) {
+        console.log(`Found sky texture: ${path}`);
+        return arrayBufferToDataURL(buffer, path);
+      }
     }
   }
+  console.log('No sky texture found, using default');
   return null;
 }
 
@@ -73,7 +92,7 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
             backgroundImage: skyTexture ? `url(${skyTexture})` : undefined,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundColor: skyTexture ? undefined : (darkMode ? '#1a1a2e' : '#87CEEB'),
+            backgroundColor: skyTexture ? undefined : '#87CEEB',
           }}
         >
           {/* Grid of items */}
