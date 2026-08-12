@@ -2,13 +2,13 @@ import { Link } from "wouter";
 import { useEffect, useState, useRef } from "react";
 
 // Animated video placeholder components
-function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atlas' | 'preview' }) {
+function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atlas' | 'scratch' }) {
   const colors = {
     editor: ['#3b82f6', '#8b5cf6', '#a855f7'],
     pack: ['#10b981', '#14b8a6', '#06b6d4'],
     library: ['#f59e0b', '#f97316', '#ef4444'],
     atlas: ['#ec4899', '#f43f5e', '#fb7185'],
-    preview: ['#14b8a6', '#06b6d4', '#0891b2']
+    scratch: ['#fbbf24', '#f59e0b', '#f97316']
   };
 
   const videoFiles = {
@@ -16,7 +16,7 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atl
     pack: '/videos/pack-management.mp4',
     library: '/videos/local-library.mp4',
     atlas: '/videos/texture-atlas.mp4',
-    preview: '/videos/texture-preview.mp4'
+    scratch: '/videos/texture-editor.mp4'
   };
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -107,18 +107,15 @@ export default function LaunchPage() {
         </svg>
         {/* Decorative geometric shapes */}
         {/* Top area shapes - visible on initial hero section */}
-        <div className="absolute top-10 left-10 w-48 h-48 border-2 border-[#C2B280]/20 rounded-full animate-spin-slow"></div>
-        <div className="absolute top-20 right-16 w-72 h-72 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
-        <div className="absolute top-1/4 left-1/4 w-36 h-36 border-2 border-gray-300/30 dark:border-gray-600/30 rotate-45 animate-spin-slow"></div>
-        <div className="absolute top-1/3 right-1/3 w-24 h-24 border-2 border-[#C2B280]/18 rotate-12 animate-spin-slow-reverse"></div>
-        <div className="absolute top-1/2 left-1/6 w-40 h-40 border-2 border-[#C2B280]/12 rounded-lg rotate-6 animate-spin-slow"></div>
-        {/* More squares prominently in top/hero area */}
-        <div className="absolute top-12 left-1/5 w-36 h-36 border-2 border-[#C2B280]/18 rotate-15 animate-spin-slow"></div>
-        <div className="absolute top-16 right-1/4 w-40 h-40 border-2 border-gray-300/35 dark:border-gray-600/35 rotate-30 animate-spin-slow-reverse"></div>
-        <div className="absolute top-1/3 left-1/2 w-32 h-32 border-2 border-[#C2B280]/15 rotate-45 animate-spin-slow"></div>
-        <div className="absolute top-1/4 right-1/2 w-28 h-28 border-2 border-gray-300/30 dark:border-gray-600/30 rotate-60 animate-spin-slow-reverse"></div>
-        <div className="absolute top-1/5 left-1/3 w-24 h-24 border-2 border-[#C2B280]/12 rotate-90 animate-spin-slow"></div>
-        <div className="absolute top-1/6 right-1/3 w-20 h-20 border-2 border-gray-300/25 dark:border-gray-600/25 rotate-75 animate-spin-slow-reverse"></div>
+        <div className="absolute top-8 left-8 w-56 h-56 border-2 border-[#C2B280]/20 rounded-full animate-spin-slow"></div>
+        <div className="absolute top-24 right-12 w-80 h-80 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
+        {/* Squares in top area - spread out */}
+        <div className="absolute top-16 left-1/4 w-40 h-40 border-2 border-[#C2B280]/18 rotate-15 animate-spin-slow"></div>
+        <div className="absolute top-32 right-1/5 w-44 h-44 border-2 border-gray-300/35 dark:border-gray-600/35 rotate-30 animate-spin-slow-reverse"></div>
+        <div className="absolute top-48 left-1/3 w-36 h-36 border-2 border-[#C2B280]/15 rotate-45 animate-spin-slow"></div>
+        <div className="absolute top-20 right-1/3 w-32 h-32 border-2 border-gray-300/30 dark:border-gray-600/30 rotate-60 animate-spin-slow-reverse"></div>
+        <div className="absolute top-40 left-1/5 w-28 h-28 border-2 border-[#C2B280]/12 rotate-90 animate-spin-slow"></div>
+        <div className="absolute top-56 right-1/4 w-24 h-24 border-2 border-gray-300/25 dark:border-gray-600/25 rotate-75 animate-spin-slow-reverse"></div>
         {/* Pentagons in top area */}
         <div className="absolute top-1/4 left-1/2 w-32 h-32 border-2 border-[#C2B280]/15 animate-spin-slow" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
         <div className="absolute top-1/3 right-1/6 w-28 h-28 border-2 border-gray-300/25 dark:border-gray-600/25 animate-spin-slow-reverse" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
@@ -193,7 +190,7 @@ export default function LaunchPage() {
         { type: 'pack' as const, title: 'Pack Management', description: 'Merge multiple packs, organize by folders, and export with custom metadata', icon: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96 12 12.01 20.73 6.96 M12 22.08 12 12' },
         { type: 'library' as const, title: 'Local Library', description: 'Save your exported packs locally and reload them anytime', icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z' },
         { type: 'atlas' as const, title: 'Texture Atlas Support', description: 'Work with texture atlases and atlas regions for optimized textures', icon: 'M3 3h18v18H3V3z M3 9h18 M9 21V9' },
-        { type: 'preview' as const, title: 'Texture Preview', description: 'Generate preview loadouts with key items to see textures in your pack\'s sky', icon: 'M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z M2.5 7c0 1.5.5 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3' },
+        { type: 'scratch' as const, title: 'Create from Scratch', description: 'Start with default textures and overlay toggle for any pack', icon: 'M12 3v18M5 12l7 7 7-7 M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0z M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10z' },
       ].map((feature, index) => (
         <div
           key={feature.type}
