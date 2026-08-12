@@ -1,6 +1,29 @@
 import { Link } from "wouter";
 import { useEffect, useState } from "react";
 
+// Full background video component
+function BackgroundVideo() {
+  return (
+    <div className="absolute inset-0 w-full h-full overflow-hidden">
+      <video 
+        autoPlay 
+        muted 
+        loop 
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ opacity: 0.3 }}
+        onError={(e) => {
+          console.log('Background video failed to load:', e);
+          e.currentTarget.style.display = 'none';
+        }}
+      >
+        <source src="/videos/background.mp4" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40"></div>
+    </div>
+  );
+}
+
 // Animated video placeholder components
 function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' }) {
   const colors = {
@@ -57,7 +80,12 @@ export default function LaunchPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-dark-bg flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-dark-bg flex flex-col relative">
+      {/* Background Video */}
+      <BackgroundVideo />
+      
+      {/* Content Overlay */}
+      <div className="relative z-10">
       {/* Hero Section */}
       <div className="flex-1 flex items-center justify-center px-4 py-24">
         <div className="max-w-4xl w-full">
@@ -221,6 +249,7 @@ export default function LaunchPage() {
           </p>
         </div>
       </footer>
+      </div>
     </div>
   );
 }

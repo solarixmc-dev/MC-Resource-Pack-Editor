@@ -11,93 +11,20 @@ interface Notification {
   type: 'success' | 'error';
 }
 
-// Minecraft color code parser
+// Minecraft color code parser - simplified to prevent infinite loops
 const parseMinecraftFormatting = (text: string): React.ReactNode => {
   if (!text) return null;
 
-  const colorMap: Record<string, string> = {
-    '0': '#000000',
-    '1': '#0000AA',
-    '2': '#00AA00',
-    '3': '#00AAAA',
-    '4': '#AA0000',
-    '5': '#AA00AA',
-    '6': '#FFAA00',
-    '7': '#AAAAAA',
-    '8': '#555555',
-    '9': '#5555FF',
-    'a': '#55FF55',
-    'b': '#55FFFF',
-    'c': '#FF5555',
-    'd': '#FF55FF',
-    'e': '#FFFF55',
-    'f': '#FFFFFF',
-  };
-
-  const formatMap: Record<string, string> = {
-    'l': 'bold',
-    'm': 'line-through',
-    'n': 'underline',
-    'o': 'italic',
-  };
-
-  // Split by § or & characters
-  const parts = text.split(/[§&]/);
-  const segments: Array<{ text: string; color?: string; format?: string }> = [];
-  let currentColor = colorMap['f']; // Default white
-  let currentFormat: string[] = [];
-
-  parts.forEach((part, index) => {
-    if (index === 0 && part) {
-      // First part before any color code
-      segments.push({ text: part, color: currentColor });
-      return;
-    }
-
-    if (part.length === 0) return;
-
-    const code = part[0].toLowerCase();
-    const text = part.slice(1);
-
-    if (colorMap[code]) {
-      currentColor = colorMap[code];
-      currentFormat = []; // Reset formats on color change
-    } else if (code === 'r') {
-      currentColor = colorMap['f'];
-      currentFormat = [];
-    } else if (formatMap[code]) {
-      if (!currentFormat.includes(formatMap[code])) {
-        currentFormat.push(formatMap[code]);
-      }
-    }
-
-    if (text) {
-      segments.push({ 
-        text, 
-        color: currentColor,
-        format: currentFormat.join(' ')
-      });
-    }
-  });
-
-  // Limit the number of segments to prevent infinite loops
-  const maxSegments = 50;
-  const limitedSegments = segments.slice(0, maxSegments);
-
-  return limitedSegments.map((segment, index) => (
-    <span 
-      key={`${index}-${segment.text}`}
-      style={{ 
-        color: segment.color,
-        fontWeight: segment.format?.includes('bold') ? 'bold' : 'normal',
-        textDecoration: segment.format?.includes('underline') ? 'underline' : 
-                      segment.format?.includes('line-through') ? 'line-through' : 'none',
-        fontStyle: segment.format?.includes('italic') ? 'italic' : 'normal'
-      }}
-    >
-      {segment.text}
-    </span>
-  ));
+  // Simple replacement instead of complex parsing to prevent infinite loops
+  let processedText = text;
+  
+  // Remove color codes
+  processedText = processedText.replace(/[§&][0-9a-fk-or]/gi, '');
+  
+  // Remove formatting codes
+  processedText = processedText.replace(/[§&][lmnor]/gi, '');
+  
+  return processedText;
 };
 
 export default function LibraryPage() {
