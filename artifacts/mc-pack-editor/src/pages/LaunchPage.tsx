@@ -1,35 +1,6 @@
 import { Link } from "wouter";
 import { useEffect, useState } from "react";
 
-// Full background video component
-function BackgroundVideo() {
-  return (
-    <div className="absolute inset-0 w-full h-full overflow-hidden">
-      <video 
-        autoPlay 
-        muted 
-        loop 
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ opacity: 0.4 }}
-        onError={(e) => {
-          console.log('Background video failed to load or not found at /videos/background.mp4:', e);
-          e.currentTarget.style.display = 'none';
-        }}
-      >
-        <source src="/videos/background.mp4" type="video/mp4" />
-      </video>
-      <div className="absolute inset-0 animate-gradient-xy" style={{
-        background: 'linear-gradient(45deg, #3b82f666, #8b5cf666, #a855f766, #3b82f666)',
-        backgroundSize: '400% 400%',
-        animation: 'gradientRotate 15s ease infinite',
-        opacity: 0.3
-      }}></div>
-      <div className="absolute inset-0 bg-black/55"></div>
-    </div>
-  );
-}
-
 // Animated video placeholder components
 function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' }) {
   const colors = {
@@ -90,9 +61,7 @@ export default function LaunchPage() {
       {/* Content Overlay */}
       <div className="relative z-10">
       {/* Hero Section */}
-      <div className="relative flex-1 flex items-center justify-center px-4 py-24 overflow-hidden">
-        {/* Background Video - only for hero section */}
-        <BackgroundVideo />
+      <div className="flex-1 flex items-center justify-center px-4 py-24">
         <div className="max-w-4xl w-full">
           {/* Logo */}
           <div className={`text-center mb-20 transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -100,12 +69,12 @@ export default function LaunchPage() {
               <div className="w-20 h-20 bg-black dark:bg-dark-text rounded-lg flex items-center justify-center">
                 <span className="text-white dark:text-dark-bg text-3xl font-bold">MC</span>
               </div>
-              <h1 className="text-6xl font-bold text-white">TextureLab</h1>
+              <h1 className="text-6xl font-bold text-black dark:text-dark-text">TextureLab</h1>
             </div>
-            <h2 className="text-4xl text-white mt-12">
+            <h2 className="text-4xl text-gray-600 dark:text-dark-text-secondary mt-12">
               <span className="border-b-2 border-[#C2B280] pb-1">The</span> ultimate Minecraft <span className="text-[#C2B280] font-bold text-4xl">Texture Editor</span>
             </h2>
-            <p className="text-white text-xl mt-12">
+            <p className="text-gray-600 dark:text-dark-text-secondary text-xl mt-12">
               Create, edit, organize, and customize Minecraft resource packs — all in your browser.
             </p>
           </div>
