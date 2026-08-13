@@ -19,7 +19,16 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atl
     scratch: '/videos/create-scratch.mp4'
   };
 
+  const videoFiles2 = {
+    editor: null,
+    pack: null,
+    library: null,
+    atlas: null,
+    scratch: '/videos/create-scratch2.mp4'
+  };
+
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [currentVideo, setCurrentVideo] = useState<0 | 1>(0);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -27,22 +36,39 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atl
     }
   }, []);
 
+  const handleVideoEnd = () => {
+    if (type === 'scratch' && currentVideo === 0 && videoFiles2.scratch) {
+      setCurrentVideo(1);
+    } else if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+    }
+  };
+
+  const getCurrentVideoSrc = () => {
+    if (type === 'scratch' && currentVideo === 1 && videoFiles2.scratch) {
+      return videoFiles2.scratch;
+    }
+    return videoFiles[type];
+  };
+
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden">
       <video
         ref={videoRef}
+        key={currentVideo}
         autoPlay
         muted
-        loop
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
         style={{ opacity: 0.8 }}
+        onEnded={handleVideoEnd}
         onError={(e) => {
           console.log('Video failed to load:', e);
           e.currentTarget.style.display = 'none';
         }}
       >
-        <source src={videoFiles[type]} type="video/mp4" />
+        <source src={getCurrentVideoSrc()} type="video/mp4" />
       </video>
       <div className="absolute inset-0 animate-gradient-xy" style={{
         background: `linear-gradient(45deg, ${colors[type][0]}66, ${colors[type][1]}66, ${colors[type][2]}66, ${colors[type][0]}66)`,
