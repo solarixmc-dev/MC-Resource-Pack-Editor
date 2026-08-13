@@ -34,11 +34,13 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atl
     if (videoRef.current) {
       videoRef.current.playbackRate = 2;
     }
-  }, []);
+  }, [currentVideo]);
 
   const handleVideoEnd = () => {
     if (type === 'scratch' && currentVideo === 0 && videoFiles2.scratch) {
       setCurrentVideo(1);
+    } else if (type === 'scratch' && currentVideo === 1) {
+      setCurrentVideo(0);
     } else if (videoRef.current) {
       videoRef.current.currentTime = 0;
       videoRef.current.play();
