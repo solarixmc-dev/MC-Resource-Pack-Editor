@@ -109,20 +109,20 @@ export default function LaunchPage() {
         {/* Top area shapes - visible on initial hero section */}
         <div className="absolute top-8 left-8 w-56 h-56 border-2 border-[#C2B280]/20 rounded-full animate-spin-slow"></div>
         <div className="absolute top-24 right-12 w-80 h-80 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
-        {/* Two squares in top area - spaced out, higher on screen */}
-        <div className="absolute top-20 left-1/4 w-36 h-36 border-2 border-[#C2B280]/18 rotate-45 animate-spin-slow"></div>
-        <div className="absolute top-32 right-1/3 w-32 h-32 border-2 border-gray-300/30 dark:border-gray-600/30 rotate-60 animate-spin-slow-reverse"></div>
+        {/* Two squares in top area - around button height, spaced out */}
+        <div className="absolute top-1/3 left-1/4 w-36 h-36 border-2 border-[#C2B280]/18 rotate-45 animate-spin-slow"></div>
+        <div className="absolute top-2/5 right-1/3 w-32 h-32 border-2 border-gray-300/30 dark:border-gray-600/30 rotate-60 animate-spin-slow-reverse"></div>
         {/* Pentagons in top area */}
         <div className="absolute top-1/4 left-1/2 w-32 h-32 border-2 border-[#C2B280]/15 animate-spin-slow" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
         <div className="absolute top-1/3 right-1/6 w-28 h-28 border-2 border-gray-300/25 dark:border-gray-600/25 animate-spin-slow-reverse" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
         <div className="absolute top-1/6 right-1/4 w-24 h-24 border-2 border-[#C2B280]/12 animate-spin-slow" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
-        {/* Small triangles in top area - higher on screen */}
-        <div className="absolute top-28 right-1/5 w-0 h-0 border-l-[16px] border-r-[16px] border-b-[28px] border-l-transparent border-r-transparent border-b-[#C2B280]/12 animate-spin-slow"></div>
-        <div className="absolute top-40 left-1/6 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[20px] border-l-transparent border-r-transparent border-b-gray-300/25 dark:border-gray-600/25 animate-spin-slow-reverse"></div>
-        <div className="absolute top-24 left-1/4 w-0 h-0 border-l-[14px] border-r-[14px] border-b-[24px] border-l-transparent border-r-transparent border-b-gray-300/30 dark:border-gray-600/30 animate-spin-slow"></div>
-        <div className="absolute top-36 left-1/3 w-0 h-0 border-l-[15px] border-r-[15px] border-b-[26px] border-l-transparent border-r-transparent border-b-[#C2B280]/10 animate-spin-slow-reverse"></div>
-        <div className="absolute top-44 right-1/4 w-0 h-0 border-l-[13px] border-r-[13px] border-b-[22px] border-l-transparent border-r-transparent border-b-gray-300/25 dark:border-gray-600/25 animate-spin-slow"></div>
-        <div className="absolute top-32 left-1/5 w-0 h-0 border-l-[14px] border-r-[14px] border-b-[24px] border-l-transparent border-r-transparent border-b-[#C2B280]/12 animate-spin-slow-reverse"></div>
+        {/* Small triangles in top area - around button height, spaced out */}
+        <div className="absolute top-1/3 right-1/5 w-0 h-0 border-l-[16px] border-r-[16px] border-b-[28px] border-l-transparent border-r-transparent border-b-[#C2B280]/12 animate-spin-slow"></div>
+        <div className="absolute top-2/5 left-1/6 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[20px] border-l-transparent border-r-transparent border-b-gray-300/25 dark:border-gray-600/25 animate-spin-slow-reverse"></div>
+        <div className="absolute top-3/8 left-1/4 w-0 h-0 border-l-[14px] border-r-[14px] border-b-[24px] border-l-transparent border-r-transparent border-b-gray-300/30 dark:border-gray-600/30 animate-spin-slow"></div>
+        <div className="absolute top-1/2 left-1/3 w-0 h-0 border-l-[15px] border-r-[15px] border-b-[26px] border-l-transparent border-r-transparent border-b-[#C2B280]/10 animate-spin-slow-reverse"></div>
+        <div className="absolute top-3/7 right-1/4 w-0 h-0 border-l-[13px] border-r-[13px] border-b-[22px] border-l-transparent border-r-transparent border-b-gray-300/25 dark:border-gray-600/25 animate-spin-slow"></div>
+        <div className="absolute top-2/5 left-1/5 w-0 h-0 border-l-[14px] border-r-[14px] border-b-[24px] border-l-transparent border-r-transparent border-b-[#C2B280]/12 animate-spin-slow-reverse"></div>
         {/* Bottom area shapes */}
         <div className="absolute bottom-32 left-1/4 w-48 h-48 border-2 border-gray-300/40 dark:border-gray-600/40 rotate-45 animate-spin-slow"></div>
         <div className="absolute bottom-24 right-1/3 w-32 h-32 border-2 border-[#C2B280]/20 rotate-12 animate-spin-slow-reverse"></div>
