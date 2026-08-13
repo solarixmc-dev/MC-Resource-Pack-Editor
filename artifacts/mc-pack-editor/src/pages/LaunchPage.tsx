@@ -16,7 +16,7 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atl
     pack: '/videos/pack-management.mp4',
     library: '/videos/local-library.mp4',
     atlas: '/videos/texture-atlas.mp4',
-    scratch: '/videos/pack-management.mp4'
+    scratch: '/videos/create-scratch.mp4'
   };
 
   const videoRef = useRef<HTMLVideoElement>(null);
