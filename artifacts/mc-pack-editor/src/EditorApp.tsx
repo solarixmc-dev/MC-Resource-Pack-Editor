@@ -1935,7 +1935,7 @@ function SettingsModal({
           <div className="flex items-center gap-3">
             <div className="relative flex-shrink-0">
               <button
-                className="w-14 h-14 rounded border overflow-hidden checkered transition-colors cursor-pointer border-slate-200 dark:border-dark-border hover:border-white dark:hover:border-dark-text"
+                className="w-14 h-14 rounded border overflow-hidden checkered transition-colors cursor-pointer border-slate-200 dark:border-dark-border hover:border-white dark:hover:border-dark-text bg-slate-50 dark:bg-dark-tertiary"
                 onClick={() => iconInputRef.current?.click()}
                 title="Click to set pack icon"
               >
