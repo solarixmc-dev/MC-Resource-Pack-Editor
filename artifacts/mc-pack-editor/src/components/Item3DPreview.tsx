@@ -15,11 +15,6 @@ const BLOCK_ITEMS = [
   "Blue Wool", "Red Wool", "Oak Planks", "End Stone", "TNT"
 ];
 
-// Block items that should render as cubes
-const BLOCK_ITEMS = [
-  "Blue Wool", "Red Wool", "Oak Planks", "End Stone", "TNT"
-];
-
 export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3DPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
