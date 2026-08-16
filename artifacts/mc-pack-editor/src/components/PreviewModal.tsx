@@ -12,7 +12,7 @@ const PREVIEW_ITEMS = [
   { name: "Shears", filenames: ["shears.png"] },
   { name: "Wooden Pickaxe", filenames: ["wood_pickaxe.png", "pickaxe_wood.png"] },
   { name: "Wooden Axe", filenames: ["wood_axe.png", "axe_wood.png"] },
-  { name: "Red Wool", filenames: ["wool_colored_red.png", "red_wool.png"] },
+  { name: "Golden Apple", filenames: ["apple_golden.png", "golden_apple.png"] },
   { name: "Blue Wool", filenames: ["wool_colored_blue.png", "blue_wool.png"] },
   { name: "Oak Planks", filenames: ["planks_oak.png"] },
   { name: "End Stone", filenames: ["end_stone.png"] },
@@ -22,7 +22,7 @@ const PREVIEW_ITEMS = [
   { name: "Iron Ingot", filenames: ["iron_ingot.png"] },
   { name: "Gold Ingot", filenames: ["gold_ingot.png"] },
   { name: "TNT", filenames: ["tnt_side.png", "tnt.png"] },
-  { name: "Golden Apple", filenames: ["apple_golden.png", "golden_apple.png"] },
+  { name: "Red Wool", filenames: ["wool_colored_red.png", "red_wool.png"] },
 ];
 
 // Search for a file by filename across all packs
