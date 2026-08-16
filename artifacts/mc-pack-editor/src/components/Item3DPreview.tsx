@@ -10,6 +10,16 @@ interface Item3DPreviewProps {
   darkMode: boolean;
 }
 
+// Block items that should render as cubes
+const BLOCK_ITEMS = [
+  "Blue Wool", "Red Wool", "Oak Planks", "End Stone", "TNT"
+];
+
+// Block items that should render as cubes
+const BLOCK_ITEMS = [
+  "Blue Wool", "Red Wool", "Oak Planks", "End Stone", "TNT"
+];
+
 export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3DPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -126,8 +136,8 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
       if (textureUrl) break;
     }
 
-    // Create a simple 3D representation (block-like)
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const isBlock = BLOCK_ITEMS.includes(item.name);
+    let geometry: THREE.BufferGeometry;
     let material: THREE.Material;
 
     if (textureUrl) {
@@ -135,12 +145,34 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
       texture.magFilter = THREE.NearestFilter;
       texture.minFilter = THREE.NearestFilter;
       texture.colorSpace = THREE.SRGBColorSpace;
-      material = new THREE.MeshBasicMaterial({ map: texture });
+      material = new THREE.MeshBasicMaterial({ 
+        map: texture,
+        transparent: true,
+        side: THREE.DoubleSide
+      });
     } else {
-      material = new THREE.MeshBasicMaterial({ color: 0x888888 });
+      material = new THREE.MeshBasicMaterial({ 
+        color: 0x888888,
+        transparent: true,
+        side: THREE.DoubleSide
+      });
+    }
+
+    if (isBlock) {
+      // Render blocks as cubes
+      geometry = new THREE.BoxGeometry(1, 1, 1);
+    } else {
+      // Render non-block items as flat planes (2D sprites)
+      geometry = new THREE.PlaneGeometry(1, 1);
     }
 
     const mesh = new THREE.Mesh(geometry, material);
+    
+    // For non-block items, make them face the camera initially
+    if (!isBlock) {
+      mesh.rotation.y = Math.PI; // Face the camera
+    }
+    
     scene.add(mesh);
 
     // Store reference for rotation
