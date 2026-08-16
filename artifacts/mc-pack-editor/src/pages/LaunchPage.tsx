@@ -133,32 +133,22 @@ export default function LaunchPage() {
           <rect width="100%" height="100%" fill="url(#grid)" className="text-gray-400 dark:text-gray-600"/>
           <rect width="100%" height="100%" fill="url(#diagonal)" className="text-gray-300 dark:text-gray-700"/>
         </svg>
-        {/* Decorative geometric shapes */}
-        {/* Top area shapes - visible on initial hero section */}
-        <div className="absolute top-8 left-8 w-56 h-56 border-2 border-[#C2B280]/20 rounded-full animate-spin-slow"></div>
-        <div className="absolute top-24 right-12 w-80 h-80 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
-        {/* Two squares in top area - lower than circles, spaced out */}
-        <div className="absolute top-40 left-1/4 w-36 h-36 border-2 border-[#C2B280]/18 dark:border-[#C2B280]/25 rotate-45 animate-spin-slow"></div>
-        <div className="absolute top-56 right-1/3 w-32 h-32 border-2 border-[#C2B280]/18 dark:border-[#C2B280]/25 rotate-60 animate-spin-slow-reverse"></div>
-        {/* Pentagons in top area */}
-        <div className="absolute top-1/4 left-1/2 w-32 h-32 border-2 border-[#C2B280]/15 animate-spin-slow" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
-        <div className="absolute top-1/3 right-1/6 w-28 h-28 border-2 border-gray-300/25 dark:border-gray-600/25 animate-spin-slow-reverse" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
-        <div className="absolute top-1/6 right-1/4 w-24 h-24 border-2 border-[#C2B280]/12 animate-spin-slow" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
-        {/* Small triangles - spread around the page, not on sides */}
-        <div className="absolute top-40 left-1/2 w-0 h-0 border-l-[16px] border-r-[16px] border-b-[28px] border-l-transparent border-r-transparent border-b-[#C2B280]/12 animate-spin-slow"></div>
-        <div className="absolute top-48 right-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[20px] border-l-transparent border-r-transparent border-b-gray-300/25 dark:border-gray-600/25 animate-spin-slow-reverse"></div>
-        <div className="absolute top-56 left-3/5 w-0 h-0 border-l-[14px] border-r-[14px] border-b-[24px] border-l-transparent border-r-transparent border-b-gray-300/30 dark:border-gray-600/30 animate-spin-slow"></div>
-        <div className="absolute top-2/5 right-3/5 w-0 h-0 border-l-[15px] border-r-[15px] border-b-[26px] border-l-transparent border-r-transparent border-b-[#C2B280]/10 animate-spin-slow-reverse"></div>
-        <div className="absolute top-3/5 left-2/5 w-0 h-0 border-l-[13px] border-r-[13px] border-b-[22px] border-l-transparent border-r-transparent border-b-gray-300/25 dark:border-gray-600/25 animate-spin-slow"></div>
-        <div className="absolute top-1/2 right-2/5 w-0 h-0 border-l-[14px] border-r-[14px] border-b-[24px] border-l-transparent border-r-transparent border-b-[#C2B280]/12 animate-spin-slow-reverse"></div>
-        {/* Bottom area shapes */}
-        <div className="absolute bottom-32 left-1/4 w-48 h-48 border-2 border-gray-300/40 dark:border-gray-600/40 rotate-45 animate-spin-slow"></div>
-        <div className="absolute bottom-24 right-1/3 w-32 h-32 border-2 border-[#C2B280]/20 rotate-12 animate-spin-slow-reverse"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-40 h-40 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow"></div>
-        <div className="absolute bottom-1/4 left-1/6 w-28 h-28 border-2 border-gray-300/35 dark:border-gray-600/35 rotate-30 animate-spin-slow-reverse"></div>
-        {/* Pentagons in bottom area */}
-        <div className="absolute bottom-1/3 left-1/3 w-36 h-36 border-2 border-[#C2B280]/18 animate-spin-slow-reverse" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
-        <div className="absolute bottom-1/4 right-1/6 w-32 h-32 border-2 border-gray-300/30 dark:border-gray-600/30 animate-spin-slow" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
+        {/* Decorative geometric shapes - minimalist design */}
+        {/* Large circles - top corners */}
+        <div className="absolute top-12 left-12 w-64 h-64 border-2 border-[#C2B280]/20 rounded-full animate-spin-slow"></div>
+        <div className="absolute top-16 right-16 w-72 h-72 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
+        {/* Medium circles - bottom area */}
+        <div className="absolute bottom-24 left-1/4 w-48 h-48 border-2 border-[#C2B280]/18 rounded-full animate-spin-slow"></div>
+        <div className="absolute bottom-32 right-1/3 w-40 h-40 border-2 border-[#C2B280]/12 rounded-full animate-spin-slow-reverse"></div>
+        {/* Rotating squares - well spaced */}
+        <div className="absolute top-1/3 left-1/5 w-32 h-32 border-2 border-[#C2B280]/18 dark:border-[#C2B280]/25 rotate-45 animate-spin-slow"></div>
+        <div className="absolute top-1/4 right-1/4 w-28 h-28 border-2 border-[#C2B280]/18 dark:border-[#C2B280]/25 rotate-30 animate-spin-slow-reverse"></div>
+        <div className="absolute bottom-1/3 left-1/3 w-36 h-36 border-2 border-[#C2B280]/15 dark:border-[#C2B280]/22 rotate-60 animate-spin-slow"></div>
+        <div className="absolute bottom-1/4 right-1/5 w-32 h-32 border-2 border-[#C2B280]/12 dark:border-[#C2B280]/20 rotate-15 animate-spin-slow-reverse"></div>
+        {/* Small triangles - minimal accents */}
+        <div className="absolute top-1/2 left-1/4 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[20px] border-l-transparent border-r-transparent border-b-[#C2B280]/10 dark:border-[#C2B280]/15 animate-spin-slow"></div>
+        <div className="absolute top-2/5 right-1/3 w-0 h-0 border-l-[10px] border-r-[10px] border-b-[18px] border-l-transparent border-r-transparent border-b-[#C2B280]/8 dark:border-[#C2B280]/12 animate-spin-slow-reverse"></div>
+        <div className="absolute bottom-1/2 left-1/2 w-0 h-0 border-l-[14px] border-r-[14px] border-b-[24px] border-l-transparent border-r-transparent border-b-[#C2B280]/12 dark:border-[#C2B280]/18 animate-spin-slow"></div>
       </div>
 
       {/* Content Overlay */}
