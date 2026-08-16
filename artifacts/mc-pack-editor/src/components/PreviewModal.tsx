@@ -10,8 +10,8 @@ interface PreviewModalProps {
 const PREVIEW_ITEMS = [
   { name: "Wooden Sword", filenames: ["wood_sword.png", "sword_wood.png"] },
   { name: "Shears", filenames: ["shears.png"] },
-  { name: "Diamond Pickaxe", filenames: ["diamond_pickaxe.png", "pickaxe_diamond.png"] },
-  { name: "Diamond Axe", filenames: ["diamond_axe.png", "axe_diamond.png"] },
+  { name: "Wooden Pickaxe", filenames: ["wood_pickaxe.png", "pickaxe_wood.png"] },
+  { name: "Wooden Axe", filenames: ["wood_axe.png", "axe_wood.png"] },
   { name: "Red Wool", filenames: ["wool_colored_red.png", "red_wool.png"] },
   { name: "Blue Wool", filenames: ["wool_colored_blue.png", "blue_wool.png"] },
   { name: "Oak Planks", filenames: ["planks_oak.png"] },
@@ -21,11 +21,8 @@ const PREVIEW_ITEMS = [
   { name: "Diamond", filenames: ["diamond.png"] },
   { name: "Iron Ingot", filenames: ["iron_ingot.png"] },
   { name: "Gold Ingot", filenames: ["gold_ingot.png"] },
-  { name: "Coal", filenames: ["coal.png"] },
-  { name: "Redstone", filenames: ["redstone.png", "redstone_dust.png"] },
   { name: "TNT", filenames: ["tnt_side.png", "tnt.png"] },
   { name: "Golden Apple", filenames: ["apple_golden.png", "golden_apple.png"] },
-  { name: "Lapis Lazuli", filenames: ["lapis_lazuli.png", "lapis.png"] },
 ];
 
 // Search for a file by filename across all packs
@@ -90,7 +87,7 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
         >
           {/* Grid of items */}
           <div className="absolute inset-0 flex items-center justify-center p-8">
-            <div className="grid grid-cols-6 gap-4">
+            <div className="grid grid-cols-5 gap-4">
               {PREVIEW_ITEMS.map((item) => {
                 const textureUrl = getItemTexture(packs, item.filenames);
                 return (
