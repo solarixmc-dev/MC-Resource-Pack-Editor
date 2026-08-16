@@ -1,5 +1,7 @@
 import { Pack } from "../types";
 import { arrayBufferToDataURL } from "../lib/zipUtils";
+import { useState } from "react";
+import Item3DPreview from "./Item3DPreview";
 
 interface PreviewModalProps {
   packs: Pack[];
@@ -59,6 +61,7 @@ function getSkyTexture(packs: Pack[]): string | null {
 }
 
 export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalProps) {
+  const [selectedItem, setSelectedItem] = useState<{ name: string; filenames: string[] } | null>(null);
   const skyTexture = getSkyTexture(packs);
 
   return (
@@ -93,7 +96,8 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
                 return (
                   <div
                     key={item.filenames[0]}
-                    className="flex flex-col items-center gap-2"
+                    className="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
+                    onClick={() => setSelectedItem(item)}
                   >
                     <div
                       className="w-16 h-16 rounded-lg checkered flex items-center justify-center border-2 border-black/20"
@@ -127,6 +131,16 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
           </p>
         </div>
       </div>
+
+      {/* 3D Item Preview */}
+      {selectedItem && (
+        <Item3DPreview
+          item={selectedItem}
+          packs={packs}
+          onClose={() => setSelectedItem(null)}
+          darkMode={darkMode}
+        />
+      )}
     </div>
   );
 }

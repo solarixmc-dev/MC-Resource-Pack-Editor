@@ -43,6 +43,7 @@
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^4.0.0",
     "autoprefixer": "^10.0.0",
     "class-variance-authority": "^0.7.0",
@@ -73,6 +74,7 @@
   },
   "dependencies": {
     "jszip": "^3.10.1",
+    "three": "^0.185.1",
     "wouter": "^3.3.5"
   }
 }
