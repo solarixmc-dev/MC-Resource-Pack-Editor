@@ -10,7 +10,7 @@ interface PreviewModalProps {
 const PREVIEW_ITEMS = [
   { name: "Wooden Sword", filenames: ["wood_sword.png", "sword_wood.png"] },
   { name: "Red Wool", filenames: ["wool_colored_red.png", "red_wool.png"] },
-  { name: "Green Wool", filenames: ["wool_colored_lime.png", "wool_colored_green.png", "green_wool.png"] },
+  { name: "Blue Wool", filenames: ["wool_colored_blue.png", "blue_wool.png"] },
   { name: "Oak Planks", filenames: ["planks_oak.png"] },
   { name: "End Stone", filenames: ["end_stone.png"] },
   { name: "Fireball", filenames: ["fireball.png", "fire_charge.png"] },
@@ -120,7 +120,7 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
         {/* Footer */}
         <div className={`p-4 border-t ${darkMode ? "border-dark-border" : "border-gray-200"}`}>
           <p className={`text-sm ${darkMode ? "text-dark-text-secondary" : "text-gray-600"}`}>
-            Preview displays textures from your resource pack. Background uses the pack's sky texture if available.
+            Preview displays textures from your resource pack.
           </p>
         </div>
       </div>
