@@ -139,7 +139,7 @@ export default function LaunchPage() {
         <div className="absolute top-24 right-12 w-80 h-80 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
         {/* Two squares in top area - lower than circles, spaced out */}
         <div className="absolute top-40 left-1/4 w-36 h-36 border-2 border-[#C2B280]/18 rotate-45 animate-spin-slow"></div>
-        <div className="absolute top-56 right-1/3 w-32 h-32 border-2 border-gray-300/30 dark:border-gray-600/30 rotate-60 animate-spin-slow-reverse"></div>
+        <div className="absolute top-56 right-1/3 w-32 h-32 border-2 border-[#C2B280]/18 dark:border-[#C2B280]/25 rotate-60 animate-spin-slow-reverse"></div>
         {/* Pentagons in top area */}
         <div className="absolute top-1/4 left-1/2 w-32 h-32 border-2 border-[#C2B280]/15 animate-spin-slow" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
         <div className="absolute top-1/3 right-1/6 w-28 h-28 border-2 border-gray-300/25 dark:border-gray-600/25 animate-spin-slow-reverse" style={{ clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)' }}></div>
