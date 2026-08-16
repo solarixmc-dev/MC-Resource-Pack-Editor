@@ -16,13 +16,13 @@ const PREVIEW_ITEMS = [
   { name: "Blue Wool", filenames: ["wool_colored_blue.png", "blue_wool.png"] },
   { name: "Oak Planks", filenames: ["planks_oak.png"] },
   { name: "End Stone", filenames: ["end_stone.png"] },
+  { name: "TNT", filenames: ["tnt_side.png", "tnt.png"] },
+  { name: "Red Wool", filenames: ["wool_colored_red.png", "red_wool.png"] },
   { name: "Fireball", filenames: ["fireball.png", "fire_charge.png"] },
   { name: "Emerald", filenames: ["emerald.png"] },
   { name: "Diamond", filenames: ["diamond.png"] },
   { name: "Iron Ingot", filenames: ["iron_ingot.png"] },
   { name: "Gold Ingot", filenames: ["gold_ingot.png"] },
-  { name: "TNT", filenames: ["tnt_side.png", "tnt.png"] },
-  { name: "Red Wool", filenames: ["wool_colored_red.png", "red_wool.png"] },
 ];
 
 // Search for a file by filename across all packs
