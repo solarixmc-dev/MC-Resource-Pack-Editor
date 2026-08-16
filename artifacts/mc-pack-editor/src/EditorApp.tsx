@@ -1261,7 +1261,7 @@ function SearchAllResults({
                 darkMode={darkMode}
                 stripColorCodes={stripColorCodes}
               />
-              <span className="text-[10px] text-muted-foreground text-center truncate px-1">{folder}</span>
+              <span className={`text-[10px] text-center truncate px-1 ${darkMode ? "text-dark-text-secondary" : "text-muted-foreground"}`}>{folder}</span>
             </div>
           );
         })}

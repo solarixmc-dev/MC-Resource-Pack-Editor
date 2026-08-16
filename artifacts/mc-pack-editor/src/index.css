@@ -336,6 +336,18 @@ html, body {
   background-color: #f0f0f0;
 }
 
+/* Dark mode override for light checkerboard */
+.dark .checkered-light {
+  background-image:
+    linear-gradient(45deg, #333 25%, transparent 25%),
+    linear-gradient(-45deg, #333 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #333 75%),
+    linear-gradient(-45deg, transparent 75%, #333 75%);
+  background-size: 2px 2px;
+  background-position: 0 0, 0 1px, 1px -1px, -1px 0px;
+  background-color: #222;
+}
+
 /* Pixel-perfect checkered pattern for texture editor (dark mode) */
 .checkered-dark {
   background-image:
