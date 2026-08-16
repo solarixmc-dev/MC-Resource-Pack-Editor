@@ -9,6 +9,9 @@ interface PreviewModalProps {
 
 const PREVIEW_ITEMS = [
   { name: "Wooden Sword", filenames: ["wood_sword.png", "sword_wood.png"] },
+  { name: "Shears", filenames: ["shears.png"] },
+  { name: "Diamond Pickaxe", filenames: ["diamond_pickaxe.png", "pickaxe_diamond.png"] },
+  { name: "Diamond Axe", filenames: ["diamond_axe.png", "axe_diamond.png"] },
   { name: "Red Wool", filenames: ["wool_colored_red.png", "red_wool.png"] },
   { name: "Blue Wool", filenames: ["wool_colored_blue.png", "blue_wool.png"] },
   { name: "Oak Planks", filenames: ["planks_oak.png"] },
@@ -18,8 +21,11 @@ const PREVIEW_ITEMS = [
   { name: "Diamond", filenames: ["diamond.png"] },
   { name: "Iron Ingot", filenames: ["iron_ingot.png"] },
   { name: "Gold Ingot", filenames: ["gold_ingot.png"] },
+  { name: "Coal", filenames: ["coal.png"] },
+  { name: "Redstone", filenames: ["redstone.png", "redstone_dust.png"] },
   { name: "TNT", filenames: ["tnt_side.png", "tnt.png"] },
   { name: "Golden Apple", filenames: ["apple_golden.png", "golden_apple.png"] },
+  { name: "Lapis Lazuli", filenames: ["lapis_lazuli.png", "lapis.png"] },
 ];
 
 // Search for a file by filename across all packs
@@ -74,7 +80,7 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
 
         {/* Preview Area */}
         <div
-          className="relative w-full h-[500px] overflow-hidden"
+          className="relative w-full h-[400px] overflow-hidden"
           style={{
             backgroundImage: skyTexture ? `url(${skyTexture})` : undefined,
             backgroundSize: 'cover',
@@ -84,7 +90,7 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
         >
           {/* Grid of items */}
           <div className="absolute inset-0 flex items-center justify-center p-8">
-            <div className="grid grid-cols-4 gap-6">
+            <div className="grid grid-cols-6 gap-4">
               {PREVIEW_ITEMS.map((item) => {
                 const textureUrl = getItemTexture(packs, item.filenames);
                 return (
@@ -93,14 +99,14 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
                     className="flex flex-col items-center gap-2"
                   >
                     <div
-                      className="w-20 h-20 rounded-lg checkered flex items-center justify-center border-2 border-black/20"
+                      className="w-16 h-16 rounded-lg checkered flex items-center justify-center border-2 border-black/20"
                       style={{ imageRendering: 'pixelated' }}
                     >
                       {textureUrl ? (
                         <img
                           src={textureUrl}
                           alt={item.name}
-                          className="w-16 h-16 object-contain"
+                          className="w-12 h-12 object-contain"
                           style={{ imageRendering: 'pixelated' }}
                         />
                       ) : (
