@@ -27,6 +27,7 @@ export interface PackAnalysis {
   invalidAnimations: string[];
   atlasAnalysis: AtlasAnalysisEntry[];
   overallSummary: string;
+  versionRange: string;
 }
 
 function formatBytes(bytes: number): string {
@@ -73,10 +74,19 @@ async function collectTextureResolutions(packs: Pack[]) {
   );
 
   const textureEntries = entries.filter(({ path }) => isImagePath(path));
+  
+  // Limit to first 50 textures for performance
+  const sampleEntries = textureEntries.slice(0, 50);
+  
   const resolutions = await Promise.all(
-    textureEntries.map(async ({ path, buffer }) => {
-      const dims = await getImageDimensions(buffer, path);
-      return dims ? { path, ...dims } : null;
+    sampleEntries.map(async ({ path, buffer }) => {
+      try {
+        const dims = await getImageDimensions(buffer, path);
+        return dims ? { path, ...dims } : null;
+      } catch (error) {
+        console.warn(`Failed to get dimensions for ${path}:`, error);
+        return null;
+      }
     })
   );
 
@@ -150,6 +160,47 @@ function analyzeAnimations(packs: Pack[]): { animatedTextures: string[]; invalid
   return { animatedTextures, invalidAnimations };
 }
 
+function detectVersionRange(texturePaths: string[], atlasAnalysis: AtlasAnalysisEntry[]): string {
+  const normalizedPaths = new Set(texturePaths.map(normalizePath));
+  
+  // Check for modern Minecraft format (resource packs with assets/minecraft structure)
+  const usesModernStructure = Array.from(normalizedPaths).some((path) => 
+    path.includes("assets/minecraft/")
+  );
+  
+  // Check for old format (direct textures folder)
+  const usesOldFormat = Array.from(normalizedPaths).some((path) => 
+    path.startsWith("textures/") || path.startsWith("blocks/") || path.startsWith("items/")
+  );
+  
+  // Check for 1.13+ flattening (blocks/items merged)
+  const usesFlattenedStructure = Array.from(normalizedPaths).some((path) => 
+    path.includes("textures/block/") || path.includes("textures/item/")
+  );
+  
+  // Check for models/animations (modern features)
+  const usesModernFeatures = Array.from(normalizedPaths).some((path) => 
+    path.includes("models/") || path.includes("animations/")
+  );
+  
+  // Check for atlases (1.8.9 style)
+  const hasAtlases = atlasAnalysis.some((entry) => entry.present);
+  
+  if (usesModernFeatures) {
+    return "1.13+ (modern resource pack)";
+  } else if (usesFlattenedStructure) {
+    return "1.13+ (block/item flattening)";
+  } else if (usesModernStructure && hasAtlases) {
+    return "1.8.9-1.12 (classic resource pack)";
+  } else if (usesModernStructure) {
+    return "1.6+ (resource pack format)";
+  } else if (usesOldFormat) {
+    return "pre-1.6 (texture pack format)";
+  } else {
+    return "Unknown (basic texture pack)";
+  }
+}
+
 function analyzeAtlas(packs: Pack[]): AtlasAnalysisEntry[] {
   const atlasChecks = [
     {
@@ -202,6 +253,7 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
       invalidAnimations: [],
       atlasAnalysis: [],
       overallSummary: "No resource pack data is currently loaded.",
+      versionRange: "Unknown",
     };
   }
 
@@ -230,6 +282,7 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
   const atlasAnalysis = analyzeAtlas(validPacks);
   const missingTextures = getMissingTextures(texturePaths);
   const duplicateTextures = detectDuplicateTextures(validPacks);
+  const versionRange = detectVersionRange(texturePaths, atlasAnalysis);
 
   const summaryParts = [
     `${validPacks.length} pack${validPacks.length !== 1 ? "s" : ""} loaded`,
@@ -256,6 +309,6 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
     invalidAnimations,
     atlasAnalysis,
     overallSummary,
-    issues,
+    versionRange,
   };
 }

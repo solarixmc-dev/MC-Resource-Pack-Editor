@@ -2055,7 +2055,7 @@ function AnalyzePackModal({
               </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
               <div className={cardBase}>
                 <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>File size</p>
                 <p className={`mt-2 text-xl font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>{analysis.totalSizeLabel}</p>
@@ -2070,6 +2070,11 @@ function AnalyzePackModal({
                 <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Total textures</p>
                 <p className={`mt-2 text-xl font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>{analysis.modifiedTextureCount}</p>
                 <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Unique textures in pack</p>
+              </div>
+              <div className={cardBase}>
+                <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Version range</p>
+                <p className={`mt-2 text-xl font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>{analysis.versionRange}</p>
+                <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Detected compatibility</p>
               </div>
               <div className={cardBase}>
                 <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Missing textures</p>
@@ -3571,6 +3576,7 @@ export default function EditorApp() {
         invalidAnimations: [],
         atlasAnalysis: [],
         overallSummary: `${packs.length} pack${packs.length !== 1 ? "s" : ""} loaded • ${textureCount} texture${textureCount !== 1 ? "s" : ""} found.`,
+        versionRange: "Unknown (basic analysis)",
       });
     } finally {
       setAnalyzing(false);
