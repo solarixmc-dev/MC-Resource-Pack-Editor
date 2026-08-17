@@ -2,14 +2,13 @@ import { Link } from "wouter";
 import { useEffect, useState } from "react";
 
 // Animated video placeholder components
-function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atlas' | 'colors' | 'preview' }) {
+function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atlas' | 'colors' }) {
   const colors = {
     editor: ['#3b82f6', '#8b5cf6', '#a855f7'],
     pack: ['#10b981', '#14b8a6', '#06b6d4'],
     library: ['#f59e0b', '#f97316', '#ef4444'],
     atlas: ['#ec4899', '#f43f5e', '#fb7185'],
-    colors: ['#8b5cf6', '#a855f7', '#6366f1'],
-    preview: ['#14b8a6', '#06b6d4', '#0891b2']
+    colors: ['#8b5cf6', '#a855f7', '#6366f1']
   };
 
   const videoFiles = {
@@ -17,8 +16,7 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atl
     pack: '/videos/pack-management.mp4',
     library: '/videos/local-library.mp4',
     atlas: '/videos/texture-atlas.mp4',
-    colors: '/videos/color-codes.mp4',
-    preview: '/videos/texture-preview.mp4'
+    colors: '/videos/color-codes.mp4'
   };
 
   return (
@@ -233,21 +231,20 @@ export default function LaunchPage() {
                 </div>
               </div>
 
-              {/* Texture Preview Card */}
+              {/* Create from Scratch Card */}
               <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
-                <VideoPlaceholder type="preview" />
+                <VideoPlaceholder type="editor" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
                 <div className="relative z-10 flex items-center p-8 h-full">
                   <div className="w-14 h-14 bg-[#C2B280] rounded-lg flex items-center justify-center mr-6 flex-shrink-0">
                     <svg className="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 1 6 0 3 3 0 0 1 6 0z" />
-                      <path d="M2.5 7c0 1.5.5 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3 3.5-4.5 4.5-3 3 4.5 9 3" />
+                      <path d="M12 5v14M5 12h14" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Texture Preview</h3>
+                    <h3 className="text-xl font-semibold text-white mb-2">Create from Scratch</h3>
                     <p className="text-gray-200 text-base">
-                      Generate preview loadouts with key items to see textures in your pack's sky
+                      Start a new resource pack from scratch with default Minecraft textures
                     </p>
                   </div>
                 </div>
