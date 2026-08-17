@@ -127,8 +127,7 @@ export default function LaunchPage() {
 
       {/* Features Grid */}
       <div className="max-w-7xl mx-auto px-4">
-          {hasScrolled && (
-            <div className={`grid md:grid-cols-3 gap-6 mb-16 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`grid md:grid-cols-3 gap-6 mb-16 transition-all duration-1000 ease-out delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               {/* Texture Editor Card */}
               <div className="relative bg-gray-50 dark:bg-dark-secondary rounded-xl overflow-hidden border-2 border-gray-200 dark:border-dark-border hover:border-[#C2B280] transition-colors group h-64">
                 <VideoPlaceholder type="editor" />
@@ -254,11 +253,9 @@ export default function LaunchPage() {
                 </div>
               </div>
             </div>
-          )}
 
           {/* Quick Start Guide */}
-          {hasScrolled && (
-            <div className={`bg-gray-50 dark:bg-dark-secondary rounded-xl p-10 border-2 border-gray-200 dark:border-dark-border transition-all duration-1000 ease-out delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`bg-gray-50 dark:bg-dark-secondary rounded-xl p-10 border-2 border-gray-200 dark:border-dark-border transition-all duration-1000 ease-out delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <h2 className="text-3xl font-bold text-black dark:text-dark-text mb-8">Quick Start Guide</h2>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="flex gap-5">
@@ -310,7 +307,6 @@ export default function LaunchPage() {
               </div>
             </div>
           </div>
-          )}
       </div>
       </div>
 
