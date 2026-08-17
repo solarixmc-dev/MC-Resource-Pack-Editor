@@ -2,6 +2,86 @@ import { Pack } from "../types";
 import { getTextureFolder, isImagePath, arrayBufferToDataURL } from "./zipUtils";
 import { getAtlasDefinition } from "./atlasRegions";
 
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(1)} KB`;
+  const mb = kb / 1024;
+  return `${mb.toFixed(2)} MB`;
+}
+
+export function detectVersionRange(texturePaths: string[], atlasAnalysis: AtlasAnalysisEntry[], packs: Pack[]): string {
+  const normalizedPaths = new Set(texturePaths.map(normalizePath));
+  
+  // Check pack.mcmeta format version
+  let packFormat = 0;
+  for (const pack of packs) {
+    for (const [path, buffer] of pack.files) {
+      if (path.toLowerCase().endsWith("pack.mcmeta")) {
+        try {
+          const text = new TextDecoder("utf-8").decode(buffer);
+          const parsed = JSON.parse(text);
+          if (parsed && parsed.pack && typeof parsed.pack.pack_format === "number") {
+            packFormat = parsed.pack.pack_format;
+            break;
+          }
+        } catch (e) {
+          console.warn("Failed to parse pack.mcmeta:", e);
+        }
+      }
+    }
+    if (packFormat > 0) break;
+  }
+  
+  // Determine version based on pack format
+  if (packFormat >= 15) {
+    return "1.20.3+ (pack format 15+)";
+  } else if (packFormat >= 13) {
+    return "1.20-1.20.2 (pack format 13-14)";
+  } else if (packFormat >= 12) {
+    return "1.19.3-1.19.4 (pack format 12)";
+  } else if (packFormat >= 9) {
+    return "1.18-1.19.2 (pack format 9-11)";
+  } else if (packFormat >= 8) {
+    return "1.17-1.17.1 (pack format 8)";
+  } else if (packFormat >= 7) {
+    return "1.16.2-1.16.5 (pack format 7)";
+  } else if (packFormat >= 6) {
+    return "1.16-1.16.1 (pack format 6)";
+  } else if (packFormat >= 5) {
+    return "1.15-1.15.2 (pack format 5)";
+  } else if (packFormat >= 4) {
+    return "1.14-1.14.4 (pack format 4)";
+  } else if (packFormat >= 3) {
+    return "1.13-1.13.2 (pack format 3)";
+  } else if (packFormat >= 2) {
+    return "1.8.9-1.12.2 (pack format 2)";
+  } else if (packFormat >= 1) {
+    return "1.6.1-1.8.8 (pack format 1)";
+  } else if (packFormat === 0) {
+    return "1.6 (pack format 0)";
+  }
+  
+  // Fallback: analyze texture structure if no pack.mcmeta or format 0
+  const hasAtlases = atlasAnalysis.some((entry) => entry.present);
+  const usesFlattenedStructure = Array.from(normalizedPaths).some((path) => 
+    path.includes("textures/block/") || path.includes("textures/item/")
+  );
+  const usesModels = Array.from(normalizedPaths).some((path) => 
+    path.includes("models/")
+  );
+  
+  if (usesModels) {
+    return "1.13+ (models detected)";
+  } else if (usesFlattenedStructure) {
+    return "1.13+ (flattened texture structure)";
+  } else if (hasAtlases) {
+    return "1.8.9-1.12 (classic resource pack with atlases)";
+  } else {
+    return "Unknown (no pack.mcmeta found)";
+  }
+}
+
 export interface AtlasAnalysisEntry {
   label: string;
   present: boolean;
@@ -160,47 +240,6 @@ function analyzeAnimations(packs: Pack[]): { animatedTextures: string[]; invalid
   return { animatedTextures, invalidAnimations };
 }
 
-function detectVersionRange(texturePaths: string[], atlasAnalysis: AtlasAnalysisEntry[]): string {
-  const normalizedPaths = new Set(texturePaths.map(normalizePath));
-  
-  // Check for modern Minecraft format (resource packs with assets/minecraft structure)
-  const usesModernStructure = Array.from(normalizedPaths).some((path) => 
-    path.includes("assets/minecraft/")
-  );
-  
-  // Check for old format (direct textures folder)
-  const usesOldFormat = Array.from(normalizedPaths).some((path) => 
-    path.startsWith("textures/") || path.startsWith("blocks/") || path.startsWith("items/")
-  );
-  
-  // Check for 1.13+ flattening (blocks/items merged)
-  const usesFlattenedStructure = Array.from(normalizedPaths).some((path) => 
-    path.includes("textures/block/") || path.includes("textures/item/")
-  );
-  
-  // Check for models/animations (modern features)
-  const usesModernFeatures = Array.from(normalizedPaths).some((path) => 
-    path.includes("models/") || path.includes("animations/")
-  );
-  
-  // Check for atlases (1.8.9 style)
-  const hasAtlases = atlasAnalysis.some((entry) => entry.present);
-  
-  if (usesModernFeatures) {
-    return "1.13+ (modern resource pack)";
-  } else if (usesFlattenedStructure) {
-    return "1.13+ (block/item flattening)";
-  } else if (usesModernStructure && hasAtlases) {
-    return "1.8.9-1.12 (classic resource pack)";
-  } else if (usesModernStructure) {
-    return "1.6+ (resource pack format)";
-  } else if (usesOldFormat) {
-    return "pre-1.6 (texture pack format)";
-  } else {
-    return "Unknown (basic texture pack)";
-  }
-}
-
 function analyzeAtlas(packs: Pack[]): AtlasAnalysisEntry[] {
   const atlasChecks = [
     {
@@ -282,7 +321,7 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
   const atlasAnalysis = analyzeAtlas(validPacks);
   const missingTextures = getMissingTextures(texturePaths);
   const duplicateTextures = detectDuplicateTextures(validPacks);
-  const versionRange = detectVersionRange(texturePaths, atlasAnalysis);
+  const versionRange = detectVersionRange(texturePaths, atlasAnalysis, validPacks);
 
   const summaryParts = [
     `${validPacks.length} pack${validPacks.length !== 1 ? "s" : ""} loaded`,
@@ -290,7 +329,7 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
     `base resolution ${baseTextureResolution}`,
   ];
 
-  const overallSummary = `${summaryParts.join(" • ")}.`;
+  const overallSummary = `${summaryParts.join(" • ")} • ${versionRange}.`;
 
   return {
     packNames: validPacks.map((pack) => pack.name),
