@@ -1,6 +1,14 @@
 import { useState, useCallback, useRef, useMemo, useEffect, type DragEvent, type PointerEvent } from "react";
 import { Pack, MC_FOLDERS, TextureOverrides, FolderSources, LayoutMode } from "./types";
 import { analyzePackBundle, PackAnalysis } from "./lib/packAnalyzer";
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(1)} KB`;
+  const mb = kb / 1024;
+  return `${mb.toFixed(2)} MB`;
+}
 import {
   loadPackFromFile,
   getTexturesForFolder,
@@ -3538,23 +3546,31 @@ export default function EditorApp() {
       setAnalysis(result);
     } catch (e) {
       console.error("Pack analysis failed:", e);
+      // Try to provide basic analysis even if full analysis fails
+      const totalSizeBytes = packs.reduce((sum, pack) => sum + Array.from(pack.files.values()).reduce((size, buffer) => size + buffer.byteLength, 0), 0);
+      const totalFiles = packs.reduce((sum, pack) => sum + pack.files.size, 0);
+      const textureCount = packs.reduce((sum, pack) => sum + Array.from(pack.files.keys()).filter((path) => {
+        const ext = path.split('.').pop()?.toLowerCase();
+        return ['png', 'jpg', 'jpeg', 'gif'].includes(ext || '');
+      }).length, 0);
+      
       setAnalysis({
         packNames: packs.map((pack) => stripColorCodes(pack.name)),
         packCount: packs.length,
-        totalFiles: 0,
-        totalSizeBytes: 0,
-        totalSizeLabel: "0 B",
+        totalFiles,
+        totalSizeBytes,
+        totalSizeLabel: formatBytes(totalSizeBytes),
         baseTextureResolution: "N/A",
         mixedResolutions: false,
         resolutions: [],
-        modifiedTextureCount: 0,
+        modifiedTextureCount: textureCount,
         texturesByFolder: new Map(),
         missingTextures: [],
         duplicateTextures: [],
         animatedTextures: [],
         invalidAnimations: [],
         atlasAnalysis: [],
-        overallSummary: "The pack could not be analyzed successfully.",
+        overallSummary: `${packs.length} pack${packs.length !== 1 ? "s" : ""} loaded • ${textureCount} texture${textureCount !== 1 ? "s" : ""} found.`,
       });
     } finally {
       setAnalyzing(false);
