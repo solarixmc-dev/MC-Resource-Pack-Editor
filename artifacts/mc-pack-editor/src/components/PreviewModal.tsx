@@ -127,7 +127,7 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
         {/* Footer */}
         <div className={`p-4 border-t ${darkMode ? "border-dark-border" : "border-gray-200"}`}>
           <p className={`text-sm ${darkMode ? "text-dark-text-secondary" : "text-gray-600"}`}>
-            Preview displays textures from your resource pack.
+            Preview displays textures from your resource pack. Click on any item to view 3D model.
           </p>
         </div>
       </div>
