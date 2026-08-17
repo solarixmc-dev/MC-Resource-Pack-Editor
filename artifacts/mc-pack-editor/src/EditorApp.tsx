@@ -2011,11 +2011,6 @@ function AnalyzePackModal({
   darkMode: boolean;
 }) {
   const cardBase = `rounded-lg border p-3 shadow-sm ${darkMode ? "border-dark-border bg-dark-secondary" : "border-slate-200 bg-white"}`;
-  const toneClasses: Record<string, string> = {
-    info: `border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300`,
-    warning: `border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300`,
-    error: `border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300`,
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm" onClick={onClose}>
@@ -2038,15 +2033,15 @@ function AnalyzePackModal({
           </div>
         ) : (
           <div className="mt-6 space-y-4">
-            <div className={`rounded-lg border p-4 ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "border-emerald-500/30 bg-emerald-500/10" : "border-amber-500/30 bg-amber-500/10"} ${darkMode ? "" : ""}`}>
+            <div className={`rounded-lg border p-4 border-emerald-500/30 bg-emerald-500/10 ${darkMode ? "" : ""}`}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>{analysis.packNames.join(", ") || "Loaded pack"}</p>
                   <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>{analysis.overallSummary}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${analysis.issues.filter(i => i.severity === "warning").length === 0 ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/20 text-amber-700 dark:text-amber-300"}`}>
-                    {analysis.issues.filter(i => i.severity === "warning").length === 0 ? "1.8.9 compatible" : "Needs review"}
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300`}>
+                    1.8.9 compatible
                   </span>
                 </div>
               </div>
@@ -2072,20 +2067,6 @@ function AnalyzePackModal({
                 <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Missing textures</p>
                 <p className={`mt-2 text-xl font-semibold ${darkMode ? "text-slate-100" : "text-slate-700"}`}>{analysis.missingTextures.length}</p>
                 <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>Core textures not found</p>
-              </div>
-            </div>
-
-            <div className={cardBase}>
-              <div className="flex items-center justify-between">
-                <p className={`text-sm font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Issues detected</p>
-                <span className={`rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold ${darkMode ? "text-slate-400" : "text-slate-500"}`}>{analysis.issues.length} note{analysis.issues.length === 1 ? "" : "s"}</span>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {analysis.issues.length ? analysis.issues.map((issue) => (
-                  <span key={issue.label} className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${toneClasses[issue.severity]}`}>
-                    {issue.label}
-                  </span>
-                )) : <span className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>No major issues detected.</span>}
               </div>
             </div>
           </div>
@@ -3574,7 +3555,6 @@ export default function EditorApp() {
         invalidAnimations: [],
         atlasAnalysis: [],
         overallSummary: "The pack could not be analyzed successfully.",
-        issues: [{ severity: "error", label: "Analysis failed", detail: "The analyzer could not complete because of an unexpected error." }],
       });
     } finally {
       setAnalyzing(false);

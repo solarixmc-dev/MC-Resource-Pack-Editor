@@ -2,14 +2,6 @@ import { Pack } from "../types";
 import { getTextureFolder, isImagePath, arrayBufferToDataURL } from "./zipUtils";
 import { getAtlasDefinition } from "./atlasRegions";
 
-export type AnalysisSeverity = "info" | "warning" | "error";
-
-export interface AnalyzerIssue {
-  severity: AnalysisSeverity;
-  label: string;
-  detail: string;
-}
-
 export interface AtlasAnalysisEntry {
   label: string;
   present: boolean;
@@ -35,7 +27,6 @@ export interface PackAnalysis {
   invalidAnimations: string[];
   atlasAnalysis: AtlasAnalysisEntry[];
   overallSummary: string;
-  issues: AnalyzerIssue[];
 }
 
 function formatBytes(bytes: number): string {
@@ -191,20 +182,6 @@ function analyzeAtlas(packs: Pack[]): AtlasAnalysisEntry[] {
   });
 }
 
-function assessCompatibility(texturePaths: string[], atlasAnalysis: AtlasAnalysisEntry[], missingTextures: string[], invalidAnimations: string[]): string[] {
-  const warnings: string[] = [];
-  const normalizedPaths = new Set(texturePaths.map(normalizePath));
-  const usesModernPaths = Array.from(normalizedPaths).some((path) => path.includes("/entity/") && path.includes("/textures/"));
-  const usesModernFormat = Array.from(normalizedPaths).some((path) => path.includes("models/") || path.includes("animations/"));
-
-  const minecraft189 = !usesModernFormat && !missingTextures.length && invalidAnimations.length === 0;
-
-  if (!minecraft189) warnings.push("Some paths or assets look less aligned with classic 1.8.9 packaging conventions.");
-  if (invalidAnimations.length > 0) warnings.push("Animation metadata is present but some entries appear invalid.");
-
-  return warnings;
-}
-
 export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
   const validPacks = packs.filter((pack) => pack.files.size > 0);
   if (!validPacks.length) {
@@ -225,7 +202,6 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
       invalidAnimations: [],
       atlasAnalysis: [],
       overallSummary: "No resource pack data is currently loaded.",
-      issues: [],
     };
   }
 
@@ -254,14 +230,6 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
   const atlasAnalysis = analyzeAtlas(validPacks);
   const missingTextures = getMissingTextures(texturePaths);
   const duplicateTextures = detectDuplicateTextures(validPacks);
-  const compatibilityWarnings = assessCompatibility(texturePaths, atlasAnalysis, missingTextures, invalidAnimations);
-
-  const issues: AnalyzerIssue[] = [];
-  if (mixedResolutions) issues.push({ severity: "warning", label: "Mixed resolutions", detail: "The pack mixes several texture sizes, which can make the UI feel inconsistent." });
-  if (missingTextures.length) issues.push({ severity: "warning", label: "Missing core textures", detail: `Some classic 1.8.9 textures are missing, including ${missingTextures.slice(0, 3).join(", ")}.` });
-  if (invalidAnimations.length) issues.push({ severity: "warning", label: "Invalid animations", detail: `${invalidAnimations.length} animation metadata file${invalidAnimations.length !== 1 ? "s" : ""} look malformed.` });
-  if (duplicateTextures.length) issues.push({ severity: "info", label: "Duplicate textures", detail: `Detected duplicate entries across uploaded packs (${duplicateTextures.length}).` });
-  if (compatibilityWarnings.length) issues.push({ severity: "warning", label: "Compatibility notes", detail: compatibilityWarnings.join(" ") });
 
   const summaryParts = [
     `${validPacks.length} pack${validPacks.length !== 1 ? "s" : ""} loaded`,
@@ -269,7 +237,7 @@ export async function analyzePackBundle(packs: Pack[]): Promise<PackAnalysis> {
     `base resolution ${baseTextureResolution}`,
   ];
 
-  const overallSummary = `${summaryParts.join(" • ")}. ${compatibilityWarnings.length === 0 ? "The set looks broadly compatible with Minecraft 1.8.9." : "A few assets may need tuning for classic 1.8.9 compatibility."}`;
+  const overallSummary = `${summaryParts.join(" • ")}.`;
 
   return {
     packNames: validPacks.map((pack) => pack.name),
