@@ -40,7 +40,7 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
       0.1,
       1000
     );
-    camera.position.z = 3;
+    camera.position.z = 2;
 
     // Initialize renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -212,7 +212,7 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className={`relative w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl ${darkMode ? "bg-dark-secondary border-dark-border" : "bg-white border-gray-200"} border`}>
+      <div className={`relative w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl ${darkMode ? "bg-dark-secondary border-dark-border" : "bg-white border-gray-200"} border`}>
         {/* Header */}
         <div className={`flex items-center justify-between p-4 border-b ${darkMode ? "border-dark-border" : "border-gray-200"}`}>
           <h2 className={`text-xl font-semibold ${darkMode ? "text-dark-text" : "text-gray-900"}`}>
@@ -229,7 +229,7 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
         {/* 3D Canvas */}
         <div 
           ref={containerRef}
-          className="w-full h-[400px] cursor-grab active:cursor-grabbing"
+          className="w-full h-[600px] cursor-grab active:cursor-grabbing"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
