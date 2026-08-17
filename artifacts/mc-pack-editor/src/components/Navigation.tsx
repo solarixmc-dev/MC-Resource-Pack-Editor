@@ -8,8 +8,7 @@ export default function Navigation() {
   const [showSettings, setShowSettings] = useState(false);
 
   const navItems = [
-    { path: "/portfolio", label: "Portfolio" },
-    { path: "/", label: "MCTextureLab" },
+    { path: "/", label: "Home" },
     { path: "/editor", label: "Texture Editor" },
     { path: "/library", label: "Pack Library" },
   ];
@@ -19,11 +18,11 @@ export default function Navigation() {
       <div className="w-full px-0">
         <div className="flex items-center justify-between h-16 relative">
           {/* Logo - absolutely positioned to left edge */}
-          <Link href="/portfolio" className="absolute left-6 flex items-center gap-2">
+          <Link href="/" className="absolute left-6 flex items-center gap-2">
             <div className="w-10 h-10 bg-black dark:bg-dark-text rounded-lg flex items-center justify-center">
-              <span className="text-white dark:text-dark-bg text-lg font-bold">S</span>
+              <span className="text-white dark:text-dark-bg text-lg font-bold">MC</span>
             </div>
-            <span className="text-xl font-bold text-black dark:text-dark-text">Solarix</span>
+            <span className="text-xl font-bold text-black dark:text-dark-text">TextureLab</span>
           </Link>
 
           {/* Navigation Links - centered */}
