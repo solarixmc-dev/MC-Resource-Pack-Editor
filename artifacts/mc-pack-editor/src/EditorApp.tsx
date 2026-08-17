@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useMemo, useEffect, type DragEvent, type PointerEvent } from "react";
 import { Pack, MC_FOLDERS, TextureOverrides, FolderSources, LayoutMode } from "./types";
-import { analyzePackBundle, PackAnalysis } from "./lib/packAnalyzer";
+import { analyzePackBundle, PackAnalysis, formatBytes } from "./lib/packAnalyzer";
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
