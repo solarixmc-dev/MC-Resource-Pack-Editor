@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import { viteSingleFile } from 'vite-plugin-singlefile';
 
 const rawPort = process.env.PORT;
 const port = Number(rawPort ?? 3000);
@@ -10,6 +11,7 @@ export default defineConfig({
   base: basePath,
   plugins: [
     react(),
+    viteSingleFile(),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [
@@ -54,7 +56,6 @@ export default defineConfig({
       'Access-Control-Allow-Origin': '*',
     },
   },
-  assetsInclude: ['**/*.mp4', '**/*.webm', '**/*.ogg'],
   preview: {
     port,
     host: "0.0.0.0",
