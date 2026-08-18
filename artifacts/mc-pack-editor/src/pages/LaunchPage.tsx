@@ -134,24 +134,24 @@ export default function LaunchPage() {
           <rect width="100%" height="100%" fill="url(#diagonal)" className="text-gray-300 dark:text-gray-700"/>
         </svg>
         {/* Decorative geometric shapes */}
-        <div className="absolute top-20 left-10 w-64 h-64 border-2 border-[#C2B280]/20 rounded-full animate-spin-slow"></div>
-        <div className="absolute top-40 right-20 w-96 h-96 border-2 border-[#C2B280]/15 rounded-full animate-spin-slow-reverse"></div>
+        <div className="absolute top-20 left-10 w-64 h-64 border-2 border-[#C2B280]/20 dark:border-[#C2B280]/30 rounded-full animate-spin-slow"></div>
+        <div className="absolute top-40 right-20 w-96 h-96 border-2 border-[#C2B280]/15 dark:border-[#C2B280]/25 rounded-full animate-spin-slow-reverse"></div>
         {/* Two squares in top area - lower than circles, spaced out */}
-        <div className="absolute top-40 left-1/4 w-36 h-36 border-2 border-[#C2B280]/18 rotate-45 animate-spin-slow"></div>
-        <div className="absolute top-56 right-1/3 w-32 h-32 border-2 border-gray-300/30 dark:border-gray-600/30 rotate-60 animate-spin-slow-reverse"></div>
-        <div className="absolute bottom-40 left-1/4 w-48 h-48 border-2 border-gray-300/40 dark:border-dark-text-tertiary rotate-45 animate-spin-slow"></div>
-        <div className="absolute bottom-20 right-1/3 w-32 h-32 border-2 border-[#C2B280]/40 dark:border-[#C2B280]/60 rotate-12 animate-spin-slow-reverse"></div>
+        <div className="absolute top-40 left-1/4 w-36 h-36 border-2 border-[#C2B280]/18 dark:border-[#C2B280]/40 rotate-45 animate-spin-slow z-0"></div>
+        <div className="absolute top-56 right-1/3 w-32 h-32 border-2 border-gray-300/30 dark:border-[#C2B280]/50 rotate-60 animate-spin-slow-reverse z-0"></div>
+        <div className="absolute bottom-40 left-1/4 w-48 h-48 border-2 border-gray-300/40 dark:border-[#C2B280]/40 rotate-45 animate-spin-slow z-0"></div>
+        <div className="absolute bottom-20 right-1/3 w-32 h-32 border-2 border-[#C2B280]/40 dark:border-[#C2B280]/60 rotate-12 animate-spin-slow-reverse z-0"></div>
         {/* Small triangles */}
-        <div className="absolute top-1/3 right-1/4 w-0 h-0 border-l-[20px] border-r-[20px] border-b-[35px] border-l-transparent border-r-transparent border-b-[#C2B280]/40 dark:border-[#C2B280]/60 animate-spin-slow"></div>
-        <div className="absolute bottom-1/3 left-1/5 w-0 h-0 border-l-[15px] border-r-[15px] border-b-[26px] border-l-transparent border-r-transparent border-b-gray-300/40 dark:border-dark-text-tertiary animate-spin-slow-reverse"></div>
-        <div className="absolute top-1/2 left-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[21px] border-l-transparent border-r-transparent border-b-[#C2B280]/30 dark:border-[#C2B280]/50 animate-spin-slow"></div>
+        <div className="absolute top-1/3 right-1/4 w-0 h-0 border-l-[20px] border-r-[20px] border-b-[35px] border-l-transparent border-r-transparent border-b-[#C2B280]/40 dark:border-[#C2B280]/60 animate-spin-slow z-0"></div>
+        <div className="absolute bottom-1/3 left-1/5 w-0 h-0 border-l-[15px] border-r-[15px] border-b-[26px] border-l-transparent border-r-transparent border-b-gray-300/40 dark:border-[#C2B280]/50 animate-spin-slow-reverse z-0"></div>
+        <div className="absolute top-1/2 left-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[21px] border-l-transparent border-r-transparent border-b-[#C2B280]/30 dark:border-[#C2B280]/50 animate-spin-slow z-0"></div>
       </div>
 
       {/* Content Overlay */}
-      <div className="relative z-10">
+      <div className="relative z-10 pointer-events-none">
       {/* Hero Section */}
-      <div className="relative h-screen flex items-center justify-center px-4 py-24">
-        <div className="max-w-5xl w-full text-center">
+      <div className="relative h-screen flex items-center justify-center px-4 py-24 pointer-events-auto">
+        <div className="max-w-5xl w-full text-center relative z-20">
           {/* Logo */}
           <div className={`transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <div className="inline-flex items-center gap-6 mb-16">

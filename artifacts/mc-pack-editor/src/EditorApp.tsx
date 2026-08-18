@@ -821,12 +821,12 @@ function FolderSidebar({
     const active = selectedFolder === key;
 
     return (
-      <div key={key} className={`group border transition-all sleek rounded-lg ${darkMode ? "sleek-dark" : "sleek"} ${active ? "border-black dark:border-black bg-black/5 dark:bg-black/5" : darkMode ? "bg-dark-secondary" : "bg-[#f5f0e6] hover:bg-[#C2B280]/30"} mb-2`}>
+      <div key={key} className={`group border transition-all sleek rounded-lg ${darkMode ? "sleek-dark" : "sleek"} ${active ? "border-black dark:border-white bg-black/5 dark:bg-white/10" : darkMode ? "bg-dark-secondary" : "bg-[#f5f0e6] hover:bg-[#C2B280]/30"} mb-2`}>
         <button
           className={`w-full flex items-center px-3 py-2.5 text-sm text-left transition-colors rounded-lg ${darkMode ? "hover:bg-[#C2B280]/50" : "hover:bg-[#C2B280]/50"}`}
           onClick={() => onSelect(key)}
         >
-          <span className={`flex-1 font-medium leading-snug ${active ? "text-black dark:text-black" : ""}`}>
+          <span className={`flex-1 font-medium leading-snug ${active ? "text-black dark:text-white" : darkMode ? "text-dark-text-primary" : "text-slate-800"}`}>
             {label}
           </span>
         </button>
@@ -3756,7 +3756,7 @@ export default function EditorApp() {
               <div className="relative" ref={settingsMenuRef}>
                 <button
                   onClick={() => setSettingsMenuOpen(!settingsMenuOpen)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors text-slate-500 hover:text-slate-700 dark:text-dark-text-tertiary dark:hover:text-dark-text"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-dark-text-tertiary dark:hover:text-dark-text-primary dark:hover:bg-dark-tertiary"
                   title="Settings"
                 >
                   <svg 
