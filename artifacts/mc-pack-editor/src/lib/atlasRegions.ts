@@ -26,9 +26,15 @@ const ICONS_REGIONS: AtlasRegion[] = [
   { id: "heart_half", label: "Heart (Half)", x: 61, y: 0, w: 9, h: 9, description: "Half heart icon" },
   { id: "heart_full_damage", label: "Heart (Damage Full)", x: 70, y: 0, w: 9, h: 9, description: "Recently lost full heart overlay" },
   { id: "heart_half_damage", label: "Heart (Damage Half)", x: 79, y: 0, w: 9, h: 9, description: "Recently lost half heart overlay" },
-  // Absorption hearts (row 1, colored)
-  { id: "heart_absorption_full", label: "Heart (Absorption Full)", x: 88, y: 0, w: 9, h: 9, description: "Absorption full heart" },
-  { id: "heart_absorption_half", label: "Heart (Absorption Half)", x: 97, y: 0, w: 9, h: 9, description: "Absorption half heart" },
+  // Absorption hearts (end of row 1)
+  { id: "heart_absorption_full", label: "Heart (Absorption Full)", x: 106, y: 0, w: 9, h: 9, description: "Absorption full heart" },
+  { id: "heart_absorption_half", label: "Heart (Absorption Half)", x: 115, y: 0, w: 9, h: 9, description: "Absorption half heart" },
+  // Wither hearts (end of row 1)
+  { id: "heart_wither_full", label: "Heart (Wither Full)", x: 124, y: 0, w: 9, h: 9, description: "Wither full heart" },
+  { id: "heart_wither_half", label: "Heart (Wither Half)", x: 133, y: 0, w: 9, h: 9, description: "Wither half heart" },
+  // Poison hearts (end of row 1)
+  { id: "heart_poison_full", label: "Heart (Poison Full)", x: 142, y: 0, w: 9, h: 9, description: "Poison full heart" },
+  { id: "heart_poison_half", label: "Heart (Poison Half)", x: 151, y: 0, w: 9, h: 9, description: "Poison half heart" },
   // Armor row (y=9)
   { id: "armor_empty", label: "Armor (Empty)", x: 16, y: 9, w: 9, h: 9, description: "Empty armor icon" },
   { id: "armor_half", label: "Armor (Half)", x: 25, y: 9, w: 9, h: 9, description: "Half armor icon" },
@@ -52,9 +58,9 @@ const ICONS_REGIONS: AtlasRegion[] = [
   { id: "heart_hardcore_empty", label: "Heart (Hardcore Empty)", x: 16, y: 45, w: 9, h: 9, description: "Hardcore mode empty heart", mapsTo: "heart_empty" },
   { id: "heart_hardcore_half", label: "Heart (Hardcore Half)", x: 61, y: 45, w: 9, h: 9, description: "Hardcore mode half heart", mapsTo: "heart_half" },
   { id: "heart_hardcore_full", label: "Heart (Hardcore Full)", x: 52, y: 45, w: 9, h: 9, description: "Hardcore mode full heart", mapsTo: "heart_full" },
-  // Horse jump bar - row 2 (y=18)
-  { id: "horse_jump_empty", label: "Horse Jump (Empty)", x: 0, y: 18, w: 182, h: 5, description: "Horse jump bar background" },
-  { id: "horse_jump_full", label: "Horse Jump (Full)", x: 0, y: 23, w: 182, h: 5, description: "Horse jump bar fill" },
+  // Horse jump bar - correct coordinates (y=84, y=89)
+  { id: "horse_jump_empty", label: "Horse Jump (Empty)", x: 0, y: 84, w: 182, h: 5, description: "Horse jump bar background" },
+  { id: "horse_jump_full", label: "Horse Jump (Full)", x: 0, y: 89, w: 182, h: 5, description: "Horse jump bar fill" },
   // XP bar
   { id: "xp_bar_empty", label: "XP Bar (Empty)", x: 0, y: 64, w: 182, h: 5, description: "Experience bar background" },
   { id: "xp_bar_full", label: "XP Bar (Full)", x: 0, y: 69, w: 182, h: 5, description: "Experience bar fill" },
