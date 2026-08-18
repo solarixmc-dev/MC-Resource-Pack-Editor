@@ -4,72 +4,6 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
-catalogs:
-  default:
-    '@replit/vite-plugin-cartographer':
-      specifier: ^0.5.1
-      version: 0.5.21
-    '@replit/vite-plugin-runtime-error-modal':
-      specifier: ^0.0.6
-      version: 0.0.6
-    '@tanstack/react-query':
-      specifier: ^5.90.21
-      version: 5.101.4
-    '@types/node':
-      specifier: ^25.3.3
-      version: 25.9.5
-    '@types/react':
-      specifier: ^19.2.0
-      version: 19.2.18
-    '@types/react-dom':
-      specifier: ^19.2.0
-      version: 19.2.4
-    '@vitejs/plugin-react':
-      specifier: ^5.0.4
-      version: 5.2.0
-    autoprefixer:
-      specifier: ^10.4.20
-      version: 10.5.4
-    class-variance-authority:
-      specifier: ^0.7.1
-      version: 0.7.1
-    clsx:
-      specifier: ^2.1.1
-      version: 2.1.1
-    drizzle-orm:
-      specifier: ^0.45.2
-      version: 0.45.2
-    framer-motion:
-      specifier: ^12.23.24
-      version: 12.43.0
-    lucide-react:
-      specifier: ^0.545.0
-      version: 0.545.0
-    postcss:
-      specifier: ^8.4.49
-      version: 8.5.25
-    react:
-      specifier: 19.1.0
-      version: 19.1.0
-    react-dom:
-      specifier: 19.1.0
-      version: 19.1.0
-    tailwind-merge:
-      specifier: ^3.3.1
-      version: 3.6.0
-    tailwindcss:
-      specifier: ^3.4.17
-      version: 3.4.19
-    tsx:
-      specifier: ^4.21.0
-      version: 4.23.4
-    vite:
-      specifier: ^7.3.2
-      version: 7.3.6
-    zod:
-      specifier: ^3.25.76
-      version: 3.25.76
-
 overrides:
   '@esbuild-kit/esm-loader': npm:tsx@^4.21.0
   esbuild: 0.28.1
@@ -248,7 +182,7 @@ importers:
         version: 1.2.16(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tailwindcss/typography':
         specifier: ^0.5.15
-        version: 0.5.20(tailwindcss@3.4.19(tsx@4.23.4)(yaml@2.9.0))
+        version: 0.5.20(tailwindcss@3.4.19)
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.43
@@ -326,7 +260,7 @@ importers:
         version: 2.6.1
       tailwindcss:
         specifier: ^3.0.0
-        version: 3.4.19(tsx@4.23.4)(yaml@2.9.0)
+        version: 3.4.19
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
@@ -336,9 +270,6 @@ importers:
       vite:
         specifier: ^5.0.0
         version: 5.4.21(@types/node@20.19.43)
-      vite-plugin-singlefile:
-        specifier: ^2.3.3
-        version: 2.3.3(rollup@4.62.4)(vite@5.4.21(@types/node@20.19.43))
       zod:
         specifier: ^3.0.0
         version: 3.25.76
@@ -3828,16 +3759,6 @@ packages:
   victory-vendor@36.9.2:
     resolution: {integrity: sha512-PnpQQMuxlwYdocC8fIJqVXvkeViHYzotI+NJrCuav0ZYFoq912ZHBk3mCeuj+5/VpodOjPe1z0Fk2ihgzlXqjQ==}
 
-  vite-plugin-singlefile@2.3.3:
-    resolution: {integrity: sha512-XVnGH0QzbOa8fxRSsHdCarVN1BSBXNi7uLMQYlrGRN5apdHkk62XQWRJhVever0lnfuyBkwn+kvVChdm/OoOUg==}
-    engines: {node: '>18.0.0'}
-    peerDependencies:
-      rollup: ^4.59.0
-      vite: ^5.4.21 || ^6.0.0 || ^7.0.0 || ^8.0.0
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-
   vite@5.4.21:
     resolution: {integrity: sha512-o5a9xKjbtuhY6Bi5S3+HvbRERmouabWbyUcpXXUA1u+GNUKoROi9byOJ8M0nHbHYHkYICiMlqxkg1KkYmm25Sw==}
     engines: {node: ^18.0.0 || >=20.0.0}
@@ -6202,10 +6123,10 @@ snapshots:
 
   '@tabby_ai/hijri-converter@1.0.5': {}
 
-  '@tailwindcss/typography@0.5.20(tailwindcss@3.4.19(tsx@4.23.4)(yaml@2.9.0))':
+  '@tailwindcss/typography@0.5.20(tailwindcss@3.4.19)':
     dependencies:
       postcss-selector-parser: 6.0.10
-      tailwindcss: 3.4.19(tsx@4.23.4)(yaml@2.9.0)
+      tailwindcss: 3.4.19
 
   '@tanstack/query-core@5.101.4': {}
 
@@ -7404,6 +7325,13 @@ snapshots:
       camelcase-css: 2.0.1
       postcss: 8.5.25
 
+  postcss-load-config@6.0.1(jiti@1.21.7)(postcss@8.5.25):
+    dependencies:
+      lilconfig: 3.1.3
+    optionalDependencies:
+      jiti: 1.21.7
+      postcss: 8.5.25
+
   postcss-load-config@6.0.1(jiti@1.21.7)(postcss@8.5.25)(tsx@4.23.4)(yaml@2.9.0):
     dependencies:
       lilconfig: 3.1.3
@@ -7935,6 +7863,34 @@ snapshots:
     dependencies:
       tailwindcss: 3.4.19(tsx@4.23.4)(yaml@2.9.0)
 
+  tailwindcss@3.4.19:
+    dependencies:
+      '@alloc/quick-lru': 5.2.0
+      arg: 5.0.2
+      chokidar: 3.6.0
+      didyoumean: 1.2.2
+      dlv: 1.1.3
+      fast-glob: 3.3.3
+      glob-parent: 6.0.2
+      is-glob: 4.0.3
+      jiti: 1.21.7
+      lilconfig: 3.1.3
+      micromatch: 4.0.8
+      normalize-path: 3.0.0
+      object-hash: 3.0.0
+      picocolors: 1.1.1
+      postcss: 8.5.25
+      postcss-import: 15.1.0(postcss@8.5.25)
+      postcss-js: 4.1.0(postcss@8.5.25)
+      postcss-load-config: 6.0.1(jiti@1.21.7)(postcss@8.5.25)
+      postcss-nested: 6.2.0(postcss@8.5.25)
+      postcss-selector-parser: 6.1.4
+      resolve: 1.22.12
+      sucrase: 3.35.1
+    transitivePeerDependencies:
+      - tsx
+      - yaml
+
   tailwindcss@3.4.19(tsx@4.23.4)(yaml@2.9.0):
     dependencies:
       '@alloc/quick-lru': 5.2.0
@@ -8117,13 +8073,6 @@ snapshots:
       d3-shape: 3.2.0
       d3-time: 3.1.0
       d3-timer: 3.0.1
-
-  vite-plugin-singlefile@2.3.3(rollup@4.62.4)(vite@5.4.21(@types/node@20.19.43)):
-    dependencies:
-      micromatch: 4.0.8
-      vite: 5.4.21(@types/node@20.19.43)
-    optionalDependencies:
-      rollup: 4.62.4
 
   vite@5.4.21(@types/node@20.19.43):
     dependencies:

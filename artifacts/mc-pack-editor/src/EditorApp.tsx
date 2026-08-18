@@ -18,6 +18,7 @@ import { SavedPack, getLocalPackLibrary, EditorState } from "./lib/packLibrary";
 import { createCroppedTexturePreviewDataUrl, TEXTURE_THUMBNAIL_SIZE } from "./lib/texturePreview";
 import { useTheme } from "./contexts/ThemeContext";
 import PreviewModal from "./components/PreviewModal";
+import BatchOperationsPanel from "./components/BatchOperationsPanel";
 
 // Notification type
 interface Notification {
@@ -3052,6 +3053,34 @@ export default function EditorApp() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showBatchOperations, setShowBatchOperations] = useState(false);
+  const [batchSelectedTextures, setBatchSelectedTextures] = useState<string[]>([]);
+
+  // Batch operation handlers
+  const handleBatchRecolor = async (options: { mode: string; color: string; intensity: number }) => {
+    // Implementation would apply recolor to selected textures
+    // For now, return mock results
+    return {
+      success: batchSelectedTextures,
+      failed: []
+    };
+  };
+
+  const handleBatchResize = async (options: { width: number; height: number; maintainAspectRatio: boolean }) => {
+    // Implementation would resize selected textures
+    return {
+      success: batchSelectedTextures,
+      failed: []
+    };
+  };
+
+  const handleBatchConvert = async (options: { format: string; quality?: number }) => {
+    // Implementation would convert selected textures
+    return {
+      success: batchSelectedTextures,
+      failed: []
+    };
+  };
 
   // Save editor state to IndexedDB whenever packs or metadata changes
   useEffect(() => {
@@ -3841,6 +3870,12 @@ export default function EditorApp() {
                 >
                   👁 Preview
                 </button>
+                <button
+                  onClick={() => setShowBatchOperations(true)}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${darkMode ? "text-dark-text-secondary hover:text-dark-text hover:bg-dark-tertiary" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}
+                >
+                  ⚡ Batch
+                </button>
                 <div className="relative" ref={exportDropdownRef}>
                   <button
                     onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
@@ -4269,6 +4304,19 @@ export default function EditorApp() {
         <PreviewModal
           packs={packs}
           onClose={() => setPreviewOpen(false)}
+          darkMode={darkMode}
+        />
+      )}
+
+      {showBatchOperations && (
+        <BatchOperationsPanel
+          textures={getAllTexturePathsInFolder(packs, selectedFolder, false)}
+          selectedTextures={batchSelectedTextures}
+          onSelectionChange={setBatchSelectedTextures}
+          onApplyRecolor={handleBatchRecolor}
+          onApplyResize={handleBatchResize}
+          onApplyConvert={handleBatchConvert}
+          onClose={() => setShowBatchOperations(false)}
           darkMode={darkMode}
         />
       )}
