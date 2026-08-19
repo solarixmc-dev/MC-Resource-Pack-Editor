@@ -172,7 +172,7 @@ export default function LaunchPage() {
           <div className={`text-center mt-12 transition-all duration-1000 ease-out delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <Link
               href="/editor"
-              className="inline-block bg-black dark:bg-white text-white dark:text-black px-20 py-6 rounded-full font-semibold text-2xl hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl"
+              className="inline-block btn-glint bg-black dark:bg-white text-white dark:text-black px-20 py-6 rounded-full font-semibold text-2xl hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl"
             >
               Get Started
             </Link>
