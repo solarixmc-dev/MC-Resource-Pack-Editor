@@ -473,14 +473,9 @@ aside {
 @keyframes glint {
   0% {
     background-position: -200% center;
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
   }
   100% {
     background-position: 200% center;
-    opacity: 0;
   }
 }
 
@@ -496,35 +491,35 @@ aside {
   left: 0;
   width: 100%;
   height: 100%;
-  background: repeating-linear-gradient(
-    110deg,
-    transparent 0px,
-    transparent 10px,
-    rgba(255, 255, 255, 0.9) 10px,
-    rgba(255, 255, 255, 1) 12px,
-    rgba(255, 255, 255, 0.9) 14px,
-    transparent 14px,
-    transparent 30px
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255, 255, 255, 0.4) 45%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0.4) 55%,
+    transparent 60%,
+    transparent 100%
   );
   background-size: 200% 100%;
-  animation: glint 0.7s ease-out forwards;
+  animation: glint 0.8s ease-out forwards;
   opacity: 0;
   pointer-events: none;
 }
 
 .btn-glint:hover::before {
-  animation: glint 0.7s ease-out forwards;
+  opacity: 1;
 }
 
 .dark .btn-glint::before {
-  background: repeating-linear-gradient(
-    110deg,
-    transparent 0px,
-    transparent 10px,
-    rgba(255, 255, 255, 0.95) 10px,
-    rgba(255, 255, 255, 1) 12px,
-    rgba(255, 255, 255, 0.95) 14px,
-    transparent 14px,
-    transparent 30px
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255, 255, 255, 0.5) 45%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(255, 255, 255, 0.5) 55%,
+    transparent 60%,
+    transparent 100%
   );
 }
