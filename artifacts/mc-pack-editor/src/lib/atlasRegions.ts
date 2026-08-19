@@ -98,7 +98,7 @@ const INVENTORY_REGIONS: AtlasRegion[] = [
   { id: "inventory_effect_night_vision", label: "Inventory Effect (Night Vision)", x: 108, y: 216, w: 18, h: 18, description: "Night vision effect icon in inventory" },
   { id: "inventory_effect_hunger", label: "Inventory Effect (Hunger)", x: 126, y: 216, w: 18, h: 18, description: "Hunger effect icon in inventory" },
   { id: "inventory_effect_weakness", label: "Inventory Effect (Weakness)", x: 144, y: 216, w: 18, h: 18, description: "Weakness effect icon in inventory" },
-  // Row 3 (y=234) - 5 items
+  // Row 3 (y=234) - 7 items
   { id: "inventory_effect_poison", label: "Inventory Effect (Poison)", x: 0, y: 234, w: 18, h: 18, description: "Poison effect icon in inventory" },
   { id: "inventory_effect_wither", label: "Inventory Effect (Wither)", x: 18, y: 234, w: 18, h: 18, description: "Wither effect icon in inventory" },
   { id: "inventory_effect_health_boost", label: "Inventory Effect (Health Boost)", x: 36, y: 234, w: 18, h: 18, description: "Health boost effect icon in inventory" },
