@@ -4283,7 +4283,7 @@ export default function EditorApp() {
               <img
                 src={atlasZoom.url}
                 alt={atlasZoom.displayName}
-                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                className="max-w-full max-h-[70vh] object-contain rounded-lg checkered"
                 style={{ imageRendering: "pixelated" }}
               />
             </div>
