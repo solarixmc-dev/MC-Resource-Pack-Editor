@@ -316,7 +316,7 @@ export default function AuthPage() {
           <div className="mt-6 text-center">
             <Link
               href="/"
-              className="btn-glint text-sm text-gray-600 dark:text-dark-text-secondary hover:text-black dark:hover:text-white"
+              className="text-sm text-gray-600 dark:text-dark-text-secondary hover:text-black dark:hover:text-white"
             >
               ← Exiting
             </Link>
