@@ -1613,7 +1613,7 @@ function TextureLightbox({
                         <img
                           src={regionPreviewUrls[region.id]}
                           alt={region.label}
-                          className="h-10 w-10 rounded border bg-black/40 object-contain flex-shrink-0 checkered"
+                          className="h-10 w-10 rounded object-contain flex-shrink-0"
                           style={{ imageRendering: "pixelated" }}
                         />
                       ) : (
