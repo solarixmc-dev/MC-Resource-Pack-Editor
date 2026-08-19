@@ -78,7 +78,7 @@ const ICONS_REGIONS: AtlasRegion[] = [
 
 // Inventory regions for status effects (1.8 HUD effect icons)
 const INVENTORY_REGIONS: AtlasRegion[] = [
-  // Row 1 (y=198)
+  // Row 1 (y=198) - 9 items
   { id: "inventory_effect_speed", label: "Inventory Effect (Speed)", x: 0, y: 198, w: 18, h: 18, description: "Speed effect icon in inventory" },
   { id: "inventory_effect_slowness", label: "Inventory Effect (Slowness)", x: 18, y: 198, w: 18, h: 18, description: "Slowness effect icon in inventory" },
   { id: "inventory_effect_haste", label: "Inventory Effect (Haste)", x: 36, y: 198, w: 18, h: 18, description: "Haste effect icon in inventory" },
@@ -88,22 +88,22 @@ const INVENTORY_REGIONS: AtlasRegion[] = [
   { id: "inventory_effect_instant_damage", label: "Inventory Effect (Instant Damage)", x: 108, y: 198, w: 18, h: 18, description: "Instant damage effect icon in inventory" },
   { id: "inventory_effect_jump_boost", label: "Inventory Effect (Jump Boost)", x: 126, y: 198, w: 18, h: 18, description: "Jump boost effect icon in inventory" },
   { id: "inventory_effect_nausea", label: "Inventory Effect (Nausea)", x: 144, y: 198, w: 18, h: 18, description: "Nausea effect icon in inventory" },
-  { id: "inventory_effect_regeneration", label: "Inventory Effect (Regeneration)", x: 162, y: 198, w: 18, h: 18, description: "Regeneration effect icon in inventory" },
-  // Row 2 (y=216)
-  { id: "inventory_effect_resistance", label: "Inventory Effect (Resistance)", x: 0, y: 216, w: 18, h: 18, description: "Resistance effect icon in inventory" },
-  { id: "inventory_effect_fire_resistance", label: "Inventory Effect (Fire Resistance)", x: 18, y: 216, w: 18, h: 18, description: "Fire resistance effect icon in inventory" },
-  { id: "inventory_effect_water_breathing", label: "Inventory Effect (Water Breathing)", x: 36, y: 216, w: 18, h: 18, description: "Water breathing effect icon in inventory" },
-  { id: "inventory_effect_invisibility", label: "Inventory Effect (Invisibility)", x: 54, y: 216, w: 18, h: 18, description: "Invisibility effect icon in inventory" },
-  { id: "inventory_effect_blindness", label: "Inventory Effect (Blindness)", x: 72, y: 216, w: 18, h: 18, description: "Blindness effect icon in inventory" },
-  { id: "inventory_effect_night_vision", label: "Inventory Effect (Night Vision)", x: 90, y: 216, w: 18, h: 18, description: "Night vision effect icon in inventory" },
-  { id: "inventory_effect_hunger", label: "Inventory Effect (Hunger)", x: 108, y: 216, w: 18, h: 18, description: "Hunger effect icon in inventory" },
-  { id: "inventory_effect_weakness", label: "Inventory Effect (Weakness)", x: 126, y: 216, w: 18, h: 18, description: "Weakness effect icon in inventory" },
-  { id: "inventory_effect_poison", label: "Inventory Effect (Poison)", x: 144, y: 216, w: 18, h: 18, description: "Poison effect icon in inventory" },
-  { id: "inventory_effect_wither", label: "Inventory Effect (Wither)", x: 162, y: 216, w: 18, h: 18, description: "Wither effect icon in inventory" },
-  // Row 3 (y=234)
-  { id: "inventory_effect_health_boost", label: "Inventory Effect (Health Boost)", x: 0, y: 234, w: 18, h: 18, description: "Health boost effect icon in inventory" },
-  { id: "inventory_effect_absorption", label: "Inventory Effect (Absorption)", x: 18, y: 234, w: 18, h: 18, description: "Absorption effect icon in inventory" },
-  { id: "inventory_effect_saturation", label: "Inventory Effect (Saturation)", x: 36, y: 234, w: 18, h: 18, description: "Saturation effect icon in inventory" },
+  // Row 2 (y=216) - 9 items
+  { id: "inventory_effect_regeneration", label: "Inventory Effect (Regeneration)", x: 0, y: 216, w: 18, h: 18, description: "Regeneration effect icon in inventory" },
+  { id: "inventory_effect_resistance", label: "Inventory Effect (Resistance)", x: 18, y: 216, w: 18, h: 18, description: "Resistance effect icon in inventory" },
+  { id: "inventory_effect_fire_resistance", label: "Inventory Effect (Fire Resistance)", x: 36, y: 216, w: 18, h: 18, description: "Fire resistance effect icon in inventory" },
+  { id: "inventory_effect_water_breathing", label: "Inventory Effect (Water Breathing)", x: 54, y: 216, w: 18, h: 18, description: "Water breathing effect icon in inventory" },
+  { id: "inventory_effect_invisibility", label: "Inventory Effect (Invisibility)", x: 72, y: 216, w: 18, h: 18, description: "Invisibility effect icon in inventory" },
+  { id: "inventory_effect_blindness", label: "Inventory Effect (Blindness)", x: 90, y: 216, w: 18, h: 18, description: "Blindness effect icon in inventory" },
+  { id: "inventory_effect_night_vision", label: "Inventory Effect (Night Vision)", x: 108, y: 216, w: 18, h: 18, description: "Night vision effect icon in inventory" },
+  { id: "inventory_effect_hunger", label: "Inventory Effect (Hunger)", x: 126, y: 216, w: 18, h: 18, description: "Hunger effect icon in inventory" },
+  { id: "inventory_effect_weakness", label: "Inventory Effect (Weakness)", x: 144, y: 216, w: 18, h: 18, description: "Weakness effect icon in inventory" },
+  // Row 3 (y=234) - 5 items
+  { id: "inventory_effect_poison", label: "Inventory Effect (Poison)", x: 0, y: 234, w: 18, h: 18, description: "Poison effect icon in inventory" },
+  { id: "inventory_effect_wither", label: "Inventory Effect (Wither)", x: 18, y: 234, w: 18, h: 18, description: "Wither effect icon in inventory" },
+  { id: "inventory_effect_health_boost", label: "Inventory Effect (Health Boost)", x: 36, y: 234, w: 18, h: 18, description: "Health boost effect icon in inventory" },
+  { id: "inventory_effect_absorption", label: "Inventory Effect (Absorption)", x: 54, y: 234, w: 18, h: 18, description: "Absorption effect icon in inventory" },
+  { id: "inventory_effect_saturation", label: "Inventory Effect (Saturation)", x: 72, y: 234, w: 18, h: 18, description: "Saturation effect icon in inventory" },
 ];
 
 const WIDGETS_REGIONS: AtlasRegion[] = [
