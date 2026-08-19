@@ -67,6 +67,13 @@ const ICONS_REGIONS: AtlasRegion[] = [
   // Boss health bars (only full and empty, no overlay)
   { id: "boss_health_empty", label: "Boss Health (Empty)", x: 0, y: 76, w: 182, h: 5, description: "Boss health bar background" },
   { id: "boss_health_full", label: "Boss Health (Full)", x: 0, y: 81, w: 182, h: 5, description: "Boss health bar fill" },
+  // Network/signal bars (ping status indicators)
+  { id: "signal_5_bars", label: "Signal (5 Bars)", x: 0, y: 176, w: 10, h: 8, description: "Full signal strength - 5 bars" },
+  { id: "signal_4_bars", label: "Signal (4 Bars)", x: 0, y: 186, w: 10, h: 8, description: "Signal strength - 4 bars" },
+  { id: "signal_3_bars", label: "Signal (3 Bars)", x: 0, y: 196, w: 10, h: 8, description: "Signal strength - 3 bars" },
+  { id: "signal_2_bars", label: "Signal (2 Bars)", x: 0, y: 206, w: 10, h: 8, description: "Signal strength - 2 bars" },
+  { id: "signal_1_bar", label: "Signal (1 Bar)", x: 0, y: 216, w: 10, h: 8, description: "High lag - 1 bar" },
+  { id: "signal_no_connection", label: "Signal (No Connection)", x: 0, y: 226, w: 10, h: 8, description: "No connection - X icon" },
 ];
 
 // Inventory regions for status effects (1.8 HUD effect icons)
