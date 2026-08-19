@@ -100,9 +100,7 @@ const INVENTORY_REGIONS: AtlasRegion[] = [
   // Row 3 (y=234) - 3 items
   { id: "inventory_effect_water_breathing", label: "Inventory Effect (Water Breathing)", x: 0, y: 234, w: 18, h: 18, description: "Water breathing effect icon in inventory" },
   { id: "inventory_effect_wither", label: "Inventory Effect (Wither)", x: 18, y: 234, w: 18, h: 18, description: "Wither effect icon in inventory" },
-  { id: "inventory_effect_health_boost", label: "Inventory Effect (Health Boost)", x: 36, y: 234, w: 18, h: 18, description: "Health boost effect icon in inventory" },
-  // Absorption uses the same icon as Health Boost
-  { id: "inventory_effect_absorption", label: "Inventory Effect (Absorption)", x: 36, y: 234, w: 18, h: 18, description: "Absorption effect icon in inventory (shares icon with Health Boost)", mapsTo: "inventory_effect_health_boost" },
+  { id: "inventory_effect_absorption", label: "Inventory Effect (Absorption)", x: 36, y: 234, w: 18, h: 18, description: "Absorption effect icon in inventory" },
 ];
 
 const WIDGETS_REGIONS: AtlasRegion[] = [
