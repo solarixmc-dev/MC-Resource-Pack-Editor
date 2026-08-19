@@ -895,7 +895,7 @@ function CroppedTexturePreview({ buffer, path, alt, size = TEXTURE_THUMBNAIL_SIZ
     <img
       src={previewUrl}
       alt={alt}
-      className="texture-preview"
+      className="texture-preview checkered"
       style={{ width: size, height: size, imageRendering: "pixelated" }}
     />
   );
@@ -1613,7 +1613,7 @@ function TextureLightbox({
                         <img
                           src={regionPreviewUrls[region.id]}
                           alt={region.label}
-                          className="h-10 w-10 rounded object-contain flex-shrink-0"
+                          className="h-10 w-10 rounded object-contain flex-shrink-0 checkered"
                           style={{ imageRendering: "pixelated" }}
                         />
                       ) : (
