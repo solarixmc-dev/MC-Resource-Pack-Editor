@@ -1373,7 +1373,7 @@ function AtlasPreviewStrip({
         })}
         {composedPreviewUrl && (
           <div className="flex w-[184px] flex-shrink-0 flex-col items-center gap-2">
-            <div className="flex flex-col gap-2 rounded-xl border border-border bg-secondary/30 p-3">
+            <div className="flex flex-col gap-2 rounded-xl border border-border bg-secondary/30 p-2">
               <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">New atlas preview</div>
               <button
                 className="cursor-pointer hover:opacity-80 transition-opacity"
@@ -1383,7 +1383,7 @@ function AtlasPreviewStrip({
                 <img
                   src={composedPreviewUrl}
                   alt="Preview of the atlas after region overrides"
-                  className={`h-40 w-40 rounded-md border border-border object-contain checkered`}
+                  className={`h-44 w-44 checkered`}
                   style={{ imageRendering: "pixelated" }}
                 />
               </button>
@@ -4283,7 +4283,7 @@ export default function EditorApp() {
               <img
                 src={atlasZoom.url}
                 alt={atlasZoom.displayName}
-                className="max-w-full max-h-[70vh] object-contain rounded-lg checkered"
+                className="max-w-full max-h-[70vh] object-contain checkered"
                 style={{ imageRendering: "pixelated" }}
               />
             </div>
