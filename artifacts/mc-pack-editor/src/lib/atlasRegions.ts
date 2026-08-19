@@ -68,12 +68,12 @@ const ICONS_REGIONS: AtlasRegion[] = [
   { id: "boss_health_empty", label: "Boss Health (Empty)", x: 0, y: 76, w: 182, h: 5, description: "Boss health bar background" },
   { id: "boss_health_full", label: "Boss Health (Full)", x: 0, y: 81, w: 182, h: 5, description: "Boss health bar fill" },
   // Network/signal bars (ping status indicators)
-  { id: "signal_5_bars", label: "Signal (5 Bars)", x: 0, y: 176, w: 10, h: 6, description: "Full signal strength - 5 bars" },
-  { id: "signal_4_bars", label: "Signal (4 Bars)", x: 0, y: 182, w: 10, h: 6, description: "Signal strength - 4 bars" },
-  { id: "signal_3_bars", label: "Signal (3 Bars)", x: 0, y: 188, w: 10, h: 6, description: "Signal strength - 3 bars" },
-  { id: "signal_2_bars", label: "Signal (2 Bars)", x: 0, y: 194, w: 10, h: 6, description: "Signal strength - 2 bars" },
-  { id: "signal_1_bar", label: "Signal (1 Bar)", x: 0, y: 200, w: 10, h: 6, description: "High lag - 1 bar" },
-  { id: "signal_no_connection", label: "Signal (No Connection)", x: 0, y: 206, w: 10, h: 6, description: "No connection - X icon" },
+  { id: "signal_5_bars", label: "Signal (5 Bars)", x: 0, y: 176, w: 18, h: 8, description: "Full signal strength - 5 bars" },
+  { id: "signal_4_bars", label: "Signal (4 Bars)", x: 0, y: 184, w: 18, h: 8, description: "Signal strength - 4 bars" },
+  { id: "signal_3_bars", label: "Signal (3 Bars)", x: 0, y: 192, w: 18, h: 8, description: "Signal strength - 3 bars" },
+  { id: "signal_2_bars", label: "Signal (2 Bars)", x: 0, y: 200, w: 18, h: 8, description: "Signal strength - 2 bars" },
+  { id: "signal_1_bar", label: "Signal (1 Bar)", x: 0, y: 208, w: 18, h: 8, description: "High lag - 1 bar" },
+  { id: "signal_no_connection", label: "Signal (No Connection)", x: 0, y: 216, w: 18, h: 8, description: "No connection - X icon" },
 ];
 
 // Inventory regions for status effects (1.8 HUD effect icons)
