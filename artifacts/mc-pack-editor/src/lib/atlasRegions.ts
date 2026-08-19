@@ -24,14 +24,17 @@ const ICONS_REGIONS: AtlasRegion[] = [
   { id: "heart_empty_flash", label: "Heart (Empty Flash)", x: 25, y: 0, w: 9, h: 9, description: "Flashing empty heart outline" },
   { id: "heart_full", label: "Heart (Full)", x: 52, y: 0, w: 9, h: 9, description: "Full heart icon" },
   { id: "heart_half", label: "Heart (Half)", x: 61, y: 0, w: 9, h: 9, description: "Half heart icon" },
-  { id: "heart_full_damage", label: "Heart (Damage Full)", x: 54, y: 0, w: 9, h: 9, description: "Recently lost full heart overlay" },
-  { id: "heart_half_damage", label: "Heart (Damage Half)", x: 63, y: 0, w: 9, h: 9, description: "Recently lost half heart overlay" },
-  // Poison hearts (middle of row 1)
-  { id: "heart_poison_full", label: "Heart (Poison Full)", x: 72, y: 0, w: 9, h: 9, description: "Poison full heart" },
-  { id: "heart_poison_half", label: "Heart (Poison Half)", x: 81, y: 0, w: 9, h: 9, description: "Poison half heart" },
-  // Absorption hearts (end of row 1, after hardcore hearts)
-  { id: "heart_absorption_full", label: "Heart (Absorption Full)", x: 162, y: 0, w: 9, h: 9, description: "Absorption full heart" },
-  { id: "heart_absorption_half", label: "Heart (Absorption Half)", x: 171, y: 0, w: 9, h: 9, description: "Absorption half heart" },
+  { id: "heart_full_damage", label: "Heart (Damage Full)", x: 70, y: 0, w: 9, h: 9, description: "Recently lost full heart overlay" },
+  { id: "heart_half_damage", label: "Heart (Damage Half)", x: 79, y: 0, w: 9, h: 9, description: "Recently lost half heart overlay" },
+  // Poison hearts
+  { id: "heart_poison_full", label: "Heart (Poison Full)", x: 88, y: 0, w: 9, h: 9, description: "Poison full heart" },
+  { id: "heart_poison_half", label: "Heart (Poison Half)", x: 97, y: 0, w: 9, h: 9, description: "Poison half heart" },
+  // Wither hearts
+  { id: "heart_wither_full", label: "Heart (Wither Full)", x: 106, y: 0, w: 9, h: 9, description: "Wither full heart" },
+  { id: "heart_wither_half", label: "Heart (Wither Half)", x: 115, y: 0, w: 9, h: 9, description: "Wither half heart" },
+  // Absorption hearts
+  { id: "heart_absorption_full", label: "Heart (Absorption Full)", x: 124, y: 0, w: 9, h: 9, description: "Absorption full heart" },
+  { id: "heart_absorption_half", label: "Heart (Absorption Half)", x: 133, y: 0, w: 9, h: 9, description: "Absorption half heart" },
   // Armor row (y=9)
   { id: "armor_empty", label: "Armor (Empty)", x: 16, y: 9, w: 9, h: 9, description: "Empty armor icon" },
   { id: "armor_half", label: "Armor (Half)", x: 25, y: 9, w: 9, h: 9, description: "Half armor icon" },
