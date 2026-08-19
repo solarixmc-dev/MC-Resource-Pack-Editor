@@ -85,6 +85,18 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'atl
 export default function LaunchPage() {
   const [isVisible, setIsVisible] = useState(false);
   const [visibleSections, setVisibleSections] = useState<Set<number>>(new Set([0]));
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    };
+    checkDarkMode();
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     setIsVisible(true);
@@ -172,7 +184,19 @@ export default function LaunchPage() {
           <div className={`text-center mt-12 transition-all duration-1000 ease-out delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <Link
               href="/editor"
-              className="inline-block btn-glint bg-black dark:bg-white text-white dark:text-black px-20 py-6 rounded-full font-semibold text-2xl hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl"
+              className="inline-block px-20 py-6 rounded-full font-semibold text-2xl hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl text-white dark:text-black"
+              style={{
+                background: isDarkMode
+                  ? 'radial-gradient(circle at ' + mousePosition.x + '% ' + mousePosition.y + '%, #e0e0e0 0%, #fff 50%, #fff 100%)'
+                  : 'radial-gradient(circle at ' + mousePosition.x + '% ' + mousePosition.y + '%, #333 0%, #000 50%, #000 100%)',
+              }}
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                setMousePosition({ x, y });
+              }}
+              onMouseLeave={() => setMousePosition({ x: 50, y: 50 })}
             >
               Get Started
             </Link>
