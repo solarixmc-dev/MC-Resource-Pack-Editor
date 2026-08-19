@@ -3756,7 +3756,7 @@ export default function EditorApp() {
               <div className="relative" ref={settingsMenuRef}>
                 <button
                   onClick={() => setSettingsMenuOpen(!settingsMenuOpen)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-dark-text-tertiary dark:hover:text-dark-text-primary dark:hover:bg-dark-tertiary"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-dark-text-tertiary dark:hover:text-white dark:hover:bg-white/20"
                   title="Settings"
                 >
                   <svg 
