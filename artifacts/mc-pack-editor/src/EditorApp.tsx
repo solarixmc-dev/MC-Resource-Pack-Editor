@@ -3233,7 +3233,9 @@ export default function EditorApp() {
     const handleStartTour = () => {
       console.log('Tour start event received');
       localStorage.removeItem('mc-pack-editor-tour-completed');
+      console.log('Setting showTour to true');
       setShowTour(true);
+      console.log('showTour set to true, current value:', true);
     };
 
     window.addEventListener('start-tour', handleStartTour);
