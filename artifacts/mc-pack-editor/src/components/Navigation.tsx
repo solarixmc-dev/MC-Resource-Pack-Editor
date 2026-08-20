@@ -6,6 +6,15 @@ export default function Navigation() {
   const [location] = useLocation();
   const { theme, setTheme, font, setFont } = useTheme();
   const [showSettings, setShowSettings] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+
+  const handleStartTour = () => {
+    setShowSettings(false);
+    // Set localStorage flag to allow tour to start
+    localStorage.removeItem('mc-pack-editor-tour-completed');
+    // Dispatch custom event to trigger tour in EditorApp
+    window.dispatchEvent(new CustomEvent('start-tour'));
+  };
 
   const navItems = [
     { path: "/", label: "Home" },
@@ -114,6 +123,16 @@ export default function Navigation() {
                     <option value="jetbrains-mono">JetBrains Mono</option>
                     <option value="pixel-sans">Pixel Sans</option>
                   </select>
+                </div>
+
+                {/* Tour */}
+                <div className="px-4 mt-4 pt-4 border-t border-gray-200 dark:border-dark-border">
+                  <button
+                    onClick={handleStartTour}
+                    className="w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors bg-[#C2B280] text-black hover:bg-[#a89860]"
+                  >
+                    Start Tour
+                  </button>
                 </div>
               </div>
             )}

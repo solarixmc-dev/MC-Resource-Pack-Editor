@@ -3226,6 +3226,15 @@ export default function EditorApp() {
     if (!tourCompleted && hasPacks) {
       setShowTour(true);
     }
+
+    // Listen for custom event to start tour
+    const handleStartTour = () => {
+      localStorage.removeItem('mc-pack-editor-tour-completed');
+      setShowTour(true);
+    };
+
+    window.addEventListener('start-tour', handleStartTour);
+    return () => window.removeEventListener('start-tour', handleStartTour);
   }, [packs.length]);
 
   // Load pack from library if stored in localStorage flag
