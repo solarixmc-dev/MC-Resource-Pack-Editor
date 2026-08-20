@@ -19,6 +19,7 @@ import { createCroppedTexturePreviewDataUrl, TEXTURE_THUMBNAIL_SIZE } from "./li
 import { useTheme } from "./contexts/ThemeContext";
 import PreviewModal from "./components/PreviewModal";
 import BatchOperationsPanel from "./components/BatchOperationsPanel";
+import TourGuide from "./components/TourGuide";
 
 // Notification type
 interface Notification {
@@ -3152,6 +3153,45 @@ export default function EditorApp() {
   const [jumpTarget, setJumpTarget] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ path: string; displayName: string; folder: string } | null>(null);
   const [atlasZoom, setAtlasZoom] = useState<{ url: string; displayName: string } | null>(null);
+  const [showTour, setShowTour] = useState(false);
+
+  // Tour steps
+  const tourSteps = [
+    {
+      target: "[data-tour='packs-area']",
+      title: "Resource Packs",
+      description: "Manage your resource packs here. Import multiple packs and use them as overlays or choose different textures from each pack.",
+      position: "right" as const,
+    },
+    {
+      target: "[data-tour='folders-area']",
+      title: "Texture Folders",
+      description: "Browse through different texture categories like blocks, items, entities, and more to find the textures you want to edit.",
+      position: "right" as const,
+    },
+    {
+      target: "[data-tour='editor-area']",
+      title: "Texture Editor",
+      description: "Edit textures with pixel-perfect precision. Use brush tools, color picker, and recoloring to customize your textures.",
+      position: "left" as const,
+    },
+    {
+      target: "[data-tour='export-area']",
+      title: "Export Your Pack",
+      description: "When you're done, export your resource pack as a ZIP file with custom metadata or save it to your local library.",
+      position: "bottom" as const,
+    },
+  ];
+
+  const handleTourComplete = () => {
+    setShowTour(false);
+    localStorage.setItem('mc-pack-editor-tour-completed', 'true');
+  };
+
+  const handleTourSkip = () => {
+    setShowTour(false);
+    localStorage.setItem('mc-pack-editor-tour-completed', 'true');
+  };
   // Settings
   const [texturesPerRow, setTexturesPerRow] = useState(6);
   const [showJsonFiles, setShowJsonFiles] = useState(true);
@@ -3178,6 +3218,15 @@ export default function EditorApp() {
     };
     document.body.style.fontFamily = fontMap[selectedFont] || fontMap["montserrat"];
   }, [selectedFont]);
+
+  // Check if user has completed the tour
+  useEffect(() => {
+    const tourCompleted = localStorage.getItem('mc-pack-editor-tour-completed');
+    const hasPacks = packs.length > 0;
+    if (!tourCompleted && hasPacks) {
+      setShowTour(true);
+    }
+  }, [packs.length]);
 
   // Load pack from library if stored in localStorage flag
   useEffect(() => {
@@ -3878,6 +3927,7 @@ export default function EditorApp() {
                 </button>
                 <div className="relative" ref={exportDropdownRef}>
                   <button
+                    data-tour="export-area"
                     onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
                     disabled={exporting}
                     className="px-6 py-2 text-sm font-medium text-white dark:text-black bg-black dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 hover:scale-105 hover:shadow-lg transition-all duration-200 rounded-2xl disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none flex items-center gap-2"
@@ -3977,7 +4027,7 @@ export default function EditorApp() {
       {/* ── Main Content Area ── */}
       <div className="flex flex-1 overflow-hidden">
         {/* ── Left Sidebar ── */}
-        <aside className={`flex-shrink-0 w-64 overflow-x-hidden overflow-y-auto sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderLeft: 'none', zIndex: 10 }}>
+        <aside data-tour="packs-area" className={`flex-shrink-0 w-64 overflow-x-hidden overflow-y-auto sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderLeft: 'none', zIndex: 10 }}>
           <div className={`p-4`}>
             <h2 className={`text-sm font-semibold mb-3 ${darkMode ? "text-dark-text" : "text-slate-700"}`}>Packs</h2>
             <DropZone onLoad={handlePacksLoaded} onTextureImport={handleTextureImport} darkMode={darkMode} />
@@ -4035,7 +4085,7 @@ export default function EditorApp() {
         </aside>
 
         {/* ── Main Content ── */}
-        <main className="flex-1 overflow-hidden flex flex-col">
+        <main data-tour="editor-area" className="flex-1 overflow-hidden flex flex-col">
           {/* Toolbar */}
           <div className={`flex-shrink-0 px-6 py-3 sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderLeft: 'none', borderRight: 'none', borderTop: 'none' }}>
             <div className="flex items-center gap-4">
@@ -4206,7 +4256,7 @@ export default function EditorApp() {
 
         {/* ── Right Sidebar (Folders) ── */}
         {sidebarOpen && packs.length > 0 && (
-          <aside className={`flex-shrink-0 w-64 overflow-x-hidden overflow-y-auto sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderRight: 'none', zIndex: 10 }}>
+          <aside data-tour="folders-area" className={`flex-shrink-0 w-64 overflow-x-hidden overflow-y-auto sleek ${darkMode ? "sleek-dark" : "sleek"}`} style={{ borderRadius: 0, borderTop: 'none', borderBottom: 'none', borderRight: 'none', zIndex: 10 }}>
             <div className={`flex items-center justify-between px-4 py-3`}>
               <h2 className={`text-sm font-semibold ${darkMode ? "text-dark-text" : "text-slate-700"}`}>Folders</h2>
               <button
@@ -4265,6 +4315,16 @@ export default function EditorApp() {
           onClose={() => setLightbox(null)}
           darkMode={darkMode}
           stripColorCodes={stripColorCodes}
+        />
+      )}
+
+      {/* ── Tour guide ── */}
+      {showTour && (
+        <TourGuide
+          steps={tourSteps}
+          onComplete={handleTourComplete}
+          onSkip={handleTourSkip}
+          darkMode={darkMode}
         />
       )}
 
