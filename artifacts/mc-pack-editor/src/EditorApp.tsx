@@ -3223,12 +3223,15 @@ export default function EditorApp() {
   useEffect(() => {
     const tourCompleted = localStorage.getItem('mc-pack-editor-tour-completed');
     const hasPacks = packs.length > 0;
+    console.log('Tour check - completed:', tourCompleted, 'hasPacks:', hasPacks);
     if (!tourCompleted && hasPacks) {
+      console.log('Auto-starting tour');
       setShowTour(true);
     }
 
     // Listen for custom event to start tour
     const handleStartTour = () => {
+      console.log('Tour start event received');
       localStorage.removeItem('mc-pack-editor-tour-completed');
       setShowTour(true);
     };

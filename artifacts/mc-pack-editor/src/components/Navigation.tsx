@@ -9,11 +9,15 @@ export default function Navigation() {
   const [showTour, setShowTour] = useState(false);
 
   const handleStartTour = () => {
+    console.log('Start tour button clicked');
     setShowSettings(false);
     // Set localStorage flag to allow tour to start
     localStorage.removeItem('mc-pack-editor-tour-completed');
     // Dispatch custom event to trigger tour in EditorApp
-    window.dispatchEvent(new CustomEvent('start-tour'));
+    const event = new CustomEvent('start-tour');
+    console.log('Dispatching event:', event);
+    window.dispatchEvent(event);
+    console.log('Event dispatched');
   };
 
   const navItems = [
