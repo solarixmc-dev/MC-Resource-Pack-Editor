@@ -7,11 +7,14 @@ Create a complete Minecraft Resource Pack Editor web application called "Texture
 ### 1. Launch Page
 - Hero section with large "TextureLab" branding (black/white dark theme logo with "MC" in a box)
 - Subtitle: "The ultimate Minecraft Texture Editor"
-- "Get Started" button linking to editor
+- "Get Started" button with cursor-following radial gradient effect
+  - Light mode: Gradient from #666666 to #000000 following cursor
+  - Dark mode: Gradient from #ffffff to #cccccc following cursor
+  - Resets to center when mouse leaves button
 - Decorative geometric shapes (circles, squares, triangles) spinning slowly in background
 - Full-screen feature sections for each capability:
   - Texture Editor
-  - Pack Management  
+  - Pack Management
   - Local Library
   - Texture Atlas Support
   - Create from Scratch
@@ -25,8 +28,9 @@ Create a complete Minecraft Resource Pack Editor web application called "Texture
 - "Create from Scratch" option with overlay toggle for any pack
 - Multiple pack support with overlay capability
 - Folder tree navigation (blocks, items, entities, environment, etc.)
-- Texture preview thumbnails in file browser
+- Texture preview thumbnails in file browser with checkerboard transparency
 - Pack analysis showing version range, file count, total size, texture count, resolution
+- Atlas region override system for icons.png, widgets.png, inventory.png
 
 **Texture Editing:**
 - Canvas-based texture editor with pixel-perfect editing
@@ -68,21 +72,95 @@ Create a complete Minecraft Resource Pack Editor web application called "Texture
 - Delete saved packs
 - Fallback to localStorage for non-logged-in users
 
-### 4. Color Code Support
+### 4. Contact Page
+- Contact form in horizontal navigation menu
+- User input fields for name, email, message
+- Username selection for identification
+- Form submission to solarixmc@gmail.com
+- Form validation and error handling
+- Success notification after submission
+
+### 5. Color Code Support
 - Full Minecraft formatting codes (§0-§f for colors, §l for bold, §o for italic, §n for underline, §m for strikethrough, §k for obfuscated, §r for reset)
 - Color code picker with visual color swatches
 - Style code buttons
 - Live preview of formatted text
 - Strip color codes option
 
-### 5. Texture Preview Modal
+### 6. Texture Preview Modal
 - Generate preview loadouts with key items
 - Show textures in context (items, blocks)
 - 3D item preview using Three.js with spin interaction
 - Grid layout for multiple items
 - Various item categories (tools, blocks, food, etc.)
+- Checkerboard background for transparency visualization
 
-### 6. Additional Advanced Features
+### 6. Atlas Region Override System
+**Advanced texture atlas management:**
+- Per-region pack selection for atlas textures
+- Live composite preview showing merged atlas result
+- HUD preview for individual regions with checkerboard background
+- Visual region highlighting and coordinate display
+- Support for mapped regions (e.g., hardcore hearts mapping to normal hearts)
+- Automatic composition of overridden regions onto base atlas
+- Zoom modal for detailed atlas inspection with checkerboard background
+
+**Atlas Region Logic (Minecraft 1.8.8 Compatible):**
+
+**Inventory.png Potion Effects (Minecraft 1.8.8 Potion.java mapping):**
+- Uses `setIconIndex(x, y)` where `statusIconIndex = x + y * 8`
+- Coordinate system: 8 columns per row, rows at y=198, y=216, y=234
+- Effect coordinates are NOT sequential - must match exact Potion.java setIconIndex values
+- Instant Health, Instant Damage, and Saturation have NO status icons (statusIconIndex = -1)
+- Absorption uses the SAME icon as Health Boost at (36,234)
+- Correct mapping:
+  - Row 1 (y=198): Speed(0), Slowness(18), Haste(36), Mining Fatigue(54), Strength(72), Weakness(90), Poison(108), Regeneration(126)
+  - Row 2 (y=216): Invisibility(0), Hunger(18), Jump Boost(36), Nausea(54), Night Vision(72), Blindness(90), Resistance(108), Fire Resistance(126)
+  - Row 3 (y=234): Water Breathing(0), Wither(18), Health Boost(36)
+- All regions are 18x18 pixels
+- Renderer calculates: x = (statusIconIndex % 8) * 18, y = 198 + floor(statusIconIndex / 8) * 18
+
+**Icons.png Atlas Regions:**
+- Hearts: Empty, Full, Half, Damage variants, Poison, Wither, Absorption
+- Armor: Empty, Half, Full, Damage variants
+- Hunger: Empty, Full, Half, Damage variants, Saturation variants
+- Air bubbles: Burst, Bubble, Filled
+- Horse jump bar: Empty (y=84), Full (y=89)
+- XP bar: Empty (y=64), Full (y=69)
+- Boss health: Empty (y=76), Full (y=81)
+- Network/signal bars: 5 bars, 4 bars, 3 bars, 2 bars, 1 bar, no connection
+- Hardcore hearts with mapping to regular hearts
+
+**Widgets.png Atlas Regions:**
+- Hotbar container, Active selector
+- Button states: Disabled, Normal, Hover
+- Slot backgrounds: Regular and Large
+- Progress bars: Background and Fill
+- Enchantment books: Left and Right pages
+- Map background
+
+**Atlas Override Implementation:**
+- Detect atlas textures using `getAtlasDefinition(path)`
+- Extract individual regions using `cropAtlasRegion()`
+- Compose merged atlas using `composeAtlas()` with region patches
+- Handle mapped regions (regions that reference other regions)
+- Generate live preview URLs for both individual regions and composed atlas
+- Support for multiple packs with per-region override selection
+- Visual feedback showing which regions have overrides applied
+
+### 7. Contact Page
+- Contact form accessible from navigation menu
+- User input fields for:
+  - Username (required)
+  - Email address (optional)
+  - Message content (required)
+- Form validation and error handling
+- Email integration to send messages to solarixmc@gmail.com
+- Success/error feedback notifications
+- Responsive form design matching app theme
+- Dark mode support for form elements
+
+### 8. Additional Advanced Features
 **Texture History:**
 - Full undo/redo stack for texture edits
 - History panel showing edit timeline
@@ -142,7 +220,9 @@ src/
 ├── pages/
 │   ├── LaunchPage.tsx     # Landing page
 │   ├── EditorPage.tsx     # Editor page wrapper
-│   └── LibraryPage.tsx    # Local library page
+│   ├── LibraryPage.tsx    # Local library page
+│   ├── ContactPage.tsx    # Contact form page
+│   └── AuthPage.tsx       # Authentication page
 ├── lib/
 │   ├── packAnalyzer.ts    # Pack analysis logic
 │   ├── zipUtils.ts        # ZIP file operations
@@ -171,6 +251,29 @@ interface TextureOverrides {
     data: ArrayBuffer;
     sourcePackId: string;
   };
+}
+
+interface AtlasRegion {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  description?: string;
+  mapsTo?: string; // For regions that should map to another region
+}
+
+interface AtlasDefinition {
+  pathSuffix: string;
+  label: string;
+  regions: AtlasRegion[];
+}
+
+interface ContactFormData {
+  username: string;
+  email?: string;
+  message: string;
 }
 
 interface PackAnalysis {
@@ -230,6 +333,9 @@ interface SavedPack {
 - Hover scale effects
 - Loading spinners
 - Toast notifications for success/error states
+- Cursor-following gradient effect on primary buttons (radial gradient follows mouse position)
+- Slowly rotating geometric shapes (circles, squares, triangles) on launch page
+- Dark mode-specific checkerboard patterns for transparency visualization
 
 ## Key Functionality Details
 
@@ -274,20 +380,35 @@ interface SavedPack {
 - Strip codes for plain text output
 
 ### Minecraft Atlas Regions
-Complete support for all Minecraft texture atlases:
+Complete support for all Minecraft texture atlases with coordinate-precise region definitions:
 
-**Icons Atlas (gui/icons.png):**
-- Health hearts (full, half, empty, various colors)
-- Armor bars (helmets, chestplates, leggings, boots)
-- Hunger icons (full, half, empty, various saturation levels)
-- Air bubbles (water breathing)
-- Horse jump bar
-- Boss health bars (ender dragon, wither)
-- Experience bar
-- Hotbar slots (selected, unselected)
-- Creative inventory tabs
-- Effect backgrounds
-- Status effect icons
+**Icons Atlas (gui/icons.png) - Precise Coordinates:**
+- Health hearts (full, half, empty, various colors):
+  - Row 1 (y=0): Empty(16,0), Empty Flash(25,0), Full(52,0), Half(61,0), Damage Full(70,0), Damage Half(79,0)
+  - Poison hearts: Full(88,0), Half(97,0)
+  - Wither hearts: Full(106,0), Half(115,0)
+  - Absorption hearts: Full(124,0), Half(133,0)
+- Armor bars (y=9): Empty(16,9), Half(25,9), Full(34,9), Damage Half(43,9), Damage Full(52,9)
+- Air bubbles (y=18): Burst(16,18), Bubble(25,18), Filled(34,18)
+- Hunger icons (y=27): Empty(16,27), Half(61,27), Full(52,27), Damage Half(70,27), Damage Full(79,27)
+  - Saturation variants: Full(34,27), Half(43,27)
+- Hardcore hearts (y=45) with mapping to regular hearts
+- Horse jump bar: Empty(0,84), Full(0,89) - both 182x5px
+- XP bar: Empty(0,64), Full(0,69) - both 182x5px
+- Boss health: Empty(0,76), Full(0,81) - both 182x5px
+- Network/signal bars (y=176-216): 5 bars(0,176), 4 bars(0,184), 3 bars(0,192), 2 bars(0,200), 1 bar(0,208), no connection(0,216) - all 18x8px
+
+**Inventory Atlas (gui/container/inventory.png) - Minecraft 1.8.8 Potion Effect Coordinates:**
+- Uses `setIconIndex(x, y)` where `statusIconIndex = x + y * 8`
+- NOT sequential coordinates - must match exact Potion.java values
+- Instant Health, Instant Damage, Saturation have NO icons (statusIconIndex = -1)
+- Absorption shares icon with Health Boost at (36,234)
+- Exact coordinate mapping:
+  - Row 1 (y=198): Speed(0,198), Slowness(18,198), Haste(36,198), Mining Fatigue(54,198), Strength(72,198), Weakness(90,198), Poison(108,198), Regeneration(126,198)
+  - Row 2 (y=216): Invisibility(0,216), Hunger(18,216), Jump Boost(36,216), Nausea(54,216), Night Vision(72,216), Blindness(90,216), Resistance(108,216), Fire Resistance(126,216)
+  - Row 3 (y=234): Water Breathing(0,234), Wither(18,234), Health Boost(36,234)
+- All regions are 18x18 pixels
+- Renderer calculates: x = (statusIconIndex % 8) * 18, y = 198 + floor(statusIconIndex / 8) * 18
 
 **Particle Atlas (textures/particle/particles.png):**
 - All particle textures (smoke, flame, lava drip, water drip, etc.)
@@ -302,6 +423,15 @@ Complete support for all Minecraft texture atlases:
 **Paintings Atlas (textures/painting/paintings_krz.png):**
 - All 26 painting textures
 - Proper aspect ratio preservation
+
+**Widgets Atlas (gui/widgets.png) - Precise Coordinates:**
+- Hotbar container: (0,0) 182x22px
+- Active selector: (0,22) 24x24px
+- Button states (y=46): Disabled(0,46), Normal(0,66), Hover(0,86) - all 200x20px
+- Slot backgrounds: Regular(0,106) 18x18px, Large(0,124) 26x26px
+- Progress bars: Background(0,150), Fill(0,155) - both 182x5px
+- Enchantment books: Left(0,160), Right(28,160) - both 28x30px
+- Map background: (0,190) 128x128px
 
 **GUI Elements:**
 - Button textures (normal, hovered, disabled)
@@ -345,6 +475,21 @@ Complete support for all Minecraft texture atlases:
 - Safe handling of user-uploaded files
 - XSS prevention in text rendering
 
+## Contact Page Email Integration
+- Email service integration for sending contact form submissions
+- Destination email: solarixmc@gmail.com
+- Email content includes:
+  - Username (from form)
+  - Email address (if provided)
+  - Message content
+  - Timestamp
+  - User agent/browser info (optional)
+- Email format: Plain text or HTML formatted message
+- Error handling for email service failures
+- Rate limiting to prevent spam (optional)
+- Success notification to user after email sent
+- Fallback handling if email service is unavailable
+
 ## Additional Notes
 - The application should work completely offline after initial load
 - No authentication required for basic functionality
@@ -353,5 +498,10 @@ Complete support for all Minecraft texture atlases:
 - Keyboard shortcuts for common actions
 - Export functionality preserves all pack metadata
 - Import supports both standard and overlay packs
+- Atlas region override system requires precise coordinate matching with Minecraft source code
+- Transparency visualization using checkerboard patterns (light/dark variants)
+- Cursor-following gradient effects on interactive elements for enhanced UX
+- Atlas zoom modal with full-size texture inspection
+- Live composite preview showing merged atlas results in real-time
 
 This is a comprehensive specification for recreating TextureLab. Focus on the core editing functionality first, then add the library and advanced features. The UI should feel polished and modern while maintaining the Minecraft aesthetic with the sand accent color and geometric decorative elements.

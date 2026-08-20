@@ -11,6 +11,7 @@ export default function Navigation() {
     { path: "/", label: "Home" },
     { path: "/editor", label: "Texture Editor" },
     { path: "/library", label: "Pack Library" },
+    { path: "/contact", label: "Contact" },
   ];
 
   return (

@@ -187,8 +187,8 @@ export default function LaunchPage() {
               className="inline-block px-20 py-6 rounded-full font-semibold text-2xl hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl text-white dark:text-black"
               style={{
                 background: isDarkMode
-                  ? 'radial-gradient(circle at ' + mousePosition.x + '% ' + mousePosition.y + '%, #e0e0e0 0%, #fff 50%, #fff 100%)'
-                  : 'radial-gradient(circle at ' + mousePosition.x + '% ' + mousePosition.y + '%, #333 0%, #000 50%, #000 100%)',
+                  ? 'radial-gradient(circle at ' + mousePosition.x + '% ' + mousePosition.y + '%, #ffffff 0%, #888888 15%, #ffffff 40%)'
+                  : 'radial-gradient(circle at ' + mousePosition.x + '% ' + mousePosition.y + '%, #888888 0%, #000000 15%, #000000 40%)',
               }}
               onMouseMove={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
