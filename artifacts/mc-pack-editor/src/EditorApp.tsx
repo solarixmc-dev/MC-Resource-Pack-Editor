@@ -4333,13 +4333,16 @@ export default function EditorApp() {
       )}
 
       {/* ── Tour guide ── */}
-      {showTour && (
-        <TourGuide
-          steps={tourSteps}
-          onComplete={handleTourComplete}
-          onSkip={handleTourSkip}
-          darkMode={darkMode}
-        />
+      {showTour && packs.length > 0 && (
+        <>
+          {console.log('About to render TourGuide, showTour:', showTour, 'tourSteps:', tourSteps, 'packs.length:', packs.length)}
+          <TourGuide
+            steps={tourSteps}
+            onComplete={handleTourComplete}
+            onSkip={handleTourSkip}
+            darkMode={darkMode}
+          />
+        </>
       )}
 
       {/* ── Atlas zoom modal ── */}
