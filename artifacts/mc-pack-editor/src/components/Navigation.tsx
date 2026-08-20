@@ -6,27 +6,6 @@ export default function Navigation() {
   const [location] = useLocation();
   const { theme, setTheme, font, setFont } = useTheme();
   const [showSettings, setShowSettings] = useState(false);
-  const [showTour, setShowTour] = useState(false);
-
-  const handleStartTour = () => {
-    console.log('Start tour button clicked, current location:', location);
-    setShowSettings(false);
-    
-    // Set localStorage flag to allow tour to start
-    localStorage.removeItem('mc-pack-editor-tour-completed');
-    
-    // Navigate to editor if not already there
-    if (location !== '/editor') {
-      console.log('Navigating to editor page');
-      window.location.href = '/editor';
-    } else {
-      // Already on editor page, dispatch event immediately
-      const event = new CustomEvent('start-tour');
-      console.log('Dispatching event:', event);
-      window.dispatchEvent(event);
-      console.log('Event dispatched');
-    }
-  };
 
   const navItems = [
     { path: "/", label: "Home" },
@@ -135,16 +114,6 @@ export default function Navigation() {
                     <option value="jetbrains-mono">JetBrains Mono</option>
                     <option value="pixel-sans">Pixel Sans</option>
                   </select>
-                </div>
-
-                {/* Tour */}
-                <div className="px-4 mt-4 pt-4 border-t border-gray-200 dark:border-dark-border">
-                  <button
-                    onClick={handleStartTour}
-                    className="w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors bg-[#C2B280] text-black hover:bg-[#a89860]"
-                  >
-                    Start Tour
-                  </button>
                 </div>
               </div>
             )}

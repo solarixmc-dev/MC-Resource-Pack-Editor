@@ -3223,23 +3223,9 @@ export default function EditorApp() {
   useEffect(() => {
     const tourCompleted = localStorage.getItem('mc-pack-editor-tour-completed');
     const hasPacks = packs.length > 0;
-    console.log('Tour check - completed:', tourCompleted, 'hasPacks:', hasPacks);
     if (!tourCompleted && hasPacks) {
-      console.log('Auto-starting tour');
       setShowTour(true);
     }
-
-    // Listen for custom event to start tour
-    const handleStartTour = () => {
-      console.log('Tour start event received');
-      localStorage.removeItem('mc-pack-editor-tour-completed');
-      console.log('Setting showTour to true');
-      setShowTour(true);
-      console.log('showTour set to true, current value:', true);
-    };
-
-    window.addEventListener('start-tour', handleStartTour);
-    return () => window.removeEventListener('start-tour', handleStartTour);
   }, [packs.length]);
 
   // Load pack from library if stored in localStorage flag
@@ -4333,16 +4319,13 @@ export default function EditorApp() {
       )}
 
       {/* ── Tour guide ── */}
-      {showTour && packs.length > 0 && (
-        <>
-          {console.log('About to render TourGuide, showTour:', showTour, 'tourSteps:', tourSteps, 'packs.length:', packs.length)}
-          <TourGuide
-            steps={tourSteps}
-            onComplete={handleTourComplete}
-            onSkip={handleTourSkip}
-            darkMode={darkMode}
-          />
-        </>
+      {showTour && (
+        <TourGuide
+          steps={tourSteps}
+          onComplete={handleTourComplete}
+          onSkip={handleTourSkip}
+          darkMode={darkMode}
+        />
       )}
 
       {/* ── Atlas zoom modal ── */}

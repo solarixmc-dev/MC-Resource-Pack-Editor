@@ -23,20 +23,12 @@ export default function TourGuide({ steps, onComplete, onSkip, darkMode }: TourG
 
   const step = steps[currentStep];
 
-  console.log('TourGuide rendered, step:', step?.title, 'steps.length:', steps.length);
-
   useEffect(() => {
     const updatePosition = () => {
-      console.log('TourGuide updatePosition called, target:', step.target);
       const targetElement = document.querySelector(step.target);
-      console.log('Target element found:', !!targetElement);
-      if (!targetElement) {
-        console.log('Target element not found for:', step.target);
-        return;
-      }
+      if (!targetElement) return;
 
       const rect = targetElement.getBoundingClientRect();
-      console.log('Target rect:', rect);
       setTargetRect(rect);
 
       const popover = popoverRef.current;
@@ -71,10 +63,8 @@ export default function TourGuide({ steps, onComplete, onSkip, darkMode }: TourG
       top = Math.max(padding, Math.min(top, window.innerHeight - popoverRect.height - padding));
       left = Math.max(padding, Math.min(left, window.innerWidth - popoverRect.width - padding));
 
-      console.log('Setting position:', { top, left });
       setPosition({ top, left });
       setIsVisible(true);
-      console.log('Setting isVisible to true');
     };
 
     updatePosition();
