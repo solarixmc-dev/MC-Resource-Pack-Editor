@@ -86,6 +86,7 @@ export default function LaunchPage() {
   const [isVisible, setIsVisible] = useState(false);
   const [visibleSections, setVisibleSections] = useState<Set<number>>(new Set([0]));
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+  const [isHovering, setIsHovering] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
@@ -186,9 +187,11 @@ export default function LaunchPage() {
               href="/editor"
               className="inline-block px-20 py-6 rounded-full font-semibold text-2xl hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl text-white dark:text-black"
               style={{
-                background: isDarkMode
-                  ? 'radial-gradient(circle at ' + mousePosition.x + '% ' + mousePosition.y + '%, #ffffff 0%, #888888 15%, #ffffff 40%)'
-                  : 'radial-gradient(circle at ' + mousePosition.x + '% ' + mousePosition.y + '%, #888888 0%, #000000 15%, #000000 40%)',
+                background: isHovering
+                  ? (isDarkMode
+                    ? 'radial-gradient(circle at ' + mousePosition.x + '% ' + mousePosition.y + '%, #ffffff 0%, #aaaaaa 25%, #ffffff 60%)'
+                    : 'radial-gradient(circle at ' + mousePosition.x + '% ' + mousePosition.y + '%, #aaaaaa 0%, #000000 25%, #000000 60%)')
+                  : (isDarkMode ? '#ffffff' : '#000000'),
               }}
               onMouseMove={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
@@ -196,7 +199,11 @@ export default function LaunchPage() {
                 const y = ((e.clientY - rect.top) / rect.height) * 100;
                 setMousePosition({ x, y });
               }}
-              onMouseLeave={() => setMousePosition({ x: 50, y: 50 })}
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => {
+                setIsHovering(false);
+                setMousePosition({ x: 50, y: 50 });
+              }}
             >
               Get Started
             </Link>
