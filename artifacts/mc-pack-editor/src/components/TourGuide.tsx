@@ -102,24 +102,15 @@ export default function TourGuide({ steps, onComplete, onSkip, darkMode }: TourG
       <div
         className="fixed z-[101] pointer-events-none"
         style={{
-          top: targetRect.top,
-          left: targetRect.left,
-          width: targetRect.width,
-          height: targetRect.height,
+          top: targetRect.top - 4,
+          left: targetRect.left - 4,
+          width: targetRect.width + 8,
+          height: targetRect.height + 8,
           boxShadow: `0 0 0 9999px rgba(0, 0, 0, 0.6)`,
-          borderRadius: "8px",
+          borderRadius: "12px",
+          border: "2px solid #C2B280",
         }}
-      >
-        <div
-          className="absolute inset-0 border-2 border-[#C2B280] rounded-lg"
-          style={{
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-        />
-      </div>
+      />
 
       {/* Tour popover */}
       <div
