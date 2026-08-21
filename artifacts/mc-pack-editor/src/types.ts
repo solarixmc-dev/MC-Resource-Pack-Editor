@@ -31,6 +31,7 @@ export const MC_FOLDERS: { key: string; label: string; icon: string }[] = [
   { key: "particle",    label: "Particles",     icon: "✨" },
   { key: "environment", label: "Environment",   icon: "🌤️" },
   { key: "sky",         label: "Sky",           icon: "🌙" },
+  { key: "skys",        label: "Skys",          icon: "🌌" },
   { key: "detector",    label: "Detector",      icon: "📡" },
   { key: "font",        label: "Font",          icon: "🔤" },
   { key: "misc",        label: "Misc",          icon: "📦" },
@@ -39,4 +40,5 @@ export const MC_FOLDERS: { key: string; label: string; icon: string }[] = [
   { key: "models",      label: "Models",        icon: "📐" },
   { key: "sounds",      label: "Sounds",        icon: "🔊" },
   { key: "lang",        label: "Language",      icon: "🌐" },
+  { key: "other",       label: "Other",         icon: "📁" },
 ];

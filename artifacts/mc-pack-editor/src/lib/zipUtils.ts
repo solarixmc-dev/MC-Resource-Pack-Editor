@@ -55,6 +55,11 @@ export function getTextureFolder(path: string): string {
   // assets/minecraft/blockstates/... -> blockstates
   if (p.match(/assets\/\w+\/blockstates\//)) return "blockstates";
 
+  // Check for sky properties files and mcpatcher sky folders
+  if (p.match(/.*sky.*\.properties$/i)) return "skys";
+  if (p.match(/mcpatcher\/.*\/sky/i)) return "skys";
+  if (p.match(/mcpatcher\/.*\/world/i)) return "skys";
+
   const knownTextureFolders = new Set(MC_FOLDERS.map((folder) => folder.key));
   const folderMap: Record<string, string> = {
     particle: "particle",
@@ -71,15 +76,15 @@ export function getTextureFolder(path: string): string {
     mob_effect: "gui",
     painting: "entity",
     banner: "entity",
-    world: "environment",
-    world0: "environment",
-    world1: "environment",
-    world2: "environment",
-    world3: "environment",
-    world4: "environment",
-    world5: "environment",
-    world_nether: "environment",
-    world_end: "environment",
+    world: "skys",
+    world0: "skys",
+    world1: "skys",
+    world2: "skys",
+    world3: "skys",
+    world4: "skys",
+    world5: "skys",
+    world_nether: "skys",
+    world_end: "skys",
     dimension: "environment",
     terrain: "blocks",
     armor: "items",
@@ -110,11 +115,53 @@ export function getTextureFolder(path: string): string {
       // Check filename for item patterns to categorize items regardless of directory
       const filename = parts[parts.length - 1].toLowerCase();
       
-      // Check for sky-related filenames - more lenient matching
+      // Check for world-specific sky files (world0.png, world1.png, etc.) - categorize as skys
+      // Match patterns like: world.png, world0.png, world1.png, world2.png, world3.png, world4.png, world5.png
+      // Also match: world_nether.png, world_end.png, end_sky.png, skybox files
+      // Also match files in mcpatcher folders
+      const worldSkyPatterns = [
+        /^world\d*\.png$/,      // world.png, world0.png, world1.png, etc.
+        /^world_nether\.png$/,  // world_nether.png
+        /^world_end\.png$/,    // world_end.png
+        /^end_sky\d*\.png$/,  // end_sky.png, end_sky0.png
+        /^skybox.*\.png$/,     // skybox files
+        /^cloud.*\.png$/,      // cloud files
+        /^sky\d*\.png$/,      // sky0.png, sky1.png, etc.
+      ];
+      
+      // Check if file is in mcpatcher folder
+      if (p.includes('mcpatcher')) {
+        if (p.includes('sky') || p.includes('world')) {
+          return "skys";
+        }
+      }
+      
+      // Check for sky-related files in environment folder
+      if (firstDir === 'environment' || p.includes('environment')) {
+        const skyEnvPatterns = [
+          'end_sky', 'end_sky0', 'end_sky1', 'end_sky2', 'end_sky3', 'end_sky4', 'end_sky5',
+          'sky', 'sky0', 'sky1', 'sky2', 'sky3', 'sky4', 'sky5',
+          'world', 'world0', 'world1', 'world2', 'world3', 'world4', 'world5',
+          'moon', 'moon_phases', 'sun', 'sunrise', 'sunset',
+          'cloud', 'clouds', 'skybox'
+        ];
+        for (const pattern of skyEnvPatterns) {
+          if (filename.includes(pattern)) {
+            return "skys";
+          }
+        }
+      }
+      
+      for (const pattern of worldSkyPatterns) {
+        if (pattern.test(filename)) {
+          return "skys";
+        }
+      }
+      
+      // Check for regular sky-related filenames
       const skyPatterns = [
-        'sky', 'sky0', 'sky1', 'sky2', 'sky3', 'sky4', 'sky5',
-        'end_sky', 'end_sky0', 'moon', 'moon_phases', 'sun',
-        'sunrise', 'sunset', 'cloud', 'clouds'
+        'sky', 'end_sky', 'moon', 'moon_phases', 'sun',
+        'sunrise', 'sunset'
       ];
       for (const pattern of skyPatterns) {
         if (filename.includes(pattern)) {
@@ -208,7 +255,7 @@ export function getAllFoldersInPacks(packs: Pack[]): Set<string> {
   for (const pack of packs) {
     pack.files.forEach((_, path) => {
       const f = getTextureFolder(path);
-      if (f !== "other" && f !== "system") folders.add(f);
+      if (f !== "system") folders.add(f);
     });
   }
   return folders;

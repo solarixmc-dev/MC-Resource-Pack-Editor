@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "wouter";
 import { SavedPack, getLocalPackLibrary } from "../lib/packLibrary";
 import { loadPackFromFile } from "../lib/zipUtils";
-import Navigation from "../components/Navigation";
 
 // Notification type
 
@@ -229,7 +228,6 @@ export default function LibraryPage() {
 
   return (
     <>
-      <Navigation />
       <div className="min-h-screen bg-white dark:bg-dark-bg flex flex-col">
         <div className="max-w-7xl mx-auto w-full px-4 py-8">
           <div className="flex items-center justify-between mb-8">

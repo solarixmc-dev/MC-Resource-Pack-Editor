@@ -3,18 +3,16 @@ import LaunchPage from "./pages/LaunchPage";
 import EditorPage from "./pages/EditorPage";
 import LibraryPage from "./pages/LibraryPage";
 import ContactPage from "./pages/ContactPage";
+import AnalyzerPage from "./pages/AnalyzerPage";
 import Navigation from "./components/Navigation";
 
 function AppContent() {
   return (
     <>
-      <Route path="/" component={() => (
-        <>
-          <Navigation />
-          <LaunchPage />
-        </>
-      )} />
+      <Navigation />
+      <Route path="/" component={LaunchPage} />
       <Route path="/editor" component={EditorPage} />
+      <Route path="/analyzer" component={AnalyzerPage} />
       <Route path="/library" component={LibraryPage} />
       <Route path="/contact" component={ContactPage} />
     </>

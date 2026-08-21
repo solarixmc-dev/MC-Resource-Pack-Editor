@@ -6,7 +6,7 @@ export const DEFAULT_UPLOAD_DEFAULTS = {
   name: "My Resource Pack",
   description: "A Minecraft 1.8 Resource Pack",
   icon: null as string | null,
-  copyFromTopPack: false,
+  copyFromTopPack: true,
 };
 
 export interface PackSettingsModalProps {

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Navigation from "../components/Navigation";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -33,9 +32,7 @@ export default function ContactPage() {
   };
 
   return (
-    <>
-      <Navigation />
-      <div className="min-h-screen bg-white dark:bg-dark-bg py-16 px-4">
+    <div className="min-h-screen bg-white dark:bg-dark-bg py-16 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-black dark:text-dark-text mb-4">Contact Us</h1>
@@ -141,7 +138,6 @@ export default function ContactPage() {
             </div>
           </div>
         </div>
-      </div>
-    </>
+    </div>
   );
 }

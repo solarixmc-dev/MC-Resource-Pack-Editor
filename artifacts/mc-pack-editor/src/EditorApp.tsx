@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { Pack, FolderSources, TextureOverrides, LayoutMode } from "./types";
 import { Notification, UploadDefaults } from "./types/editor";
-import { analyzePackBundle, PackAnalysis, formatBytes } from "./lib/packAnalyzer";
+import { formatBytes } from "./lib/packAnalyzer";
 import {
   loadPackFromFile,
   getAllTexturePathsInFolder,
@@ -28,7 +28,6 @@ import { ImageCropper } from "./components/canvas/ImageCropper";
 import { PackOrderPanel } from "./components/modals/PackOrderPanel";
 import { PackSettingsModal, DEFAULT_UPLOAD_DEFAULTS } from "./components/modals/PackSettingsModal";
 import { SettingsModal } from "./components/modals/SettingsModal";
-import { AnalyzePackModal } from "./components/modals/AnalyzePackModal";
 import { FileViewerModal } from "./components/modals/FileViewerModal";
 
 function readUploadDefaults(): UploadDefaults {
@@ -36,9 +35,18 @@ function readUploadDefaults(): UploadDefaults {
 
   try {
     const saved = window.localStorage.getItem("mc-pack-editor-upload-defaults");
+    const savedCopyFromTopPack = window.localStorage.getItem("mc-pack-editor-copy-from-top-pack");
+    
     if (!saved) return { formatVersion: 1, ...DEFAULT_UPLOAD_DEFAULTS };
 
     const parsed = JSON.parse(saved) as Partial<UploadDefaults>;
+    let copyFromTopPack = typeof parsed.copyFromTopPack === "boolean" ? parsed.copyFromTopPack : true;
+    
+    // Also check separate localStorage for copyFromTopPack (for immediate effect)
+    if (savedCopyFromTopPack !== null) {
+      copyFromTopPack = JSON.parse(savedCopyFromTopPack);
+    }
+    
     return {
       formatVersion: typeof parsed.formatVersion === "number" ? parsed.formatVersion : 1,
       name: typeof parsed.name === "string" && parsed.name.trim() ? parsed.name : DEFAULT_UPLOAD_DEFAULTS.name,
@@ -46,7 +54,7 @@ function readUploadDefaults(): UploadDefaults {
         ? parsed.description
         : DEFAULT_UPLOAD_DEFAULTS.description,
       icon: typeof parsed.icon === "string" ? parsed.icon : null,
-      copyFromTopPack: typeof parsed.copyFromTopPack === "boolean" ? parsed.copyFromTopPack : false,
+      copyFromTopPack,
     };
   } catch {
     return { formatVersion: 1, ...DEFAULT_UPLOAD_DEFAULTS };
@@ -79,7 +87,7 @@ export default function EditorApp() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showBatchOperations, setShowBatchOperations] = useState(false);
   const [batchSelectedTextures, setBatchSelectedTextures] = useState<string[]>([]);
-  const [copyFromTopPack, setCopyFromTopPack] = useState(false);
+  const [copyFromTopPack, setCopyFromTopPack] = useState(uploadDefaults.copyFromTopPack);
 
   // Batch operation handlers
   const handleBatchRecolor = async (_options: { mode: string; color: string; intensity: number }) => {
@@ -290,10 +298,7 @@ export default function EditorApp() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const [analysisOpen, setAnalysisOpen] = useState(false);
   const [editingTexture, setEditingTexture] = useState<{ path: string; displayName: string; folder: string; packId: string | null } | null>(null);
-  const [analysis, setAnalysis] = useState<PackAnalysis | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
   const [packVisibility, setPackVisibility] = useState<Record<string, boolean>>({});
   const [removedFiles, setRemovedFiles] = useState<Record<string, boolean>>({});
   const [cropSource, setCropSource] = useState<string | null>(null);
@@ -349,6 +354,47 @@ export default function EditorApp() {
     }
   }, [copyFromTopPack, uploadDefaults]);
 
+  // Handle copy from top pack when the setting is toggled on
+  useEffect(() => {
+    if (copyFromTopPack && packs.length > 0) {
+      const topPack = packs[0];
+      
+      const iconBuffer = topPack.files.get("pack.png");
+      if (iconBuffer) {
+        const iconUrl = arrayBufferToDataURL(iconBuffer, "pack.png");
+        setPackIcon(iconUrl);
+      } else {
+        setPackIcon(null);
+      }
+
+      const mcmetaBuffer = topPack.files.get("pack.mcmeta");
+      if (mcmetaBuffer) {
+        try {
+          const decoder = new TextDecoder();
+          const mcmetaText = decoder.decode(mcmetaBuffer);
+          const mcmeta = JSON.parse(mcmetaText);
+          const packData = mcmeta.pack;
+          
+          if (packData?.description) {
+            let description = packData.description;
+            if (typeof description === "object") {
+              description = description.text || "";
+            }
+            setPackDescription(description.trim());
+          } else {
+            setPackDescription(uploadDefaults.description);
+          }
+        } catch {
+          setPackDescription(uploadDefaults.description);
+        }
+      } else {
+        setPackDescription(uploadDefaults.description);
+      }
+
+      setPackName(topPack.name);
+    }
+  }, [copyFromTopPack, packs, uploadDefaults]);
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
     document.documentElement.style.colorScheme = darkMode ? "dark" : "light";
@@ -358,6 +404,10 @@ export default function EditorApp() {
   useEffect(() => {
     window.localStorage.setItem("mc-pack-editor-upload-defaults", JSON.stringify(uploadDefaults));
   }, [uploadDefaults]);
+
+  useEffect(() => {
+    window.localStorage.setItem("mc-pack-editor-copy-from-top-pack", JSON.stringify(copyFromTopPack));
+  }, [copyFromTopPack]);
 
   const removePack = useCallback((id: string) => {
     setPacks((prev) => prev.filter((p) => p.id !== id));
@@ -553,46 +603,6 @@ export default function EditorApp() {
       setExporting(false);
     }
   }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles, addNotification, localLibrary]);
-
-  const handleAnalyze = useCallback(async () => {
-    if (!packs.length) return;
-    setAnalysisOpen(true);
-    setAnalyzing(true);
-    try {
-      const result = await analyzePackBundle(packs);
-      setAnalysis(result);
-    } catch (e) {
-      console.error("Pack analysis failed:", e);
-      const totalSizeBytes = packs.reduce((sum, pack) => sum + Array.from(pack.files.values()).reduce((size, buffer) => size + buffer.byteLength, 0), 0);
-      const totalFiles = packs.reduce((sum, pack) => sum + pack.files.size, 0);
-      const textureCount = packs.reduce((sum, pack) => sum + Array.from(pack.files.keys()).filter((path) => {
-        const ext = path.split('.').pop()?.toLowerCase();
-        return ['png', 'jpg', 'jpeg', 'gif'].includes(ext || '');
-      }).length, 0);
-      
-      setAnalysis({
-        packNames: packs.map((pack) => stripColorCodes(pack.name)),
-        packCount: packs.length,
-        totalFiles,
-        totalSizeBytes,
-        totalSizeLabel: formatBytes(totalSizeBytes),
-        baseTextureResolution: "N/A",
-        mixedResolutions: false,
-        resolutions: [],
-        modifiedTextureCount: textureCount,
-        texturesByFolder: new Map(),
-        missingTextures: [],
-        duplicateTextures: [],
-        animatedTextures: [],
-        invalidAnimations: [],
-        atlasAnalysis: [],
-        overallSummary: `${packs.length} pack${packs.length !== 1 ? "s" : ""} loaded • ${textureCount} texture${textureCount !== 1 ? "s" : ""} found.`,
-        versionRange: "Unknown (basic analysis)",
-      });
-    } finally {
-      setAnalyzing(false);
-    }
-  }, [packs]);
 
   const handleGeneratePreview = useCallback(() => {
     if (!packs.length) return;
@@ -823,14 +833,6 @@ export default function EditorApp() {
           <div className="flex items-center gap-2">
             {packs.length > 0 && (
               <>
-                <button
-                  onClick={handleAnalyze}
-                  disabled={analyzing}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${darkMode ? "text-dark-text-secondary hover:text-dark-text hover:bg-dark-tertiary" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}
-                >
-                  <span className={analyzing ? "animate-pulse" : ""}>✨</span>
-                  {analyzing ? "Analyzing…" : "Analyze"}
-                </button>
                 <button
                   onClick={handleGeneratePreview}
                   className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${darkMode ? "text-dark-text-secondary hover:text-dark-text hover:bg-dark-tertiary" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}
@@ -1267,15 +1269,6 @@ export default function EditorApp() {
             </div>
           </div>
         </div>
-      )}
-
-      {analysisOpen && (
-        <AnalyzePackModal
-          analysis={analysis}
-          isAnalyzing={analyzing}
-          onClose={() => setAnalysisOpen(false)}
-          darkMode={darkMode}
-        />
       )}
 
       {previewOpen && (

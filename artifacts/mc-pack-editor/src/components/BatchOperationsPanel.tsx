@@ -17,7 +17,7 @@ interface BatchOperationsPanelProps {
   onApplyResize: (options: ResizeBatchOptions) => Promise<{ success: string[]; failed: Array<{ path: string; error: string }> }>;
   onApplyConvert: (options: ConvertBatchOptions) => Promise<{ success: string[]; failed: Array<{ path: string; error: string }> }>;
   onClose: () => void;
-  darkMode: boolean;
+  darkMode?: boolean;
 }
 
 export default function BatchOperationsPanel({
@@ -28,7 +28,7 @@ export default function BatchOperationsPanel({
   onApplyResize,
   onApplyConvert,
   onClose,
-  darkMode,
+  darkMode = false,
 }: BatchOperationsPanelProps) {
   const [operationType, setOperationType] = useState<'recolor' | 'resize' | 'convert'>('recolor');
   const [filterPattern, setFilterPattern] = useState('');

@@ -10,6 +10,7 @@ export default function Navigation() {
   const navItems = [
     { path: "/", label: "Home" },
     { path: "/editor", label: "Texture Editor" },
+    { path: "/analyzer", label: "Pack Analyzer" },
     { path: "/library", label: "Pack Library" },
     { path: "/contact", label: "Contact" },
   ];
