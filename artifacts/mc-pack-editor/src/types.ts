@@ -5,6 +5,8 @@ export interface Pack {
   name: string;
   files: Map<string, ArrayBuffer>;
   color: string;
+  description?: string;
+  icon?: string | null;
 }
 
 export interface TextureEntry {

@@ -130,7 +130,7 @@ export function selectNone(): string[] {
   return [];
 }
 
-export function invertSelection(textures: string[], selected: string[], allTextures: string[]): string[] {
+export function invertSelection(selected: string[], allTextures: string[]): string[] {
   const selectedSet = new Set(selected);
   return allTextures.filter(t => !selectedSet.has(t));
 }

@@ -70,7 +70,7 @@ export default function BatchOperationsPanel({
     setResults(null);
 
     try {
-      let result;
+      let result: { success: string[]; failed: Array<{ path: string; error: string }> } | undefined;
       if (operationType === 'recolor') {
         result = await onApplyRecolor({
           mode: recolorMode,
@@ -89,7 +89,7 @@ export default function BatchOperationsPanel({
           quality: convertQuality,
         });
       }
-      setResults(result);
+      setResults(result ?? null);
     } catch (error) {
       console.error('Batch operation failed:', error);
     } finally {
