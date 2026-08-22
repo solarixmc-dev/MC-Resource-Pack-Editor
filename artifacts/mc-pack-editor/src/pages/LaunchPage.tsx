@@ -71,10 +71,14 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'scr
   };
 
   const getCurrentVideoSrc = () => {
+    console.log('Getting video source for type:', type, 'currentVideo:', currentVideo);
     if (type === 'scratch' && currentVideo === 1 && videoFiles2.scratch) {
+      console.log('Using video 2 for scratch:', videoFiles2.scratch);
       return videoFiles2.scratch;
     }
-    return videoFiles[type];
+    const src = videoFiles[type];
+    console.log('Using video source:', src);
+    return src;
   };
 
   return (
