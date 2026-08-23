@@ -580,12 +580,13 @@ export async function exportMergedPack(
     }
 
     if (!sourcePack) {
-      // Only include files that exist in the top priority pack
-      // Don't include unique files from lower priority packs
-      if (!packs[0].files.has(path)) {
-        continue;
+      // Check all packs in priority order and use the first one that has the file
+      for (const pack of packs) {
+        if (pack.files.has(path)) {
+          sourcePack = pack;
+          break;
+        }
       }
-      sourcePack = packs[0];
     }
 
     if (sourcePack) {
