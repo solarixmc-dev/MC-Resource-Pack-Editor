@@ -239,7 +239,7 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
           {/* Video background */}
           {!videoError && (
             <video
-              src="/videos/3d-preview.mp4"
+              src={`${process.env.NODE_ENV === 'production' ? '/MC-Resource-Pack-Editor' : ''}/videos/3d-preview.mp4`}
               autoPlay
               loop
               muted

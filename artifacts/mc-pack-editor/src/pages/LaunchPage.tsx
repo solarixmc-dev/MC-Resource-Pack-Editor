@@ -20,22 +20,24 @@ function VideoPlaceholder({ type }: { type: 'editor' | 'pack' | 'library' | 'scr
     preview: ['#ec4899', '#f43f5e', '#ef4444']
   };
 
+  const basePath = process.env.NODE_ENV === 'production' ? '/MC-Resource-Pack-Editor' : '';
+  
   const videoFiles = {
-    editor: '/videos/texture-editor.mp4',
-    pack: '/videos/pack-management.mp4',
-    library: '/videos/local-library.mp4',
-    scratch: '/videos/create-scratch.mp4',
-    analyzer: '/videos/pack-analyzer.mp4',
-    preview: '/videos/3d-preview.mp4'
+    editor: `${basePath}/videos/texture-editor.mp4`,
+    pack: `${basePath}/videos/pack-management.mp4`,
+    library: `${basePath}/videos/local-library.mp4`,
+    scratch: `${basePath}/videos/create-scratch.mp4`,
+    analyzer: `${basePath}/videos/pack-analyzer.mp4`,
+    preview: `${basePath}/videos/3d-preview.mp4`
   };
 
   const videoFiles2 = {
-    editor: '/videos/texture-editor2.mp4',
-    pack: '/videos/pack-management2.mp4',
-    library: '/videos/local-library2.mp4',
-    scratch: '/videos/create-scratch2.mp4',
-    analyzer: '/videos/pack-analyzer.mp4',
-    preview: '/videos/3d-preview.mp4'
+    editor: `${basePath}/videos/texture-editor2.mp4`,
+    pack: `${basePath}/videos/pack-management2.mp4`,
+    library: `${basePath}/videos/local-library2.mp4`,
+    scratch: `${basePath}/videos/create-scratch2.mp4`,
+    analyzer: `${basePath}/videos/pack-analyzer.mp4`,
+    preview: `${basePath}/videos/3d-preview.mp4`
   };
 
   const videoRef = useRef<HTMLVideoElement>(null);
