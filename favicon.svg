@@ -1,0 +1,25 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top pins -->
+  <rect x="58" y="12" width="14" height="24" rx="6" fill="#FFF"/>
+  <rect x="82" y="12" width="14" height="24" rx="6" fill="#FFF"/>
+  <rect x="106" y="12" width="14" height="24" rx="6" fill="#FFF"/>
+  <!-- Right pins -->
+  <rect x="144" y="58" width="24" height="14" rx="6" fill="#FFF"/>
+  <rect x="144" y="82" width="24" height="14" rx="6" fill="#FFF"/>
+  <rect x="144" y="106" width="24" height="14" rx="6" fill="#FFF"/>
+  <!-- Bottom pins -->
+  <rect x="58" y="144" width="14" height="24" rx="6" fill="#FFF"/>
+  <rect x="82" y="144" width="14" height="24" rx="6" fill="#FFF"/>
+  <rect x="106" y="144" width="14" height="24" rx="6" fill="#FFF"/>
+  <!-- Left pins -->
+  <rect x="12" y="58" width="24" height="14" rx="6" fill="#FFF"/>
+  <rect x="12" y="82" width="24" height="14" rx="6" fill="#FFF"/>
+  <rect x="12" y="106" width="24" height="14" rx="6" fill="#FFF"/>
+  <!-- Outer square -->
+  <rect x="36" y="36" width="108" height="108" rx="14" fill="#FFF"/>
+  <!-- Inner chip face -->
+  <rect x="48" y="48" width="84" height="84" rx="12" fill="#000"/>
+  <!-- Center node -->
+  <rect x="66" y="66" width="48" height="48" rx="10" fill="none" stroke="#000" stroke-width="8"/>
+  <rect x="70" y="70" width="40" height="40" rx="10" fill="#FFF"/>
+</svg>
