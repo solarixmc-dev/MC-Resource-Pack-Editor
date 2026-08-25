@@ -5,10 +5,9 @@ import path from "path";
 const rawPort = process.env.PORT;
 const port = Number(rawPort ?? 3000);
 const basePath = process.env.BASE_PATH ?? "/";
-const isProduction = process.env.NODE_ENV === 'production';
 
 export default defineConfig({
-  base: isProduction ? '/MC-Resource-Pack-Editor/' : basePath,
+  base: basePath,
   plugins: [
     react(),
     ...(process.env.NODE_ENV !== "production" &&
