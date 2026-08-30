@@ -43,26 +43,8 @@ function getItemTexture(packs: Pack[], filenames: string[]): string | null {
   return null;
 }
 
-function getSkyTexture(packs: Pack[]): string | null {
-  const skyFilenames = ["cloud1.png", "cloud2.png", "clouds.png", "sky.png"];
-
-  for (const pack of packs) {
-    for (const [path, buffer] of pack.files.entries()) {
-      const parts = path.split('/');
-      const filename = parts[parts.length - 1].toLowerCase();
-      if (skyFilenames.includes(filename)) {
-        console.log(`Found sky texture: ${filename} at ${path}`);
-        return arrayBufferToDataURL(buffer, path);
-      }
-    }
-  }
-  console.log('No sky texture found, using default');
-  return null;
-}
-
 export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalProps) {
   const [selectedItem, setSelectedItem] = useState<{ name: string; filenames: string[] } | null>(null);
-  const skyTexture = getSkyTexture(packs);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -80,14 +62,7 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
 
         {/* Preview Area */}
         <div
-          className="relative w-full h-[400px] overflow-hidden"
-          style={{
-            backgroundImage: skyTexture ? `url(${skyTexture})` : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundColor: skyTexture ? undefined : (darkMode ? '#1a1a1a' : '#87CEEB'),
-            filter: darkMode && skyTexture ? 'brightness(0.5) contrast(1.2)' : undefined,
-          }}
+          className={`relative w-full h-[400px] overflow-hidden ${darkMode ? "bg-dark-bg" : "bg-white"}`}
         >
           {/* Grid of items */}
           <div className="absolute inset-0 flex items-center justify-center p-8">
