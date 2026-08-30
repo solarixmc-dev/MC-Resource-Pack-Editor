@@ -20,10 +20,8 @@ function AppContent() {
 }
 
 export default function App() {
-  const basePath = process.env.NODE_ENV === 'production' ? '/MC-Resource-Pack-Editor' : '/';
-  
   return (
-    <Router base={basePath}>
+    <Router>
       <AppContent />
     </Router>
   );
