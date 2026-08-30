@@ -16,7 +16,6 @@ import { useTheme } from "./contexts/ThemeContext";
 
 // Components
 import PreviewModal from "./components/PreviewModal";
-import BatchOperationsPanel from "./components/BatchOperationsPanel";
 import TourGuide from "./components/TourGuide";
 import { DropZone } from "./components/common/DropZone";
 import { FolderSidebar } from "./components/explorer/FolderSidebar";
@@ -85,31 +84,7 @@ export default function EditorApp() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [showBatchOperations, setShowBatchOperations] = useState(false);
-  const [batchSelectedTextures, setBatchSelectedTextures] = useState<string[]>([]);
   const [copyFromTopPack, setCopyFromTopPack] = useState(uploadDefaults.copyFromTopPack);
-
-  // Batch operation handlers
-  const handleBatchRecolor = async (_options: { mode: string; color: string; intensity: number }) => {
-    return {
-      success: batchSelectedTextures,
-      failed: []
-    };
-  };
-
-  const handleBatchResize = async (_options: { width: number; height: number; maintainAspectRatio: boolean }) => {
-    return {
-      success: batchSelectedTextures,
-      failed: []
-    };
-  };
-
-  const handleBatchConvert = async (_options: { format: string; quality?: number }) => {
-    return {
-      success: batchSelectedTextures,
-      failed: []
-    };
-  };
 
   // Save editor state to IndexedDB whenever packs or metadata changes
   useEffect(() => {
@@ -839,12 +814,6 @@ export default function EditorApp() {
                 >
                   👁 Preview
                 </button>
-                <button
-                  onClick={() => setShowBatchOperations(true)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${darkMode ? "text-dark-text-secondary hover:text-dark-text hover:bg-dark-tertiary" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}
-                >
-                  ⚡ Batch
-                </button>
                 <div className="relative" ref={exportDropdownRef}>
                   <button
                     data-tour="export-area"
@@ -1275,19 +1244,6 @@ export default function EditorApp() {
         <PreviewModal
           packs={packs}
           onClose={() => setPreviewOpen(false)}
-          darkMode={darkMode}
-        />
-      )}
-
-      {showBatchOperations && (
-        <BatchOperationsPanel
-          textures={getAllTexturePathsInFolder(packs, selectedFolder, false)}
-          selectedTextures={batchSelectedTextures}
-          onSelectionChange={setBatchSelectedTextures}
-          onApplyRecolor={handleBatchRecolor}
-          onApplyResize={handleBatchResize}
-          onApplyConvert={handleBatchConvert}
-          onClose={() => setShowBatchOperations(false)}
           darkMode={darkMode}
         />
       )}
