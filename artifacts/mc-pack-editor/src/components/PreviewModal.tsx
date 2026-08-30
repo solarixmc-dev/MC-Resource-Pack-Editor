@@ -76,7 +76,7 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
                     onClick={() => setSelectedItem(item)}
                   >
                     <div
-                      className={`w-16 h-16 rounded-lg flex items-center justify-center border-2 ${darkMode ? "bg-dark-tertiary border-dark-border" : "bg-white border-gray-300"}`}
+                      className="w-16 h-16 rounded-lg checkered flex items-center justify-center border-2 border-black/20"
                       style={{ imageRendering: 'pixelated' }}
                     >
                       {textureUrl ? (
