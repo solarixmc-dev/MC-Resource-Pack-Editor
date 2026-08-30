@@ -29,51 +29,9 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Initialize Three.js scene with Minecraft sky background
+    // Initialize Three.js scene with simple theme-matching background
     const scene = new THREE.Scene();
-    
-    // Load actual Minecraft sky texture
-    const textureLoader = new THREE.TextureLoader();
-    const basePath = process.env.NODE_ENV === 'production' ? '/MC-Resource-Pack-Editor' : '';
-    const skyTexture = textureLoader.load(`${basePath}/clouds.png`, 
-      (texture) => {
-        texture.magFilter = THREE.NearestFilter;
-        texture.minFilter = THREE.NearestFilter;
-        scene.background = texture;
-      },
-      undefined,
-      (error) => {
-        console.error('Failed to load sky texture:', error);
-        // Fallback to gradient if texture fails
-        const canvas = document.createElement('canvas');
-        canvas.width = 2;
-        canvas.height = 512;
-        const ctx = canvas.getContext('2d');
-        
-        if (ctx) {
-          const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-          if (darkMode) {
-            gradient.addColorStop(0, '#0a0a20');
-            gradient.addColorStop(0.5, '#1a1a40');
-            gradient.addColorStop(1, '#2a2a60');
-          } else {
-            gradient.addColorStop(0, '#87CEEB');
-            gradient.addColorStop(0.4, '#ADD8E6');
-            gradient.addColorStop(0.7, '#B0E0E6');
-            gradient.addColorStop(1, '#E0F7FA');
-          }
-          ctx.fillStyle = gradient;
-          ctx.fillRect(0, 0, 2, 512);
-          
-          const fallbackTexture = new THREE.CanvasTexture(canvas);
-          fallbackTexture.magFilter = THREE.NearestFilter;
-          fallbackTexture.minFilter = THREE.NearestFilter;
-          scene.background = fallbackTexture;
-        } else {
-          scene.background = new THREE.Color(darkMode ? 0x1a1a1a : 0x87CEEB);
-        }
-      }
-    );
+    scene.background = new THREE.Color(darkMode ? 0x000000 : 0xFFFFFF);
 
     // Initialize camera
     const camera = new THREE.PerspectiveCamera(
@@ -91,13 +49,9 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     containerRef.current.appendChild(renderer.domElement);
 
-    // Add lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    // Add lighting (simplified to prevent specks)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
     scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 5, 5);
-    scene.add(directionalLight);
 
     // Create 3D item
     create3DItem(scene, item, packs);
@@ -143,9 +97,6 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
         }
       }
       if (scene) {
-        if (scene.background instanceof THREE.Texture) {
-          scene.background.dispose();
-        }
         scene.traverse((object) => {
           if (object instanceof THREE.Mesh) {
             object.geometry.dispose();
@@ -188,13 +139,15 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
       material = new THREE.MeshBasicMaterial({ 
         map: texture,
         transparent: true,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
+        alphaTest: 0.1
       });
     } else {
       material = new THREE.MeshBasicMaterial({ 
         color: 0x888888,
         transparent: true,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
+        alphaTest: 0.1
       });
     }
 
