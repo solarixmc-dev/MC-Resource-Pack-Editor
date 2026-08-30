@@ -32,36 +32,48 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
     // Initialize Three.js scene with Minecraft sky background
     const scene = new THREE.Scene();
     
-    // Create gradient background that mimics Minecraft sky
-    const canvas = document.createElement('canvas');
-    canvas.width = 2;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d');
-    
-    if (ctx) {
-      const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-      if (darkMode) {
-        // Night sky gradient
-        gradient.addColorStop(0, '#0a0a20');
-        gradient.addColorStop(0.5, '#1a1a40');
-        gradient.addColorStop(1, '#2a2a60');
-      } else {
-        // Day sky gradient (Minecraft-style)
-        gradient.addColorStop(0, '#87CEEB');
-        gradient.addColorStop(0.4, '#ADD8E6');
-        gradient.addColorStop(0.7, '#B0E0E6');
-        gradient.addColorStop(1, '#E0F7FA');
+    // Load actual Minecraft sky texture
+    const textureLoader = new THREE.TextureLoader();
+    const basePath = process.env.NODE_ENV === 'production' ? '/MC-Resource-Pack-Editor' : '';
+    const skyTexture = textureLoader.load(`${basePath}/clouds.png`, 
+      (texture) => {
+        texture.magFilter = THREE.NearestFilter;
+        texture.minFilter = THREE.NearestFilter;
+        scene.background = texture;
+      },
+      undefined,
+      (error) => {
+        console.error('Failed to load sky texture:', error);
+        // Fallback to gradient if texture fails
+        const canvas = document.createElement('canvas');
+        canvas.width = 2;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        
+        if (ctx) {
+          const gradient = ctx.createLinearGradient(0, 0, 0, 512);
+          if (darkMode) {
+            gradient.addColorStop(0, '#0a0a20');
+            gradient.addColorStop(0.5, '#1a1a40');
+            gradient.addColorStop(1, '#2a2a60');
+          } else {
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(0.4, '#ADD8E6');
+            gradient.addColorStop(0.7, '#B0E0E6');
+            gradient.addColorStop(1, '#E0F7FA');
+          }
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, 2, 512);
+          
+          const fallbackTexture = new THREE.CanvasTexture(canvas);
+          fallbackTexture.magFilter = THREE.NearestFilter;
+          fallbackTexture.minFilter = THREE.NearestFilter;
+          scene.background = fallbackTexture;
+        } else {
+          scene.background = new THREE.Color(darkMode ? 0x1a1a1a : 0x87CEEB);
+        }
       }
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 2, 512);
-      
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.magFilter = THREE.NearestFilter;
-      texture.minFilter = THREE.NearestFilter;
-      scene.background = texture;
-    } else {
-      scene.background = new THREE.Color(darkMode ? 0x1a1a1a : 0x87CEEB);
-    }
+    );
 
     // Initialize camera
     const camera = new THREE.PerspectiveCamera(
