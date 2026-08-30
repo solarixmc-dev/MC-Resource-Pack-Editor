@@ -300,7 +300,7 @@ export default function LibraryPage() {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-black dark:text-dark-text truncate">
-                        {parseMinecraftFormatting(pack.name)}
+                        {parseMinecraftFormatting(pack.name, true)}
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-dark-text-tertiary">
                         {new Date(pack.createdAt).toLocaleDateString()}
