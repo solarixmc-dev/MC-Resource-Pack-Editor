@@ -25,7 +25,8 @@ const PREVIEW_ITEMS = [
   { name: "Diamond", filenames: ["diamond.png"] },
   { name: "Iron Ingot", filenames: ["iron_ingot.png"] },
   { name: "Gold Ingot", filenames: ["gold_ingot.png"] },
-  { name: "Potion Bottle", filenames: ["potion_bottle_drinkable.png", "potion_bottle_splash.png"] },
+  { name: "Potion Bottle", filenames: ["potion_bottle_drinkable.png"] },
+  { name: "Potion Splash", filenames: ["potion_bottle_splash.png"] },
   { name: "Bed", filenames: ["bed.png", "bed_foot.png", "bed_head.png"] },
 ];
 
@@ -68,7 +69,7 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
         >
           {/* Grid of items */}
           <div className="absolute inset-0 flex items-center justify-center p-8">
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-6 gap-4">
               {PREVIEW_ITEMS.map((item) => {
                 const textureUrl = getItemTexture(packs, item.filenames);
                 return (

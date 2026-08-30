@@ -51,6 +51,7 @@ export function TextureEditorModal({
   const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
   const [recolorMode, setRecolorMode] = useState<RecolorMode>("tint");
   const [recolorIntensity, setRecolorIntensity] = useState(0.6);
+  const [previousColor, setPreviousColor] = useState("#000000");
   const [imageData, setImageData] = useState<ImageData | null>(null);
   const [textContent, setTextContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +64,8 @@ export function TextureEditorModal({
   }, [editHistory]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasFrameRef = useRef<HTMLDivElement>(null);
+  const isDrawingRef = useRef(false);
+  const beforeDrawStateRef = useRef<ImageData | null>(null);
   const [canvasScale, setCanvasScale] = useState(1);
   const [overlayOpacity, setOverlayOpacity] = useState(0);
   const [defaultImageData, setDefaultImageData] = useState<ImageData | null>(null);
@@ -211,9 +214,18 @@ export function TextureEditorModal({
     setHasChanges(true);
     setEditHistory((previous) => {
       const entries = [...previous.entries.slice(0, previous.index + 1), next];
+      // Limit history to 50 entries to prevent memory issues
+      if (entries.length > 50) {
+        entries.shift();
+      }
       return { entries, index: entries.length - 1 };
     });
   }, []);
+
+  const handleColorChange = useCallback((newColor: string) => {
+    setColor(newColor);
+    setPreviousColor(color);
+  }, [color]);
 
   const undoEdit = useCallback(() => {
     const current = editHistoryRef.current;
@@ -310,7 +322,7 @@ export function TextureEditorModal({
           return next;
         });
       }
-      
+
       if (e.type === "pointerup") {
         e.currentTarget.releasePointerCapture(e.pointerId);
       }
@@ -319,16 +331,40 @@ export function TextureEditorModal({
 
     if (e.type === "pointerdown") {
       e.currentTarget.setPointerCapture(e.pointerId);
+      // Save state before starting to draw (store in ref, not history)
+      if (imageData) {
+        beforeDrawStateRef.current = new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height);
+        isDrawingRef.current = true;
+      }
     }
 
-    if (e.type === "pointerdown" || (e.type === "pointermove" && e.buttons === 1)) {
+    if (e.type === "pointermove" && e.buttons === 1) {
       let next = imageData;
       if (tool === "pencil" || tool === "eraser") {
         next = applyBrush(imageData, px, py, color, brushSize, tool === "eraser" ? "eraser" : "pencil", rectRegion);
       }
       if (next !== imageData) {
-        applyImageChange(next);
+        setImageData(next); // Update visual without adding to history
       }
+    }
+
+    if (e.type === "pointerup") {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+      // Save both before and after states on pointer up (single stroke = one history entry)
+      if (isDrawingRef.current && beforeDrawStateRef.current && imageData) {
+        const afterState = new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height);
+        setEditHistory((previous) => {
+          const entries = [...previous.entries.slice(0, previous.index + 1), beforeDrawStateRef.current!, afterState];
+          // Limit history to 50 entries to prevent memory issues
+          if (entries.length > 50) {
+            entries.shift();
+          }
+          return { entries, index: entries.length - 1 };
+        });
+        setHasChanges(true);
+      }
+      isDrawingRef.current = false;
+      beforeDrawStateRef.current = null;
     }
   };
 
@@ -542,7 +578,7 @@ export function TextureEditorModal({
 
               <div className="rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-tertiary p-3">
                 <div className="flex items-center gap-3 mb-3">
-                  <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-10 w-10 cursor-pointer rounded border border-slate-200 dark:border-dark-border bg-transparent p-1" aria-label="Color picker" />
+                  <input type="color" value={color} onChange={(e) => handleColorChange(e.target.value)} className="h-10 w-10 cursor-pointer rounded border border-slate-200 dark:border-dark-border bg-transparent p-1" aria-label="Color picker" />
                   <input
                     type="text"
                     value={hexInput}
