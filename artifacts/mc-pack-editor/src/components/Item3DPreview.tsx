@@ -29,9 +29,39 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Initialize Three.js scene
+    // Initialize Three.js scene with Minecraft sky background
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(darkMode ? 0x1a1a1a : 0x87CEEB);
+    
+    // Create gradient background that mimics Minecraft sky
+    const canvas = document.createElement('canvas');
+    canvas.width = 2;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    
+    if (ctx) {
+      const gradient = ctx.createLinearGradient(0, 0, 0, 512);
+      if (darkMode) {
+        // Night sky gradient
+        gradient.addColorStop(0, '#0a0a20');
+        gradient.addColorStop(0.5, '#1a1a40');
+        gradient.addColorStop(1, '#2a2a60');
+      } else {
+        // Day sky gradient (Minecraft-style)
+        gradient.addColorStop(0, '#87CEEB');
+        gradient.addColorStop(0.4, '#ADD8E6');
+        gradient.addColorStop(0.7, '#B0E0E6');
+        gradient.addColorStop(1, '#E0F7FA');
+      }
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 2, 512);
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.magFilter = THREE.NearestFilter;
+      texture.minFilter = THREE.NearestFilter;
+      scene.background = texture;
+    } else {
+      scene.background = new THREE.Color(darkMode ? 0x1a1a1a : 0x87CEEB);
+    }
 
     // Initialize camera
     const camera = new THREE.PerspectiveCamera(
@@ -101,6 +131,9 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
         }
       }
       if (scene) {
+        if (scene.background instanceof THREE.Texture) {
+          scene.background.dispose();
+        }
         scene.traverse((object) => {
           if (object instanceof THREE.Mesh) {
             object.geometry.dispose();
