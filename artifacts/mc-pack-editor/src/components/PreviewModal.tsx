@@ -25,6 +25,8 @@ const PREVIEW_ITEMS = [
   { name: "Diamond", filenames: ["diamond.png"] },
   { name: "Iron Ingot", filenames: ["iron_ingot.png"] },
   { name: "Gold Ingot", filenames: ["gold_ingot.png"] },
+  { name: "Potion Bottle", filenames: ["potion_bottle_drinkable.png", "potion_bottle_splash.png"] },
+  { name: "Bed", filenames: ["bed.png", "bed_foot.png", "bed_head.png"] },
 ];
 
 // Search for a file by filename across all packs
@@ -62,7 +64,7 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
 
         {/* Preview Area */}
         <div
-          className={`relative w-full h-[400px] overflow-hidden ${darkMode ? "bg-dark-bg" : "bg-white"}`}
+          className={`relative w-full h-[400px] overflow-hidden ${darkMode ? "bg-dark-secondary" : "bg-white"}`}
         >
           {/* Grid of items */}
           <div className="absolute inset-0 flex items-center justify-center p-8">
