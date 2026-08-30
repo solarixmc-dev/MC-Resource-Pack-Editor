@@ -3,6 +3,7 @@ import LaunchPage from "./pages/LaunchPage";
 import EditorPage from "./pages/EditorPage";
 import LibraryPage from "./pages/LibraryPage";
 import AnalyzerPage from "./pages/AnalyzerPage";
+import SkinEditorPage from "./pages/SkinEditorPage";
 import Navigation from "./components/Navigation";
 
 function AppContent() {
@@ -13,6 +14,7 @@ function AppContent() {
       <Route path="/editor" component={EditorPage} />
       <Route path="/analyzer" component={AnalyzerPage} />
       <Route path="/library" component={LibraryPage} />
+      <Route path="/skin-editor" component={SkinEditorPage} />
     </>
   );
 }
