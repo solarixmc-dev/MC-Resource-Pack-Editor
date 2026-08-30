@@ -25,7 +25,6 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
   const previousMousePosition = useRef({ x: 0, y: 0 });
   const rotationRef = useRef({ x: 0, y: 0 });
   const meshRef = useRef<THREE.Mesh | null>(null);
-  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -230,35 +229,12 @@ export default function Item3DPreview({ item, packs, onClose, darkMode }: Item3D
         {/* 3D Canvas */}
         <div 
           ref={containerRef}
-          className="w-full h-[400px] cursor-grab active:cursor-grabbing relative"
+          className="w-full h-[400px] cursor-grab active:cursor-grabbing"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
         >
-          {/* Video background */}
-          {!videoError && (
-            <video
-              src={`${process.env.NODE_ENV === 'production' ? '/MC-Resource-Pack-Editor' : ''}/videos/3d-preview.mp4`}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ pointerEvents: 'none' }}
-              onError={() => {
-                console.error('Video failed to load');
-                setVideoError(true);
-              }}
-              onLoadStart={() => console.log('Video loading started')}
-              onCanPlay={() => console.log('Video can play')}
-            />
-          )}
-          {videoError && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-dark-tertiary">
-              <p className="text-sm text-gray-500 dark:text-dark-text-secondary">Video unavailable</p>
-            </div>
-          )}
         </div>
 
         {/* Footer */}
