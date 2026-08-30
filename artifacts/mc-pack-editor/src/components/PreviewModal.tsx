@@ -15,19 +15,19 @@ const PREVIEW_ITEMS = [
   { name: "Wooden Pickaxe", filenames: ["wood_pickaxe.png", "pickaxe_wood.png"] },
   { name: "Wooden Axe", filenames: ["wood_axe.png", "axe_wood.png"] },
   { name: "Golden Apple", filenames: ["apple_golden.png", "golden_apple.png"] },
-  { name: "Blue Wool", filenames: ["wool_colored_blue.png", "blue_wool.png"] },
+  { name: "Fireball", filenames: ["fireball.png", "fire_charge.png"] },
   { name: "Oak Planks", filenames: ["planks_oak.png"] },
   { name: "End Stone", filenames: ["end_stone.png"] },
   { name: "TNT", filenames: ["tnt_side.png", "tnt.png"] },
   { name: "Red Wool", filenames: ["wool_colored_red.png", "red_wool.png"] },
-  { name: "Fireball", filenames: ["fireball.png", "fire_charge.png"] },
-  { name: "Emerald", filenames: ["emerald.png"] },
+  { name: "Blue Wool", filenames: ["wool_colored_blue.png", "blue_wool.png"] },
+  { name: "Bed", filenames: ["bed.png", "bed_foot.png", "bed_head.png"] },
   { name: "Diamond", filenames: ["diamond.png"] },
+  { name: "Emerald", filenames: ["emerald.png"] },
   { name: "Iron Ingot", filenames: ["iron_ingot.png"] },
   { name: "Gold Ingot", filenames: ["gold_ingot.png"] },
   { name: "Potion Bottle", filenames: ["potion_bottle_drinkable.png"] },
   { name: "Potion Splash", filenames: ["potion_bottle_splash.png"] },
-  { name: "Bed", filenames: ["bed.png", "bed_foot.png", "bed_head.png"] },
 ];
 
 // Search for a file by filename across all packs
