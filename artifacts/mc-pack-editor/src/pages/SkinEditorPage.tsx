@@ -21,7 +21,7 @@ export default function SkinEditorPage() {
   const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
   const [recolorMode, setRecolorMode] = useState<"tint" | "hue-shift" | "colorize" | "multiply" | "overlay">("tint");
   const [recolorIntensity, setRecolorIntensity] = useState(0.6);
-  const [activeLayer, setActiveLayer] = useState<"body" | "outer" | "all">("all");
+  const [activeLayer, setActiveLayer] = useState<"top" | "bottom" | "all">("all");
   const [hasChanges, setHasChanges] = useState(false);
   const [editHistory, setEditHistory] = useState<{ entries: ImageData[]; index: number }>({ entries: [], index: -1 });
   const editHistoryRef = useRef(editHistory);
@@ -103,11 +103,6 @@ export default function SkinEditorPage() {
     try {
       const buffer = await file.arrayBuffer();
       const imageData = loadImageDataFromBuffer(buffer);
-      if (imageData.width !== 64 || imageData.height !== 64) {
-        alert("Skin must be 64x64 pixels");
-        setIsLoading(false);
-        return;
-      }
       setSkinData(imageData);
       setEditHistory({ entries: [imageData], index: 0 });
       setHasChanges(false);
@@ -135,11 +130,12 @@ export default function SkinEditorPage() {
   const getLayerRegion = () => {
     if (!skinData) return undefined;
     if (activeLayer === "all") return undefined;
-    if (activeLayer === "body") {
-      return { x: 0, y: 0, width: 64, height: 32 };
+    const height = skinData.height;
+    if (activeLayer === "top") {
+      return { x: 0, y: 0, width: skinData.width, height: Math.floor(height / 2) };
     }
-    if (activeLayer === "outer") {
-      return { x: 0, y: 32, width: 64, height: 32 };
+    if (activeLayer === "bottom") {
+      return { x: 0, y: Math.floor(height / 2), width: skinData.width, height: Math.ceil(height / 2) };
     }
     return undefined;
   };
@@ -299,7 +295,7 @@ export default function SkinEditorPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className={`text-3xl font-bold ${darkMode ? "text-dark-text" : "text-gray-900"}`}>Minecraft Skin Editor</h1>
-          <p className={`mt-2 ${darkMode ? "text-dark-text-secondary" : "text-gray-600"}`}>Upload and edit your Minecraft skin (64x64 PNG)</p>
+          <p className={`mt-2 ${darkMode ? "text-dark-text-secondary" : "text-gray-600"}`}>Upload and edit your Minecraft skin (PNG)</p>
         </div>
 
         {!skinData ? (
@@ -319,7 +315,7 @@ export default function SkinEditorPage() {
               {isLoading ? "Loading..." : "Upload Skin (.png)"}
             </button>
             <p className={`mt-4 ${darkMode ? "text-dark-text-secondary" : "text-gray-600"}`}>
-              Supports 64x64 Minecraft skin files
+              Supports PNG skin files
             </p>
           </div>
         ) : (
@@ -420,7 +416,7 @@ export default function SkinEditorPage() {
               <div className={`rounded-lg border ${darkMode ? "border-dark-border bg-dark-secondary" : "border-gray-200 bg-white"} p-4`}>
                 <h3 className={`text-sm font-semibold mb-3 ${darkMode ? "text-dark-text" : "text-gray-900"}`}>Layer</h3>
                 <div className="space-y-2">
-                  {(["all", "body", "outer"] as const).map((layer) => (
+                  {(["all", "top", "bottom"] as const).map((layer) => (
                     <button
                       key={layer}
                       onClick={() => setActiveLayer(layer)}
@@ -434,7 +430,7 @@ export default function SkinEditorPage() {
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
-                      {layer === "all" ? "All Layers" : layer === "body" ? "Body Layer" : "Outer Layer"}
+                      {layer === "all" ? "All Layers" : layer === "top" ? "Top Half" : "Bottom Half"}
                     </button>
                   ))}
                 </div>
