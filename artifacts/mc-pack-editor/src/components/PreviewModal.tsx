@@ -85,7 +85,8 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
             backgroundImage: skyTexture ? `url(${skyTexture})` : undefined,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundColor: skyTexture ? undefined : '#87CEEB',
+            backgroundColor: skyTexture ? undefined : (darkMode ? '#1a1a1a' : '#87CEEB'),
+            filter: darkMode && skyTexture ? 'brightness(0.5) contrast(1.2)' : undefined,
           }}
         >
           {/* Grid of items */}
@@ -100,7 +101,7 @@ export default function PreviewModal({ packs, onClose, darkMode }: PreviewModalP
                     onClick={() => setSelectedItem(item)}
                   >
                     <div
-                      className="w-16 h-16 rounded-lg checkered flex items-center justify-center border-2 border-black/20"
+                      className={`w-16 h-16 rounded-lg flex items-center justify-center border-2 ${darkMode ? "bg-dark-tertiary border-dark-border" : "bg-white border-gray-300"}`}
                       style={{ imageRendering: 'pixelated' }}
                     >
                       {textureUrl ? (
