@@ -42,11 +42,15 @@ export default function SkinEditorPage() {
     const canvas = canvasRef.current;
     const imgData = skinData;
     if (!canvas || !imgData) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    canvas.width = imgData.width;
-    canvas.height = imgData.height;
-    ctx.putImageData(imgData, 0, 0);
+    try {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      canvas.width = imgData.width;
+      canvas.height = imgData.height;
+      ctx.putImageData(imgData, 0, 0);
+    } catch (error) {
+      console.error("Error drawing image:", error);
+    }
   }, [skinData]);
 
   useEffect(() => { drawImage(); }, [drawImage]);
@@ -99,16 +103,19 @@ export default function SkinEditorPage() {
       return;
     }
 
+    console.log("Loading skin file:", file.name, file.size);
     setIsLoading(true);
     try {
       const buffer = await file.arrayBuffer();
+      console.log("Buffer loaded, size:", buffer.byteLength);
       const imageData = loadImageDataFromBuffer(buffer);
+      console.log("ImageData loaded:", imageData.width, "x", imageData.height);
       setSkinData(imageData);
       setEditHistory({ entries: [imageData], index: 0 });
       setHasChanges(false);
     } catch (error) {
       console.error("Error loading skin:", error);
-      alert("Error loading skin file");
+      alert("Error loading skin file: " + (error as Error).message);
     } finally {
       setIsLoading(false);
     }
@@ -359,19 +366,21 @@ export default function SkinEditorPage() {
                 </div>
 
                 <div ref={canvasFrameRef} className="flex items-center justify-center overflow-auto" style={{ minHeight: "500px" }}>
-                  <canvas
-                    ref={canvasRef}
-                    onPointerDown={handleCanvasPointer}
-                    onPointerMove={handleCanvasPointer}
-                    onPointerUp={handleCanvasPointer}
-                    onPointerLeave={handleCanvasPointer}
-                    style={{
-                      width: `${skinData?.width ? skinData.width * 8 : 0}px`,
-                      height: `${skinData?.height ? skinData.height * 8 : 0}px`,
-                      imageRendering: "pixelated",
-                      cursor: tool === "eyedropper" ? "crosshair" : tool === "pixel-select" ? "crosshair" : "cell",
-                    }}
-                  />
+                  {skinData && (
+                    <canvas
+                      ref={canvasRef}
+                      onPointerDown={handleCanvasPointer}
+                      onPointerMove={handleCanvasPointer}
+                      onPointerUp={handleCanvasPointer}
+                      onPointerLeave={handleCanvasPointer}
+                      style={{
+                        width: `${skinData.width * 8}px`,
+                        height: `${skinData.height * 8}px`,
+                        imageRendering: "pixelated",
+                        cursor: tool === "eyedropper" ? "crosshair" : tool === "pixel-select" ? "crosshair" : "cell",
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             </div>
