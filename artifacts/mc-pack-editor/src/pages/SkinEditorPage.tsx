@@ -87,14 +87,11 @@ export default function SkinEditorPage() {
           canvas: canvas3dRef.current!,
           width: 400,
           height: 500,
-        });
-        
-        // Load the skin directly with the data URL
-        viewer.loadSkin(url).catch((err) => {
-          console.error("Error loading skin in 3D viewer:", err);
+          skin: url,
         });
         
         viewer3dRef.current = viewer;
+        console.log("3D viewer initialized successfully");
       } catch (error) {
         console.error("Error initializing 3D viewer:", error);
       }
@@ -129,9 +126,7 @@ export default function SkinEditorPage() {
       try {
         const buffer = imageDataToBuffer(next);
         const url = arrayBufferToDataURL(buffer);
-        viewer3dRef.current.loadSkin(url).catch((err) => {
-          console.error("Error updating 3D viewer:", err);
-        });
+        viewer3dRef.current.loadSkin(url);
       } catch (error) {
         console.error("Error updating 3D viewer:", error);
       }
