@@ -65,7 +65,11 @@ export default function SkinEditorPage() {
 
     // Clean up previous viewer
     if (viewer3dRef.current) {
-      viewer3dRef.current.dispose();
+      try {
+        viewer3dRef.current.dispose();
+      } catch (e) {
+        console.error("Error disposing viewer:", e);
+      }
       viewer3dRef.current = null;
     }
 
@@ -74,22 +78,33 @@ export default function SkinEditorPage() {
     const url = arrayBufferToDataURL(buffer, "skin.png");
     setSkinUrl(url);
 
-    // Initialize viewer
-    try {
-      const viewer = new Render({
-        canvas: canvas3dRef.current,
-        width: 400,
-        height: 500,
-      });
-      viewer.loadSkin(url);
-      viewer3dRef.current = viewer;
-    } catch (error) {
-      console.error("Error initializing 3D viewer:", error);
-    }
+    // Initialize viewer with a small delay to ensure canvas is ready
+    const timer = setTimeout(() => {
+      try {
+        const viewer = new Render({
+          canvas: canvas3dRef.current!,
+          width: 400,
+          height: 500,
+        });
+        
+        viewer.loadSkin(url).catch((err) => {
+          console.error("Error loading skin in 3D viewer:", err);
+        });
+        
+        viewer3dRef.current = viewer;
+      } catch (error) {
+        console.error("Error initializing 3D viewer:", error);
+      }
+    }, 100);
 
     return () => {
+      clearTimeout(timer);
       if (viewer3dRef.current) {
-        viewer3dRef.current.dispose();
+        try {
+          viewer3dRef.current.dispose();
+        } catch (e) {
+          console.error("Error disposing viewer:", e);
+        }
         viewer3dRef.current = null;
       }
       if (url) {
@@ -111,13 +126,19 @@ export default function SkinEditorPage() {
 
     // Update 3D viewer with new skin
     if (viewer3dRef.current) {
-      const buffer = imageDataToBuffer(next);
-      const url = arrayBufferToDataURL(buffer, "skin.png");
-      viewer3dRef.current.loadSkin(url);
-      if (skinUrl) {
-        URL.revokeObjectURL(skinUrl);
+      try {
+        const buffer = imageDataToBuffer(next);
+        const url = arrayBufferToDataURL(buffer, "skin.png");
+        viewer3dRef.current.loadSkin(url).catch((err) => {
+          console.error("Error updating 3D viewer:", err);
+        });
+        if (skinUrl) {
+          URL.revokeObjectURL(skinUrl);
+        }
+        setSkinUrl(url);
+      } catch (error) {
+        console.error("Error updating 3D viewer:", error);
       }
-      setSkinUrl(url);
     }
   }, []);
 
@@ -456,6 +477,8 @@ export default function SkinEditorPage() {
                 <div className="flex items-center justify-center" style={{ minHeight: "500px" }}>
                   <canvas
                     ref={canvas3dRef}
+                    width={400}
+                    height={500}
                     style={{ width: "100%", height: "auto" }}
                   />
                 </div>
