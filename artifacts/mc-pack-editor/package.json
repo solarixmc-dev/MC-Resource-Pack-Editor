@@ -75,6 +75,7 @@
   },
   "dependencies": {
     "jszip": "^3.10.1",
+    "skin3d": "^0.2.0",
     "three": "^0.185.1",
     "wouter": "^3.3.5"
   }

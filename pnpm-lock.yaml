@@ -104,6 +104,9 @@ importers:
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
+      skin3d:
+        specifier: ^0.2.0
+        version: 0.2.0
       three:
         specifier: ^0.185.1
         version: 0.185.1
@@ -3395,6 +3398,12 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
+  skin3d@0.2.0:
+    resolution: {integrity: sha512-xeX+u8z5YEcHgi8jMMyvHCXGfW7tc+LF1vbsnqYbQvMEc+d5DCRBtLBgYHxcZgvOLVaKWuX2sjVXS3tA1x6TPg==}
+
+  skinview-utils@0.7.1:
+    resolution: {integrity: sha512-4eLrMqR526ehlZbsd8SuZ/CHpS9GiH0xUMoV+PYlJVi95ZFz5HJu7Spt5XYa72DRS7wgt5qquvHZf0XZJgmu9Q==}
+
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
@@ -3473,6 +3482,9 @@ packages:
 
   thread-stream@3.1.0:
     resolution: {integrity: sha512-OqyPZ9u96VohAyMfJykzmivOrY2wfMSf3C5TtFJVgN+Hm6aj+voFhlK+kZEIv2FBh1X6Xp3DlnCOfEQ3B2J86A==}
+
+  three@0.156.1:
+    resolution: {integrity: sha512-kP7H0FK9d/k6t/XvQ9FO6i+QrePoDcNhwl0I02+wmUJRNSLCUIDMcfObnzQvxb37/0Uc9TDT0T1HgsRRrO6SYQ==}
 
   three@0.185.1:
     resolution: {integrity: sha512-5aojFCXKwnjBRZvUnt3WFfEcvUJgkN5LlijRFN95hMy8WVkG4I0QNcJE+OuWvuJ0bOdStrbfXn0pkd6/QyiAlg==}
@@ -6834,6 +6846,13 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
+  skin3d@0.2.0:
+    dependencies:
+      skinview-utils: 0.7.1
+      three: 0.156.1
+
+  skinview-utils@0.7.1: {}
+
   slash@3.0.0: {}
 
   sonic-boom@4.2.1:
@@ -6928,6 +6947,8 @@ snapshots:
   thread-stream@3.1.0:
     dependencies:
       real-require: 0.2.0
+
+  three@0.156.1: {}
 
   three@0.185.1: {}
 

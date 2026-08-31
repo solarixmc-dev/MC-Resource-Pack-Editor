@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useTheme } from "../contexts/ThemeContext";
 import { loadImageDataFromBuffer, imageDataToBuffer, applyBrush, pickColorAt, type EditorTool, applyRecolor } from "../lib/textureEditor";
 import { hexToRgbColor, rgbToHexColor, isValidHexColor, applyRecolorToPixel } from "../lib/colorUtils";
+import { Render } from "skin3d";
 
 function arrayBufferToDataURL(buffer: ArrayBuffer, filename: string): string {
   const blob = new Blob([buffer], { type: "image/png" });
@@ -31,6 +32,9 @@ export default function SkinEditorPage() {
   const canvasFrameRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const viewer3dRef = useRef<Render | null>(null);
+  const canvas3dRef = useRef<HTMLCanvasElement>(null);
+  const [skinUrl, setSkinUrl] = useState<string | null>(null);
 
   useEffect(() => {
     editHistoryRef.current = editHistory;
@@ -55,6 +59,45 @@ export default function SkinEditorPage() {
 
   useEffect(() => { drawImage(); }, [drawImage]);
 
+  // Initialize 3D viewer when skin is loaded
+  useEffect(() => {
+    if (!skinData || !canvas3dRef.current) return;
+
+    // Clean up previous viewer
+    if (viewer3dRef.current) {
+      viewer3dRef.current.dispose();
+      viewer3dRef.current = null;
+    }
+
+    // Create data URL from skin data
+    const buffer = imageDataToBuffer(skinData);
+    const url = arrayBufferToDataURL(buffer, "skin.png");
+    setSkinUrl(url);
+
+    // Initialize viewer
+    try {
+      const viewer = new Render({
+        canvas: canvas3dRef.current,
+        width: 400,
+        height: 500,
+      });
+      viewer.loadSkin(url);
+      viewer3dRef.current = viewer;
+    } catch (error) {
+      console.error("Error initializing 3D viewer:", error);
+    }
+
+    return () => {
+      if (viewer3dRef.current) {
+        viewer3dRef.current.dispose();
+        viewer3dRef.current = null;
+      }
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [skinData]);
+
   const applyImageChange = useCallback((next: ImageData) => {
     setSkinData(next);
     setHasChanges(true);
@@ -65,6 +108,17 @@ export default function SkinEditorPage() {
       }
       return { entries, index: entries.length - 1 };
     });
+
+    // Update 3D viewer with new skin
+    if (viewer3dRef.current) {
+      const buffer = imageDataToBuffer(next);
+      const url = arrayBufferToDataURL(buffer, "skin.png");
+      viewer3dRef.current.loadSkin(url);
+      if (skinUrl) {
+        URL.revokeObjectURL(skinUrl);
+      }
+      setSkinUrl(url);
+    }
   }, []);
 
   const undoEdit = useCallback(() => {
@@ -338,7 +392,7 @@ export default function SkinEditorPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Canvas Area */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-2">
               <div className={`rounded-lg border ${darkMode ? "border-dark-border bg-dark-secondary" : "border-gray-200 bg-white"} p-4`}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -391,6 +445,19 @@ export default function SkinEditorPage() {
                       }}
                     />
                   )}
+                </div>
+              </div>
+            </div>
+
+            {/* 3D Preview */}
+            <div className="lg:col-span-1">
+              <div className={`rounded-lg border ${darkMode ? "border-dark-border bg-dark-secondary" : "border-gray-200 bg-white"} p-4`}>
+                <h3 className={`text-sm font-semibold mb-3 ${darkMode ? "text-dark-text" : "text-gray-900"}`}>3D Preview</h3>
+                <div className="flex items-center justify-center" style={{ minHeight: "500px" }}>
+                  <canvas
+                    ref={canvas3dRef}
+                    style={{ width: "100%", height: "auto" }}
+                  />
                 </div>
               </div>
             </div>
