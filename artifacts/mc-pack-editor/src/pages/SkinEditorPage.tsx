@@ -4,9 +4,13 @@ import { loadImageDataFromBuffer, imageDataToBuffer, applyBrush, pickColorAt, ty
 import { hexToRgbColor, rgbToHexColor, isValidHexColor, applyRecolorToPixel } from "../lib/colorUtils";
 import { Render } from "skin3d";
 
-function arrayBufferToDataURL(buffer: ArrayBuffer, filename: string): string {
-  const blob = new Blob([buffer], { type: "image/png" });
-  return URL.createObjectURL(blob);
+function arrayBufferToDataURL(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return `data:image/png;base64,${btoa(binary)}`;
 }
 
 export default function SkinEditorPage() {
@@ -34,7 +38,6 @@ export default function SkinEditorPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const viewer3dRef = useRef<Render | null>(null);
   const canvas3dRef = useRef<HTMLCanvasElement>(null);
-  const [skinUrl, setSkinUrl] = useState<string | null>(null);
 
   useEffect(() => {
     editHistoryRef.current = editHistory;
@@ -75,8 +78,7 @@ export default function SkinEditorPage() {
 
     // Create data URL from skin data
     const buffer = imageDataToBuffer(skinData);
-    const url = arrayBufferToDataURL(buffer, "skin.png");
-    setSkinUrl(url);
+    const url = arrayBufferToDataURL(buffer);
 
     // Initialize viewer with a small delay to ensure canvas is ready
     const timer = setTimeout(() => {
@@ -87,6 +89,7 @@ export default function SkinEditorPage() {
           height: 500,
         });
         
+        // Load the skin directly with the data URL
         viewer.loadSkin(url).catch((err) => {
           console.error("Error loading skin in 3D viewer:", err);
         });
@@ -107,9 +110,6 @@ export default function SkinEditorPage() {
         }
         viewer3dRef.current = null;
       }
-      if (url) {
-        URL.revokeObjectURL(url);
-      }
     };
   }, [skinData]);
 
@@ -128,14 +128,10 @@ export default function SkinEditorPage() {
     if (viewer3dRef.current) {
       try {
         const buffer = imageDataToBuffer(next);
-        const url = arrayBufferToDataURL(buffer, "skin.png");
+        const url = arrayBufferToDataURL(buffer);
         viewer3dRef.current.loadSkin(url).catch((err) => {
           console.error("Error updating 3D viewer:", err);
         });
-        if (skinUrl) {
-          URL.revokeObjectURL(skinUrl);
-        }
-        setSkinUrl(url);
       } catch (error) {
         console.error("Error updating 3D viewer:", error);
       }
@@ -209,14 +205,13 @@ export default function SkinEditorPage() {
   const handleDownload = () => {
     if (!skinData) return;
     const buffer = imageDataToBuffer(skinData);
-    const url = arrayBufferToDataURL(buffer, "skin.png");
+    const url = arrayBufferToDataURL(buffer);
     const a = document.createElement("a");
     a.href = url;
     a.download = "skin.png";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
   const getLayerRegion = () => {
