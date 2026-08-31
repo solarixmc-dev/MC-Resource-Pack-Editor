@@ -108,8 +108,18 @@ export default function SkinEditorPage() {
     try {
       const buffer = await file.arrayBuffer();
       console.log("Buffer loaded, size:", buffer.byteLength);
-      const imageData = loadImageDataFromBuffer(buffer);
+      
+      if (buffer.byteLength < 100) {
+        throw new Error("File is too small to be a valid image");
+      }
+      
+      const imageData = await loadImageDataFromBuffer(buffer, file.name);
       console.log("ImageData loaded:", imageData.width, "x", imageData.height);
+      
+      if (!imageData || imageData.width === 0 || imageData.height === 0) {
+        throw new Error("Failed to load image data");
+      }
+      
       setSkinData(imageData);
       setEditHistory({ entries: [imageData], index: 0 });
       setHasChanges(false);
