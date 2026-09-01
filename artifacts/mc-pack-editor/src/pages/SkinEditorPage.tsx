@@ -46,8 +46,8 @@ export default function SkinEditorPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const viewer3dRef = useRef<Render | null>(null);
   const canvas3dRef = useRef<HTMLCanvasElement>(null);
-  const [originalBuffer, setOriginalBuffer] = useState<ArrayBuffer | null>(null);
   const [viewMode, setViewMode] = useState<"3d" | "uv">("3d");
+  const [skinUploaded, setSkinUploaded] = useState(false);
 
   useEffect(() => {
     editHistoryRef.current = editHistory;
@@ -65,16 +65,31 @@ export default function SkinEditorPage() {
       canvas.width = imgData.width;
       canvas.height = imgData.height;
       ctx.putImageData(imgData, 0, 0);
+      console.log("UV skin drawn successfully");
     } catch (error) {
       console.error("Error drawing image:", error);
     }
   }, [skinData]);
 
-  useEffect(() => { drawImage(); }, [drawImage]);
+  useEffect(() => { drawImage(); }, [drawImage, viewMode]);
 
   // Initialize 3D viewer when skin is loaded and in 3D mode
   useEffect(() => {
-    if (!originalBuffer || !canvas3dRef.current || viewMode !== "3d") return;
+    // Only process when in 3D mode
+    if (viewMode !== "3d") {
+      // Dispose viewer when switching away from 3D mode
+      if (viewer3dRef.current) {
+        try {
+          viewer3dRef.current.dispose();
+        } catch (e) {
+          console.error("Error disposing viewer:", e);
+        }
+        viewer3dRef.current = null;
+      }
+      return;
+    }
+
+    if (!skinData || !canvas3dRef.current) return;
 
     // Clean up previous viewer
     if (viewer3dRef.current) {
@@ -86,9 +101,10 @@ export default function SkinEditorPage() {
       viewer3dRef.current = null;
     }
 
-    // Create data URL from original buffer
-    const url = arrayBufferToDataURL(originalBuffer);
-    console.log("Skin data URL created, length:", url.length);
+    // Create data URL from current skinData
+    const buffer = imageDataToBuffer(skinData);
+    const url = arrayBufferToDataURL(buffer);
+    console.log("Skin data URL created from current skinData, length:", url.length);
 
     // Initialize viewer - wait for canvas to be fully ready
     const timer = setTimeout(() => {
@@ -131,7 +147,7 @@ export default function SkinEditorPage() {
         viewer3dRef.current = null;
       }
     };
-  }, [originalBuffer, viewMode]);
+  }, [skinData, viewMode]);
 
   const applyImageChange = useCallback((next: ImageData) => {
     setSkinData(next);
@@ -163,6 +179,7 @@ export default function SkinEditorPage() {
     setSkinData(current.entries[index]);
     setEditHistory((previous) => ({ ...previous, index }));
     setHasChanges(index > 0);
+    console.log("Undo to index:", index, "Total entries:", current.entries.length);
   }, []);
 
   const redoEdit = useCallback(() => {
@@ -171,6 +188,7 @@ export default function SkinEditorPage() {
     const index = current.index + 1;
     setSkinData(current.entries[index]);
     setEditHistory((previous) => ({ ...previous, index }));
+    console.log("Redo to index:", index, "Total entries:", current.entries.length);
   }, []);
 
   const canUndo = editHistory.index > 0;
@@ -210,7 +228,7 @@ export default function SkinEditorPage() {
       }
       
       setSkinData(imageData);
-      setOriginalBuffer(buffer);
+      setSkinUploaded(true);
       setEditHistory({ entries: [imageData], index: 0 });
       setHasChanges(false);
     } catch (error) {
@@ -404,7 +422,7 @@ export default function SkinEditorPage() {
           <p className={`mt-2 ${darkMode ? "text-dark-text-secondary" : "text-gray-600"}`}>Upload and edit your Minecraft skin (PNG)</p>
         </div>
 
-        {!skinData ? (
+        {!skinUploaded ? (
           <div className={`border-2 border-dashed rounded-lg p-12 text-center ${darkMode ? "border-dark-border" : "border-gray-300"}`}>
             <input
               ref={fileInputRef}
@@ -474,7 +492,18 @@ export default function SkinEditorPage() {
                       />
                     </div>
                   ) : (
-                    <div ref={canvasFrameRef} className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-dark-tertiary">
+                    <div ref={canvasFrameRef} className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-dark-tertiary relative">
+                      {/* Grid overlay for UV skin */}
+                      <div 
+                        className="absolute inset-0 pointer-events-none opacity-30"
+                        style={{
+                          backgroundImage: `
+                            linear-gradient(${darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} 1px, transparent 1px),
+                            linear-gradient(90deg, ${darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} 1px, transparent 1px)
+                          `,
+                          backgroundSize: '8px 8px',
+                        }}
+                      />
                       {skinData ? (
                         <canvas
                           ref={canvasRef}
@@ -487,6 +516,8 @@ export default function SkinEditorPage() {
                             height: `${skinData.height * 8}px`,
                             imageRendering: "pixelated",
                             cursor: tool === "eyedropper" ? "crosshair" : tool === "pixel-select" ? "crosshair" : "cell",
+                            position: "relative",
+                            zIndex: 1,
                           }}
                         />
                       ) : (
