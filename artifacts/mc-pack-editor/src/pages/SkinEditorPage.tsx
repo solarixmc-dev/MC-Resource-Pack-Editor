@@ -5,12 +5,20 @@ import { hexToRgbColor, rgbToHexColor, isValidHexColor, applyRecolorToPixel } fr
 import { Render } from "skin3d";
 
 function arrayBufferToDataURL(buffer: ArrayBuffer): string {
+  console.log("Converting buffer to data URL, buffer size:", buffer.byteLength);
   const bytes = new Uint8Array(buffer);
+  console.log("First 10 bytes:", Array.from(bytes.slice(0, 10)));
+  
   let binary = "";
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-  return `data:image/png;base64,${btoa(binary)}`;
+  
+  const base64 = btoa(binary);
+  console.log("Base64 length:", base64.length);
+  const result = `data:image/png;base64,${base64}`;
+  console.log("Final data URL length:", result.length);
+  return result;
 }
 
 export default function SkinEditorPage() {
@@ -38,6 +46,7 @@ export default function SkinEditorPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const viewer3dRef = useRef<Render | null>(null);
   const canvas3dRef = useRef<HTMLCanvasElement>(null);
+  const [originalBuffer, setOriginalBuffer] = useState<ArrayBuffer | null>(null);
 
   useEffect(() => {
     editHistoryRef.current = editHistory;
@@ -64,7 +73,7 @@ export default function SkinEditorPage() {
 
   // Initialize 3D viewer when skin is loaded
   useEffect(() => {
-    if (!skinData || !canvas3dRef.current) return;
+    if (!originalBuffer || !canvas3dRef.current) return;
 
     // Clean up previous viewer
     if (viewer3dRef.current) {
@@ -76,9 +85,8 @@ export default function SkinEditorPage() {
       viewer3dRef.current = null;
     }
 
-    // Create data URL from skin data
-    const buffer = imageDataToBuffer(skinData);
-    const url = arrayBufferToDataURL(buffer);
+    // Create data URL from original buffer
+    const url = arrayBufferToDataURL(originalBuffer);
     console.log("Skin data URL created, length:", url.length);
 
     // Initialize viewer - wait for canvas to be fully ready
@@ -122,7 +130,7 @@ export default function SkinEditorPage() {
         viewer3dRef.current = null;
       }
     };
-  }, [skinData]);
+  }, [originalBuffer]);
 
   const applyImageChange = useCallback((next: ImageData) => {
     setSkinData(next);
@@ -201,6 +209,7 @@ export default function SkinEditorPage() {
       }
       
       setSkinData(imageData);
+      setOriginalBuffer(buffer);
       setEditHistory({ entries: [imageData], index: 0 });
       setHasChanges(false);
     } catch (error) {
