@@ -72,9 +72,9 @@ export default function SkinEditorPage() {
 
   useEffect(() => { drawImage(); }, [drawImage]);
 
-  // Initialize 3D viewer when skin is loaded
+  // Initialize 3D viewer when skin is loaded and in 3D mode
   useEffect(() => {
-    if (!originalBuffer || !canvas3dRef.current) return;
+    if (!originalBuffer || !canvas3dRef.current || viewMode !== "3d") return;
 
     // Clean up previous viewer
     if (viewer3dRef.current) {
@@ -103,8 +103,8 @@ export default function SkinEditorPage() {
         // First create the viewer without skin
         const viewer = new Render({
           canvas: canvas3dRef.current,
-          width: 400,
-          height: 500,
+          width: 600,
+          height: 700,
         });
         
         // Then load the skin separately
@@ -131,7 +131,7 @@ export default function SkinEditorPage() {
         viewer3dRef.current = null;
       }
     };
-  }, [originalBuffer]);
+  }, [originalBuffer, viewMode]);
 
   const applyImageChange = useCallback((next: ImageData) => {
     setSkinData(next);
@@ -474,8 +474,8 @@ export default function SkinEditorPage() {
                       />
                     </div>
                   ) : (
-                    <div ref={canvasFrameRef} className="flex items-center justify-center w-full h-full">
-                      {skinData && (
+                    <div ref={canvasFrameRef} className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-dark-tertiary">
+                      {skinData ? (
                         <canvas
                           ref={canvasRef}
                           onPointerDown={handleCanvasPointer}
@@ -489,6 +489,10 @@ export default function SkinEditorPage() {
                             cursor: tool === "eyedropper" ? "crosshair" : tool === "pixel-select" ? "crosshair" : "cell",
                           }}
                         />
+                      ) : (
+                        <div className={darkMode ? "text-dark-text-secondary" : "text-gray-600"}>
+                          No skin loaded
+                        </div>
                       )}
                     </div>
                   )}
