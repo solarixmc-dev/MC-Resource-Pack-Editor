@@ -47,6 +47,7 @@ export default function SkinEditorPage() {
   const viewer3dRef = useRef<Render | null>(null);
   const canvas3dRef = useRef<HTMLCanvasElement>(null);
   const [originalBuffer, setOriginalBuffer] = useState<ArrayBuffer | null>(null);
+  const [viewMode, setViewMode] = useState<"3d" | "uv">("3d");
 
   useEffect(() => {
     editHistoryRef.current = editHistory;
@@ -424,10 +425,11 @@ export default function SkinEditorPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Canvas Area */}
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Main Preview Area (4/5 of screen) */}
+            <div className="lg:col-span-4">
               <div className={`rounded-lg border ${darkMode ? "border-dark-border bg-dark-secondary" : "border-gray-200 bg-white"} p-4`}>
+                {/* View Mode Toggle */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <button
@@ -463,43 +465,98 @@ export default function SkinEditorPage() {
                   </div>
                 </div>
 
-                <div ref={canvasFrameRef} className="flex items-center justify-center overflow-auto" style={{ minHeight: "500px" }}>
-                  {skinData && (
-                    <canvas
-                      ref={canvasRef}
-                      onPointerDown={handleCanvasPointer}
-                      onPointerMove={handleCanvasPointer}
-                      onPointerUp={handleCanvasPointer}
-                      onPointerLeave={handleCanvasPointer}
-                      style={{
-                        width: `${skinData.width * 8}px`,
-                        height: `${skinData.height * 8}px`,
-                        imageRendering: "pixelated",
-                        cursor: tool === "eyedropper" ? "crosshair" : tool === "pixel-select" ? "crosshair" : "cell",
-                      }}
-                    />
+                {/* View Mode Tabs */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={() => setViewMode("3d")}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      viewMode === "3d"
+                        ? darkMode
+                          ? "bg-dark-border text-dark-text"
+                          : "bg-gray-200 text-gray-900"
+                        : darkMode
+                          ? "bg-dark-tertiary text-dark-text-secondary hover:bg-dark-border"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    3D View
+                  </button>
+                  <button
+                    onClick={() => setViewMode("uv")}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      viewMode === "uv"
+                        ? darkMode
+                          ? "bg-dark-border text-dark-text"
+                          : "bg-gray-200 text-gray-900"
+                        : darkMode
+                          ? "bg-dark-tertiary text-dark-text-secondary hover:bg-dark-border"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    UV Skin
+                  </button>
+                </div>
+
+                {/* Content Area */}
+                <div className="flex items-center justify-center overflow-auto" style={{ minHeight: "600px" }}>
+                  {viewMode === "3d" ? (
+                    <div className="flex items-center justify-center w-full h-full">
+                      <canvas
+                        ref={canvas3dRef}
+                        width={600}
+                        height={700}
+                        style={{ width: "100%", height: "auto", maxWidth: "100%" }}
+                      />
+                    </div>
+                  ) : (
+                    <div ref={canvasFrameRef} className="flex items-center justify-center w-full h-full">
+                      {skinData && (
+                        <canvas
+                          ref={canvasRef}
+                          onPointerDown={handleCanvasPointer}
+                          onPointerMove={handleCanvasPointer}
+                          onPointerUp={handleCanvasPointer}
+                          onPointerLeave={handleCanvasPointer}
+                          style={{
+                            width: `${skinData.width * 8}px`,
+                            height: `${skinData.height * 8}px`,
+                            imageRendering: "pixelated",
+                            cursor: tool === "eyedropper" ? "crosshair" : tool === "pixel-select" ? "crosshair" : "cell",
+                          }}
+                        />
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* 3D Preview */}
-            <div className="lg:col-span-1">
+            {/* Tools Panel (1/5 of screen) */}
+            <div className="lg:col-span-1 space-y-4">
+              {/* Layer Selection */}
               <div className={`rounded-lg border ${darkMode ? "border-dark-border bg-dark-secondary" : "border-gray-200 bg-white"} p-4`}>
-                <h3 className={`text-sm font-semibold mb-3 ${darkMode ? "text-dark-text" : "text-gray-900"}`}>3D Preview</h3>
-                <div className="flex items-center justify-center" style={{ minHeight: "500px" }}>
-                  <canvas
-                    ref={canvas3dRef}
-                    width={400}
-                    height={500}
-                    style={{ width: "100%", height: "auto" }}
-                  />
+                <h3 className={`text-sm font-semibold mb-3 ${darkMode ? "text-dark-text" : "text-gray-900"}`}>Layer</h3>
+                <div className="space-y-2">
+                  {(["all", "top", "bottom"] as const).map((layer) => (
+                    <button
+                      key={layer}
+                      onClick={() => setActiveLayer(layer)}
+                      className={`w-full px-3 py-2 rounded-lg text-sm capitalize transition-colors ${
+                        activeLayer === layer
+                          ? darkMode
+                            ? "bg-dark-border text-dark-text"
+                            : "bg-gray-200 text-gray-900"
+                          : darkMode
+                            ? "bg-dark-tertiary text-dark-text-secondary hover:bg-dark-border"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {layer === "all" ? "All Layers" : layer === "top" ? "Top Half" : "Bottom Half"}
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
 
-            {/* Tools Panel */}
-            <div className="space-y-4">
               {/* Tools */}
               <div className={`rounded-lg border ${darkMode ? "border-dark-border bg-dark-secondary" : "border-gray-200 bg-white"} p-4`}>
                 <h3 className={`text-sm font-semibold mb-3 ${darkMode ? "text-dark-text" : "text-gray-900"}`}>Tools</h3>
@@ -532,30 +589,6 @@ export default function SkinEditorPage() {
                     Clear selection ({selectedPixels.size} pixels)
                   </button>
                 )}
-              </div>
-
-              {/* Layer Selection */}
-              <div className={`rounded-lg border ${darkMode ? "border-dark-border bg-dark-secondary" : "border-gray-200 bg-white"} p-4`}>
-                <h3 className={`text-sm font-semibold mb-3 ${darkMode ? "text-dark-text" : "text-gray-900"}`}>Layer</h3>
-                <div className="space-y-2">
-                  {(["all", "top", "bottom"] as const).map((layer) => (
-                    <button
-                      key={layer}
-                      onClick={() => setActiveLayer(layer)}
-                      className={`w-full px-3 py-2 rounded-lg text-sm capitalize transition-colors ${
-                        activeLayer === layer
-                          ? darkMode
-                            ? "bg-dark-border text-dark-text"
-                            : "bg-gray-200 text-gray-900"
-                          : darkMode
-                            ? "bg-dark-tertiary text-dark-text-secondary hover:bg-dark-border"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      {layer === "all" ? "All Layers" : layer === "top" ? "Top Half" : "Bottom Half"}
-                    </button>
-                  ))}
-                </div>
               </div>
 
               {/* Color Picker */}
