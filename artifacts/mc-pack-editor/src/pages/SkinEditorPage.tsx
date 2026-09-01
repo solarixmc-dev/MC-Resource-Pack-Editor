@@ -494,17 +494,6 @@ export default function SkinEditorPage() {
                     </div>
                   ) : (
                     <div ref={canvasFrameRef} className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-dark-tertiary relative">
-                      {/* Grid overlay for UV skin */}
-                      <div 
-                        className="absolute inset-0 pointer-events-none opacity-30"
-                        style={{
-                          backgroundImage: `
-                            linear-gradient(${darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} 1px, transparent 1px),
-                            linear-gradient(90deg, ${darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} 1px, transparent 1px)
-                          `,
-                          backgroundSize: '8px 8px',
-                        }}
-                      />
                       {skinData ? (
                         <canvas
                           ref={canvasRef}
@@ -525,6 +514,22 @@ export default function SkinEditorPage() {
                         <div className={darkMode ? "text-dark-text-secondary" : "text-gray-600"}>
                           No skin loaded
                         </div>
+                      )}
+                      {/* Grid overlay for UV skin - just lines, no fill */}
+                      {skinData && (
+                        <div 
+                          className="absolute inset-0 pointer-events-none opacity-50"
+                          style={{
+                            zIndex: 2,
+                            backgroundImage: `
+                              linear-gradient(${darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'} 1px, transparent 1px),
+                              linear-gradient(90deg, ${darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'} 1px, transparent 1px)
+                            `,
+                            backgroundSize: '8px 8px',
+                            width: `${skinData.width * 8}px`,
+                            height: `${skinData.height * 8}px`,
+                          }}
+                        />
                       )}
                     </div>
                   )}
