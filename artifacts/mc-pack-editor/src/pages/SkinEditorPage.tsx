@@ -46,6 +46,7 @@ export default function SkinEditorPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const viewer3dRef = useRef<Render | null>(null);
   const canvas3dRef = useRef<HTMLCanvasElement>(null);
+  const [originalBuffer, setOriginalBuffer] = useState<ArrayBuffer | null>(null);
   const [viewMode, setViewMode] = useState<"3d" | "uv">("3d");
   const [skinUploaded, setSkinUploaded] = useState(false);
 
@@ -89,7 +90,7 @@ export default function SkinEditorPage() {
       return;
     }
 
-    if (!skinData || !canvas3dRef.current) return;
+    if (!originalBuffer || !canvas3dRef.current) return;
 
     // Clean up previous viewer
     if (viewer3dRef.current) {
@@ -101,10 +102,9 @@ export default function SkinEditorPage() {
       viewer3dRef.current = null;
     }
 
-    // Create data URL from current skinData
-    const buffer = imageDataToBuffer(skinData);
-    const url = arrayBufferToDataURL(buffer);
-    console.log("Skin data URL created from current skinData, length:", url.length);
+    // Create data URL from original buffer
+    const url = arrayBufferToDataURL(originalBuffer);
+    console.log("Skin data URL created from originalBuffer, length:", url.length);
 
     // Initialize viewer - wait for canvas to be fully ready
     const timer = setTimeout(() => {
@@ -147,7 +147,7 @@ export default function SkinEditorPage() {
         viewer3dRef.current = null;
       }
     };
-  }, [skinData, viewMode]);
+  }, [originalBuffer, viewMode]);
 
   const applyImageChange = useCallback((next: ImageData) => {
     setSkinData(next);
@@ -228,6 +228,7 @@ export default function SkinEditorPage() {
       }
       
       setSkinData(imageData);
+      setOriginalBuffer(buffer);
       setSkinUploaded(true);
       setEditHistory({ entries: [imageData], index: 0 });
       setHasChanges(false);
