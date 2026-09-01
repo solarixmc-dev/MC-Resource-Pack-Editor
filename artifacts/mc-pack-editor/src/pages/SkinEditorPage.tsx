@@ -372,11 +372,7 @@ export default function SkinEditorPage() {
 
   const handle3DPaint = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!viewer3dRef.current || !raycasterRef.current || !skinData || viewMode !== "3d") return;
-    if (tool === "eyedropper" || tool === "pixel-select") return;
     
-    // Only paint on mouse down or when dragging
-    if (e.type !== "pointerdown" && e.buttons !== 1) return;
-
     const canvas = canvas3dRef.current;
     const rect = canvas.getBoundingClientRect();
     
@@ -411,6 +407,43 @@ export default function SkinEditorPage() {
           const height = texture.image.height;
           const px = Math.floor(uv.x * width);
           const py = Math.floor((1 - uv.y) * height);
+          
+          // Handle eyedropper tool
+          if (tool === "eyedropper") {
+            const idx = (py * width + px) * 4;
+            const r = skinData.data[idx];
+            const g = skinData.data[idx + 1];
+            const b = skinData.data[idx + 2];
+            const colorValue = rgbToHexColor(r, g, b);
+            setColor(colorValue);
+            setTool("pencil");
+            return;
+          }
+          
+          // Handle pixel select tool
+          if (tool === "pixel-select") {
+            if (e.type === "pointerdown") {
+              const pixelKey = `${px},${py}`;
+              setSelectedPixels(prev => {
+                const next = new Set(prev);
+                if (e.ctrlKey || e.metaKey) {
+                  if (next.has(pixelKey)) {
+                    next.delete(pixelKey);
+                  } else {
+                    next.add(pixelKey);
+                  }
+                } else {
+                  next.clear();
+                  next.add(pixelKey);
+                }
+                return next;
+              });
+            }
+            return;
+          }
+          
+          // Only paint on mouse down or when dragging
+          if (e.type !== "pointerdown" && e.buttons !== 1) return;
           
           // Apply paint operation to skinData
           const next = skinData;
@@ -593,7 +626,7 @@ export default function SkinEditorPage() {
                         height={700}
                         onPointerDown={handle3DPaint}
                         onPointerMove={handle3DPaint}
-                        style={{ width: "100%", height: "auto", maxWidth: "100%", position: "relative", zIndex: 1, cursor: tool === "eyedropper" || tool === "pixel-select" ? "default" : "crosshair" }}
+                        style={{ width: "100%", height: "auto", maxWidth: "100%", position: "relative", zIndex: 1, cursor: tool === "pixel-select" ? "default" : "crosshair" }}
                       />
                     </div>
                   ) : (
