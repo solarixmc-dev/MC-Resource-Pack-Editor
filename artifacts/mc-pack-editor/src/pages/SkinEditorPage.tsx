@@ -3,6 +3,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { loadImageDataFromBuffer, imageDataToBuffer, applyBrush, pickColorAt, type EditorTool, applyRecolor } from "../lib/textureEditor";
 import { hexToRgbColor, rgbToHexColor, isValidHexColor, applyRecolorToPixel } from "../lib/colorUtils";
 import { Render } from "skin3d";
+import * as THREE from "three";
 
 function arrayBufferToDataURL(buffer: ArrayBuffer): string {
   console.log("Converting buffer to data URL, buffer size:", buffer.byteLength);
@@ -49,6 +50,11 @@ export default function SkinEditorPage() {
   const [originalBuffer, setOriginalBuffer] = useState<ArrayBuffer | null>(null);
   const [viewMode, setViewMode] = useState<"3d" | "uv">("3d");
   const [skinUploaded, setSkinUploaded] = useState(false);
+  
+  // 3D raycasting for painting
+  const raycasterRef = useRef<THREE.Raycaster | null>(null);
+  const mouseRef = useRef<THREE.Vector2>(new THREE.Vector2());
+  const is3DPaintingRef = useRef(false);
 
   useEffect(() => {
     editHistoryRef.current = editHistory;
@@ -87,6 +93,7 @@ export default function SkinEditorPage() {
         }
         viewer3dRef.current = null;
       }
+      raycasterRef.current = null;
       return;
     }
 
@@ -127,6 +134,10 @@ export default function SkinEditorPage() {
         viewer.loadSkin(url).then(() => {
           console.log("Skin loaded successfully in 3D viewer");
           viewer3dRef.current = viewer;
+          
+          // Initialize raycaster for 3D painting
+          raycasterRef.current = new THREE.Raycaster();
+          console.log("Raycaster initialized for 3D painting");
         }).catch((err) => {
           console.error("Error loading skin in 3D viewer:", err);
         });
@@ -146,6 +157,7 @@ export default function SkinEditorPage() {
         }
         viewer3dRef.current = null;
       }
+      raycasterRef.current = null;
     };
   }, [originalBuffer, viewMode]);
 
@@ -358,6 +370,96 @@ export default function SkinEditorPage() {
     }
   };
 
+  const handle3DPaint = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!viewer3dRef.current || !raycasterRef.current || !skinData || viewMode !== "3d") return;
+    if (tool === "eyedropper" || tool === "pixel-select") return;
+    
+    // Only paint on mouse down or when dragging
+    if (e.type !== "pointerdown" && e.buttons !== 1) return;
+
+    const canvas = canvas3dRef.current;
+    const rect = canvas.getBoundingClientRect();
+    
+    // Calculate mouse position in normalized device coordinates
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    mouseRef.current.set(x, y);
+    
+    // Raycast from camera
+    raycasterRef.current.setFromCamera(mouseRef.current, viewer3dRef.current.camera);
+    
+    // Get all meshes from the player object
+    const meshes: THREE.Mesh[] = [];
+    viewer3dRef.current.playerObject.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        meshes.push(child);
+      }
+    });
+    
+    const intersects = raycasterRef.current.intersectObjects(meshes);
+    
+    if (intersects.length > 0) {
+      const intersection = intersects[0];
+      const uv = intersection.uv;
+      
+      if (uv) {
+        // Convert UV to pixel coordinates
+        const texture = viewer3dRef.current.playerObject.skin?.map;
+        if (texture) {
+          const width = texture.image.width;
+          const height = texture.image.height;
+          const px = Math.floor(uv.x * width);
+          const py = Math.floor((1 - uv.y) * height);
+          
+          // Apply paint operation to skinData
+          const next = skinData;
+          let pixelArray: Uint8ClampedArray | null = null;
+          
+          if (tool === "pencil" || tool === "eraser") {
+            pixelArray = new Uint8ClampedArray(next.data);
+            
+            const r = parseInt(color.slice(1, 3), 16);
+            const g = parseInt(color.slice(3, 5), 16);
+            const b = parseInt(color.slice(5, 7), 16);
+            
+            for (let i = 0; i < brushSize; i++) {
+              for (let j = 0; j < brushSize; j++) {
+                const offsetX = Math.floor(i / 2) * (i % 2 === 0 ? 1 : -1);
+                const offsetY = Math.floor(j / 2) * (j % 2 === 0 ? 1 : -1);
+                const targetX = px + offsetX;
+                const targetY = py + offsetY;
+                
+                if (targetX >= 0 && targetX < width && targetY >= 0 && targetY < height) {
+                  const targetIdx = (targetY * width + targetX) * 4;
+                  if (tool === "eraser") {
+                    pixelArray[targetIdx] = 0;
+                    pixelArray[targetIdx + 1] = 0;
+                    pixelArray[targetIdx + 2] = 0;
+                    pixelArray[targetIdx + 3] = 255;
+                  } else {
+                    pixelArray[targetIdx] = r;
+                    pixelArray[targetIdx + 1] = g;
+                    pixelArray[targetIdx + 2] = b;
+                    pixelArray[targetIdx + 3] = 255;
+                  }
+                }
+              }
+            }
+            
+            const newImageData = new ImageData(pixelArray, width, height);
+            applyImageChange(newImageData);
+            
+            // Update texture in real-time
+            const newBuffer = imageDataToBuffer(newImageData);
+            const newUrl = arrayBufferToDataURL(newBuffer);
+            viewer3dRef.current.loadSkin(newUrl);
+          }
+        }
+      }
+    }
+  }, [color, brushSize, tool, skinData, viewMode]);
+
   const handleApplyRecolor = () => {
     if (!skinData) return;
 
@@ -489,7 +591,9 @@ export default function SkinEditorPage() {
                         ref={canvas3dRef}
                         width={600}
                         height={700}
-                        style={{ width: "100%", height: "auto", maxWidth: "100%", position: "relative", zIndex: 1 }}
+                        onPointerDown={handle3DPaint}
+                        onPointerMove={handle3DPaint}
+                        style={{ width: "100%", height: "auto", maxWidth: "100%", position: "relative", zIndex: 1, cursor: tool === "eyedropper" || tool === "pixel-select" ? "default" : "crosshair" }}
                       />
                     </div>
                   ) : (
