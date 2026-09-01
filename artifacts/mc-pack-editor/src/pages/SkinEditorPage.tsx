@@ -55,6 +55,7 @@ export default function SkinEditorPage() {
   const raycasterRef = useRef<THREE.Raycaster | null>(null);
   const mouseRef = useRef<THREE.Vector2>(new THREE.Vector2());
   const is3DPaintingRef = useRef(false);
+  const hoverPixelRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     editHistoryRef.current = editHistory;
@@ -408,6 +409,9 @@ export default function SkinEditorPage() {
           const px = Math.floor(uv.x * width);
           const py = Math.floor((1 - uv.y) * height);
           
+          // Update hover pixel for visual feedback
+          hoverPixelRef.current = { x: px, y: py };
+          
           // Handle eyedropper tool
           if (tool === "eyedropper") {
             const idx = (py * width + px) * 4;
@@ -490,6 +494,9 @@ export default function SkinEditorPage() {
           }
         }
       }
+    } else {
+      // Clear hover when not intersecting
+      hoverPixelRef.current = null;
     }
   }, [color, brushSize, tool, skinData, viewMode]);
 
@@ -626,8 +633,20 @@ export default function SkinEditorPage() {
                         height={700}
                         onPointerDown={handle3DPaint}
                         onPointerMove={handle3DPaint}
+                        onPointerLeave={() => hoverPixelRef.current = null}
                         style={{ width: "100%", height: "auto", maxWidth: "100%", position: "relative", zIndex: 1, cursor: tool === "pixel-select" ? "default" : "crosshair" }}
                       />
+                      {/* Pixel indicator overlay */}
+                      {hoverPixelRef.current && (
+                        <div 
+                          className={`absolute top-4 left-4 px-3 py-2 rounded-lg text-xs font-mono ${
+                            darkMode ? "bg-black/80 text-white" : "bg-white/80 text-black"
+                          }`}
+                          style={{ zIndex: 10 }}
+                        >
+                          Pixel: ({hoverPixelRef.current.x}, {hoverPixelRef.current.y})
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div ref={canvasFrameRef} className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-dark-tertiary relative">
