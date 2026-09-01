@@ -79,23 +79,37 @@ export default function SkinEditorPage() {
     // Create data URL from skin data
     const buffer = imageDataToBuffer(skinData);
     const url = arrayBufferToDataURL(buffer);
+    console.log("Skin data URL created, length:", url.length);
 
-    // Initialize viewer with a small delay to ensure canvas is ready
+    // Initialize viewer - wait for canvas to be fully ready
     const timer = setTimeout(() => {
       try {
+        if (!canvas3dRef.current) {
+          console.error("Canvas element not available");
+          return;
+        }
+
+        console.log("Initializing viewer with canvas:", canvas3dRef.current);
+        
+        // First create the viewer without skin
         const viewer = new Render({
-          canvas: canvas3dRef.current!,
+          canvas: canvas3dRef.current,
           width: 400,
           height: 500,
-          skin: url,
         });
         
-        viewer3dRef.current = viewer;
-        console.log("3D viewer initialized successfully");
+        // Then load the skin separately
+        viewer.loadSkin(url).then(() => {
+          console.log("Skin loaded successfully in 3D viewer");
+          viewer3dRef.current = viewer;
+        }).catch((err) => {
+          console.error("Error loading skin in 3D viewer:", err);
+        });
+        
       } catch (error) {
         console.error("Error initializing 3D viewer:", error);
       }
-    }, 100);
+    }, 200);
 
     return () => {
       clearTimeout(timer);
