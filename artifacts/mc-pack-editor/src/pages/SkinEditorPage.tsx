@@ -34,7 +34,7 @@ export default function SkinEditorPage() {
   const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
   const [recolorMode, setRecolorMode] = useState<"tint" | "hue-shift" | "colorize" | "multiply" | "overlay">("tint");
   const [recolorIntensity, setRecolorIntensity] = useState(0.6);
-  const [activeLayer, setActiveLayer] = useState<"top" | "bottom" | "all">("all");
+  const [activeLayer, setActiveLayer] = useState<"base" | "top" | "all">("all");
   const [hasChanges, setHasChanges] = useState(false);
   const [editHistory, setEditHistory] = useState<{ entries: ImageData[]; index: number }>({ entries: [], index: -1 });
   const editHistoryRef = useRef(editHistory);
@@ -237,10 +237,10 @@ export default function SkinEditorPage() {
     if (!skinData) return undefined;
     if (activeLayer === "all") return undefined;
     const height = skinData.height;
-    if (activeLayer === "top") {
+    if (activeLayer === "base") {
       return { x: 0, y: 0, width: skinData.width, height: Math.floor(height / 2) };
     }
-    if (activeLayer === "bottom") {
+    if (activeLayer === "top") {
       return { x: 0, y: Math.floor(height / 2), width: skinData.width, height: Math.ceil(height / 2) };
     }
     return undefined;
@@ -425,87 +425,52 @@ export default function SkinEditorPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {/* Main Preview Area (4/5 of screen) */}
-            <div className="lg:col-span-4">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Main Preview Area (3/4 of screen) */}
+            <div className="lg:col-span-3">
               <div className={`rounded-lg border ${darkMode ? "border-dark-border bg-dark-secondary" : "border-gray-200 bg-white"} p-4`}>
-                {/* View Mode Toggle */}
+                {/* Top Bar with View Toggle and Download */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium ${darkMode ? "bg-dark-tertiary text-dark-text hover:bg-dark-border" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                      onClick={() => setViewMode(viewMode === "3d" ? "uv" : "3d")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        darkMode
+                          ? "bg-dark-tertiary text-dark-text hover:bg-dark-border"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
                     >
-                      Upload New
-                    </button>
-                    <button
-                      onClick={handleDownload}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium ${darkMode ? "bg-dark-tertiary text-dark-text hover:bg-dark-border" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
-                    >
-                      Download
+                      {viewMode === "3d" ? "UV Skin" : "3D Model"}
                     </button>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={undoEdit}
-                      disabled={!canUndo}
-                      className={`px-2.5 py-1.5 rounded-lg text-lg ${darkMode ? "bg-dark-tertiary text-dark-text hover:bg-dark-border" : "bg-gray-100 text-gray-700 hover:bg-gray-200"} disabled:opacity-40`}
-                      title="Undo (Ctrl+Z)"
-                    >
-                      ↶
-                    </button>
-                    <button
-                      onClick={redoEdit}
-                      disabled={!canRedo}
-                      className={`px-2.5 py-1.5 rounded-lg text-lg ${darkMode ? "bg-dark-tertiary text-dark-text hover:bg-dark-border" : "bg-gray-100 text-gray-700 hover:bg-gray-200"} disabled:opacity-40`}
-                      title="Redo (Ctrl+Y)"
-                    >
-                      ↷
-                    </button>
-                  </div>
-                </div>
-
-                {/* View Mode Tabs */}
-                <div className="flex gap-2 mb-4">
                   <button
-                    onClick={() => setViewMode("3d")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      viewMode === "3d"
-                        ? darkMode
-                          ? "bg-dark-border text-dark-text"
-                          : "bg-gray-200 text-gray-900"
-                        : darkMode
-                          ? "bg-dark-tertiary text-dark-text-secondary hover:bg-dark-border"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
+                    onClick={handleDownload}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${darkMode ? "bg-dark-tertiary text-dark-text hover:bg-dark-border" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
                   >
-                    3D View
-                  </button>
-                  <button
-                    onClick={() => setViewMode("uv")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      viewMode === "uv"
-                        ? darkMode
-                          ? "bg-dark-border text-dark-text"
-                          : "bg-gray-200 text-gray-900"
-                        : darkMode
-                          ? "bg-dark-tertiary text-dark-text-secondary hover:bg-dark-border"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    UV Skin
+                    Download
                   </button>
                 </div>
 
                 {/* Content Area */}
                 <div className="flex items-center justify-center overflow-auto" style={{ minHeight: "600px" }}>
                   {viewMode === "3d" ? (
-                    <div className="flex items-center justify-center w-full h-full">
+                    <div className="flex items-center justify-center w-full h-full relative">
+                      {/* 3D Grid Background */}
+                      <div 
+                        className="absolute inset-0 opacity-20"
+                        style={{
+                          backgroundImage: `
+                            linear-gradient(${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} 1px, transparent 1px),
+                            linear-gradient(90deg, ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} 1px, transparent 1px)
+                          `,
+                          backgroundSize: '20px 20px',
+                        }}
+                      />
                       <canvas
                         ref={canvas3dRef}
                         width={600}
                         height={700}
-                        style={{ width: "100%", height: "auto", maxWidth: "100%" }}
+                        style={{ width: "100%", height: "auto", maxWidth: "100%", position: "relative", zIndex: 1 }}
                       />
                     </div>
                   ) : (
@@ -531,13 +496,44 @@ export default function SkinEditorPage() {
               </div>
             </div>
 
-            {/* Tools Panel (1/5 of screen) */}
+            {/* Tools Panel (1/4 of screen) */}
             <div className="lg:col-span-1 space-y-4">
+              {/* Upload */}
+              <div className={`rounded-lg border ${darkMode ? "border-dark-border bg-dark-secondary" : "border-gray-200 bg-white"} p-4`}>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`w-full px-3 py-2 rounded-lg text-sm font-medium ${darkMode ? "bg-dark-tertiary text-dark-text hover:bg-dark-border" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                >
+                  Upload New Skin
+                </button>
+              </div>
+
+              {/* Undo/Redo */}
+              <div className={`rounded-lg border ${darkMode ? "border-dark-border bg-dark-secondary" : "border-gray-200 bg-white"} p-4`}>
+                <div className="flex gap-2">
+                  <button
+                    onClick={undoEdit}
+                    disabled={!canUndo}
+                    className={`flex-1 px-2.5 py-2 rounded-lg text-lg ${darkMode ? "bg-dark-tertiary text-dark-text hover:bg-dark-border" : "bg-gray-100 text-gray-700 hover:bg-gray-200"} disabled:opacity-40`}
+                    title="Undo (Ctrl+Z)"
+                  >
+                    ↶
+                  </button>
+                  <button
+                    onClick={redoEdit}
+                    disabled={!canRedo}
+                    className={`flex-1 px-2.5 py-2 rounded-lg text-lg ${darkMode ? "bg-dark-tertiary text-dark-text hover:bg-dark-border" : "bg-gray-100 text-gray-700 hover:bg-gray-200"} disabled:opacity-40`}
+                    title="Redo (Ctrl+Y)"
+                  >
+                    ↷
+                  </button>
+                </div>
+              </div>
               {/* Layer Selection */}
               <div className={`rounded-lg border ${darkMode ? "border-dark-border bg-dark-secondary" : "border-gray-200 bg-white"} p-4`}>
                 <h3 className={`text-sm font-semibold mb-3 ${darkMode ? "text-dark-text" : "text-gray-900"}`}>Layer</h3>
                 <div className="space-y-2">
-                  {(["all", "top", "bottom"] as const).map((layer) => (
+                  {(["all", "base", "top"] as const).map((layer) => (
                     <button
                       key={layer}
                       onClick={() => setActiveLayer(layer)}
@@ -551,7 +547,7 @@ export default function SkinEditorPage() {
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
-                      {layer === "all" ? "All Layers" : layer === "top" ? "Top Half" : "Bottom Half"}
+                      {layer === "all" ? "All Layers" : layer === "base" ? "Base Layer" : "Top Layer"}
                     </button>
                   ))}
                 </div>
