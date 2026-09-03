@@ -12,7 +12,6 @@ export default function Navigation() {
     { path: "/editor", label: "Texture Editor" },
     { path: "/analyzer", label: "Pack Analyzer" },
     { path: "/library", label: "Pack Library" },
-    { path: "/skin-editor", label: "Skin Editor" },
   ];
 
   return (

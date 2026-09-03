@@ -14,7 +14,7 @@ function AppContent() {
       <Route path="/editor" component={EditorPage} />
       <Route path="/analyzer" component={AnalyzerPage} />
       <Route path="/library" component={LibraryPage} />
-      <Route path="/skin-editor" component={SkinEditorPage} />
+      <Route path="/skin" component={SkinEditorPage} />
     </>
   );
 }
