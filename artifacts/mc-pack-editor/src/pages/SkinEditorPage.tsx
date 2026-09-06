@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useTheme } from "../contexts/ThemeContext";
 import { loadImageDataFromBuffer, imageDataToBuffer, applyBrush, pickColorAt, type EditorTool, applyRecolor } from "../lib/textureEditor";
 import { hexToRgbColor, rgbToHexColor, isValidHexColor, applyRecolorToPixel } from "../lib/colorUtils";
+import { showSuccess, showError } from "../lib/notifications";
 import { Render } from "skin3d";
 import * as THREE from "three";
 
@@ -219,7 +220,7 @@ export default function SkinEditorPage() {
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith(".png")) {
-      alert("Please upload a PNG file");
+      showError("Please upload a PNG file");
       return;
     }
 
@@ -247,7 +248,7 @@ export default function SkinEditorPage() {
       setHasChanges(false);
     } catch (error) {
       console.error("Error loading skin:", error);
-      alert("Error loading skin file: " + (error as Error).message);
+      showError("Error loading skin file: " + (error as Error).message);
     } finally {
       setIsLoading(false);
     }

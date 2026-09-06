@@ -2,15 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "wouter";
 import { SavedPack, getLocalPackLibrary } from "../lib/packLibrary";
 import { loadPackFromFile } from "../lib/zipUtils";
-
-// Notification type
-
-// Notification type
-interface Notification {
-  id: string;
-  message: string;
-  type: 'success' | 'error';
-}
+import { showSuccess, showError } from "../lib/notifications";
+import { ConfirmDialog } from "../components/common/ConfirmDialog";
 
 // Minecraft color code parser
 const parseMinecraftFormatting = (text: string, addOutline = false): React.ReactNode => {
@@ -103,17 +96,18 @@ export default function LibraryPage() {
   const [packs, setPacks] = useState<SavedPack[]>([]);
   const [loading, setLoading] = useState(false);
   const [storageUsage, setStorageUsage] = useState({ used: 0, total: 500 * 1024 * 1024, percentage: 0 });
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({ open: false, title: "", description: "", onConfirm: () => {} });
 
-  // Add notification
-  const addNotification = useCallback((message: string, type: 'success' | 'error' = 'success') => {
-    const id = crypto.randomUUID();
-    setNotifications(prev => [...prev, { id, message, type }]);
-    
-    // Auto-remove after 3 seconds
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 3000);
+  // Helper function to show confirm dialog
+  const showConfirm = useCallback((title: string, description: string, onConfirm: () => void) => {
+    setConfirmDialog({ open: true, title, description, onConfirm });
   }, []);
 
   // Function to load packs (shared between useEffect and refresh button)
@@ -132,9 +126,9 @@ export default function LibraryPage() {
     } catch (error) {
       console.error('Failed to load packs:', error);
       setPacks([]);
-      addNotification('Failed to load packs from library', 'error');
+      showError('Failed to load packs from library');
     }
-  }, [addNotification]);
+  }, []);
 
   // Reload packs when component mounts
   useEffect(() => {
@@ -149,13 +143,13 @@ export default function LibraryPage() {
       // Set flag in localStorage to indicate which pack to load
       localStorage.setItem('mc-pack-editor-load-pack-id', packId);
       console.log('Pack load flag set in localStorage');
-      addNotification("Pack loaded successfully!", "success");
+      showSuccess("Pack loaded successfully!");
       // Navigate to editor
       window.location.href = `/editor`;
     } catch (error) {
       console.error("Failed to load pack:", error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      addNotification(`Failed to load pack: ${errorMessage}`, "error");
+      showError(`Failed to load pack: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -176,43 +170,51 @@ export default function LibraryPage() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        addNotification("Pack downloaded successfully!", "success");
+        showSuccess("Pack downloaded successfully!");
       }
     } catch (error) {
       console.error("Failed to download pack:", error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      addNotification(`Failed to download pack: ${errorMessage}`, "error");
+      showError(`Failed to download pack: ${errorMessage}`);
     }
   };
 
   const handleDeletePack = async (packId: string) => {
-    if (confirm("Are you sure you want to delete this pack from your library?")) {
-      try {
-        // Delete from IndexedDB library
-        await localLibrary.deletePack(packId);
-        await loadPacks();
-        addNotification("Pack deleted successfully!", "success");
-      } catch (error) {
-        console.error('Failed to delete pack:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        addNotification(`Failed to delete pack: ${errorMessage}`, "error");
+    showConfirm(
+      "Delete Pack",
+      "Are you sure you want to delete this pack from your library?",
+      async () => {
+        try {
+          // Delete from IndexedDB library
+          await localLibrary.deletePack(packId);
+          await loadPacks();
+          showSuccess("Pack deleted successfully!");
+        } catch (error) {
+          console.error('Failed to delete pack:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          showError(`Failed to delete pack: ${errorMessage}`);
+        }
       }
-    }
+    );
   };
 
   const handleClearAll = async () => {
-    if (confirm("Are you sure you want to clear all saved packs?")) {
-      try {
-        // Clear IndexedDB library
-        await localLibrary.clearAll();
-        setPacks([]);
-        addNotification("All packs cleared successfully!", "success");
-      } catch (error) {
-        console.error('Failed to clear packs:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        addNotification(`Failed to clear packs: ${errorMessage}`, "error");
+    showConfirm(
+      "Clear All Packs",
+      "Are you sure you want to clear all saved packs?",
+      async () => {
+        try {
+          // Clear IndexedDB library
+          await localLibrary.clearAll();
+          setPacks([]);
+          showSuccess("All packs cleared successfully!");
+        } catch (error) {
+          console.error('Failed to clear packs:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          showError(`Failed to clear packs: ${errorMessage}`);
+        }
       }
-    }
+    );
   };
 
   // Update storage usage when packs change
@@ -358,27 +360,17 @@ export default function LibraryPage() {
         </div>
       </div>
 
-      {/* Notifications */}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            className="relative bg-white dark:bg-dark-secondary rounded-lg shadow-lg border border-gray-200 dark:border-dark-border overflow-hidden"
-            style={{ width: '300px' }}
-          >
-            <div className="px-4 py-3">
-              <p className="text-sm text-gray-800 dark:text-dark-text">{notification.message}</p>
-            </div>
-            <div
-              className="h-1"
-              style={{
-                backgroundColor: notification.type === 'error' ? '#ef4444' : '#22c55e',
-                animation: 'progress 3s linear forwards'
-              }}
-            />
-          </div>
-        ))}
-      </div>
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        onConfirm={() => {
+          confirmDialog.onConfirm();
+          setConfirmDialog(prev => ({ ...prev, open: false }));
+        }}
+      />
     </>
   );
 }

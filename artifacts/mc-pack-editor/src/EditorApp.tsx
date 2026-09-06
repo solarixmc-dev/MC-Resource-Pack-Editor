@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { Pack, FolderSources, TextureOverrides, LayoutMode } from "./types";
-import { Notification, UploadDefaults } from "./types/editor";
+import { UploadDefaults } from "./types/editor";
 import { formatBytes } from "./lib/packAnalyzer";
 import {
   loadPackFromFile,
@@ -13,6 +13,7 @@ import { getAtlasDefinition } from "./lib/atlasRegions";
 import { getLocalPackLibrary, EditorState } from "./lib/packLibrary";
 import { stripColorCodes } from "./lib/colorUtils";
 import { useTheme } from "./contexts/ThemeContext";
+import { showSuccess, showError, showInfo } from "./lib/notifications";
 
 // Components
 import PreviewModal from "./components/PreviewModal";
@@ -28,6 +29,7 @@ import { PackOrderPanel } from "./components/modals/PackOrderPanel";
 import { PackSettingsModal, DEFAULT_UPLOAD_DEFAULTS } from "./components/modals/PackSettingsModal";
 import { SettingsModal } from "./components/modals/SettingsModal";
 import { FileViewerModal } from "./components/modals/FileViewerModal";
+import { ConfirmDialog } from "./components/common/ConfirmDialog";
 
 function readUploadDefaults(): UploadDefaults {
   if (typeof window === "undefined") return { formatVersion: 1, ...DEFAULT_UPLOAD_DEFAULTS };
@@ -83,8 +85,20 @@ export default function EditorApp() {
   const exportDropdownRef = useRef<HTMLDivElement>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [copyFromTopPack, setCopyFromTopPack] = useState(uploadDefaults.copyFromTopPack);
+  
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({ open: false, title: "", description: "", onConfirm: () => {} });
+
+  // Helper function to show confirm dialog
+  const showConfirm = useCallback((title: string, description: string, onConfirm: () => void) => {
+    setConfirmDialog({ open: true, title, description, onConfirm });
+  }, []);
 
   // Save editor state to IndexedDB whenever packs or metadata changes
   useEffect(() => {
@@ -139,15 +153,7 @@ export default function EditorApp() {
     });
   }, [uploadDefaults.name, uploadDefaults.description]);
 
-  // Add notification
-  const addNotification = useCallback((message: string, type: 'success' | 'error' = 'success') => {
-    const id = crypto.randomUUID();
-    setNotifications(prev => [...prev, { id, message, type }]);
-    
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 3000);
-  }, []);
+
 
   const [globalSearch, setGlobalSearch] = useState("");
   const [jumpTarget, setJumpTarget] = useState<string | null>(null);
@@ -410,29 +416,35 @@ export default function EditorApp() {
   }, []);
 
   const clearAllPacks = useCallback(() => {
-    if (!confirm("Are you sure you want to clear all packs and start a new project? This cannot be undone.")) return;
-    
-    setPacks([]);
-    setFolderSources({});
-    setTextureOverrides({});
-    setAtlasRegionOverrides({});
-    setPackVisibility({});
-    setRemovedFiles({});
-    setPackName(uploadDefaults.name);
-    setPackDescription(uploadDefaults.description);
-    setPackIcon(uploadDefaults.icon);
-    setSelectedFolder("blocks");
-    setGlobalSearch("");
-    setJumpTarget(null);
-    setLightbox(null);
-    setEditingTexture(null);
-    setAnalysis(null);
-    
-    const library = getLocalPackLibrary();
-    library.clearEditorState().catch(err => {
-      console.error('Failed to clear editor state:', err);
-    });
-  }, [uploadDefaults]);
+    showConfirm(
+      "Clear All Packs",
+      "Are you sure you want to clear all packs and start a new project? This cannot be undone.",
+      () => {
+        setPacks([]);
+        setFolderSources({});
+        setTextureOverrides({});
+        setAtlasRegionOverrides({});
+        setPackVisibility({});
+        setRemovedFiles({});
+        setPackName(uploadDefaults.name);
+        setPackDescription(uploadDefaults.description);
+        setPackIcon(uploadDefaults.icon);
+        setSelectedFolder("blocks");
+        setGlobalSearch("");
+        setJumpTarget(null);
+        setLightbox(null);
+        setEditingTexture(null);
+        setAnalysis(null);
+        
+        const library = getLocalPackLibrary();
+        library.clearEditorState().catch(err => {
+          console.error('Failed to clear editor state:', err);
+        });
+        
+        showSuccess("All packs cleared successfully");
+      }
+    );
+  }, [showConfirm, uploadDefaults]);
 
   const handleViewFiles = useCallback((packId: string) => {
     const pack = packs.find(p => p.id === packId);
@@ -541,7 +553,7 @@ export default function EditorApp() {
       }
     } catch (e) {
       console.error("Export failed:", e);
-      alert("Export failed. Please try again.");
+      showError("Export failed. Please try again.");
     } finally {
       setExporting(false);
     }
@@ -565,19 +577,19 @@ export default function EditorApp() {
       
       try {
         await localLibrary.savePack(packName, packDescription, packIcon, arrayBuffer);
-        addNotification("Pack saved to library!", "success");
+        showSuccess("Pack saved to library!");
       } catch (error) {
         console.error("Failed to save to library:", error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        addNotification(`Failed to save: ${errorMessage}`, "error");
+        showError(`Failed to save: ${errorMessage}`);
       }
     } catch (e) {
       console.error("Save failed:", e);
-      addNotification(`Save failed: ${e instanceof Error ? e.message : 'Unknown error'}`, "error");
+      showError(`Save failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
     } finally {
       setExporting(false);
     }
-  }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles, addNotification, localLibrary]);
+  }, [packs, folderSources, textureOverrides, atlasRegionOverrides, packName, packDescription, packIcon, removedFiles, localLibrary]);
 
   const handleGeneratePreview = useCallback(() => {
     if (!packs.length) return;
@@ -625,7 +637,7 @@ export default function EditorApp() {
       }
     } catch (error) {
       console.error("Failed to load default pack:", error);
-      alert("Default textures not found. Please download Minecraft default textures and place them in public/textures/default-pack.zip");
+      showError("Default textures not found. Please download Minecraft default textures and place them in public/textures/default-pack.zip");
       window.open('https://www.curseforge.com/api/v1/mods/690071/files/4370838/download', '_blank');
       setTimeout(() => setShowOpenFilePrompt(true), 1000);
     }
@@ -652,7 +664,7 @@ export default function EditorApp() {
       setWaitingForFileSelection(false);
     } catch (error) {
       console.error("Failed to load pack:", error);
-      alert("Failed to load the downloaded file. Please try again.");
+      showError("Failed to load the downloaded file. Please try again.");
       setWaitingForFileSelection(false);
     }
   }, []);
@@ -1254,21 +1266,26 @@ export default function EditorApp() {
           pack={fileViewerPack}
           onClose={() => setFileViewerPack(null)}
           onDeleteFile={(filePath) => {
-            if (confirm(`Delete ${filePath} from ${stripColorCodes(fileViewerPack.name)}?`)) {
-              setPacks(prev => {
-                const updated = prev.map(pack => {
-                  if (pack.id === fileViewerPack.id) {
-                    const newFiles = new Map(pack.files);
-                    newFiles.delete(filePath);
-                    const updatedPack = { ...pack, files: newFiles };
-                    setTimeout(() => setFileViewerPack(updatedPack), 0);
-                    return updatedPack;
-                  }
-                  return pack;
+            showConfirm(
+              "Delete File",
+              `Delete ${filePath} from ${stripColorCodes(fileViewerPack.name)}?`,
+              () => {
+                setPacks(prev => {
+                  const updated = prev.map(pack => {
+                    if (pack.id === fileViewerPack.id) {
+                      const newFiles = new Map(pack.files);
+                      newFiles.delete(filePath);
+                      const updatedPack = { ...pack, files: newFiles };
+                      setTimeout(() => setFileViewerPack(updatedPack), 0);
+                      return updatedPack;
+                    }
+                    return pack;
+                  });
+                  return updated;
                 });
-                return updated;
-              });
-            }
+                showSuccess("File deleted successfully");
+              }
+            );
           }}
           darkMode={darkMode}
           stripColorCodes={stripColorCodes}
@@ -1304,27 +1321,17 @@ export default function EditorApp() {
         />
       )}
 
-      {/* ── Notifications ── */}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            className="relative bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
-            style={{ width: '300px' }}
-          >
-            <div className="px-4 py-3">
-              <p className="text-sm text-gray-800">{notification.message}</p>
-            </div>
-            <div
-              className="h-1"
-              style={{
-                backgroundColor: notification.type === 'error' ? '#ef4444' : '#22c55e',
-                animation: 'progress 3s linear forwards'
-              }}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
+      {/* ── Confirm Dialog ── */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        onConfirm={() => {
+          confirmDialog.onConfirm();
+          setConfirmDialog(prev => ({ ...prev, open: false }));
+        }}
+      />
+    </>
   );
 }

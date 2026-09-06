@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { hashPassword, verifyPassword } from "../lib/crypto";
+import { showInfo } from "../lib/notifications";
 
 interface User {
   id: string;
@@ -193,9 +194,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Store the code for this email (in a real app, this would be sent via email)
     setResetCodes(prev => new Map(prev).set(email, code));
     
-    // For demo purposes, we'll log the code and show it in an alert
+    // For demo purposes, we'll log the code and show it in a toast
     console.log(`Password reset code for ${email}: ${code}`);
-    alert(`Password reset code: ${code} (In production, this would be sent to your email)`);
+    showInfo(`Password reset code: ${code} (In production, this would be sent to your email)`);
     
     return code;
   };
