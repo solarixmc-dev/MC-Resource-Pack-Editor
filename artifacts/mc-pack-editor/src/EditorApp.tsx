@@ -442,6 +442,9 @@ export default function EditorApp() {
         });
         
         showSuccess("All packs cleared successfully");
+        
+        // Close dialog after clearing
+        setConfirmDialog(prev => ({ ...prev, open: false }));
       }
     );
   }, [showConfirm, uploadDefaults]);

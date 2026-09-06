@@ -194,6 +194,8 @@ export default function LibraryPage() {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           showError(`Failed to delete pack: ${errorMessage}`);
         }
+        // Close dialog after operation
+        setConfirmDialog(prev => ({ ...prev, open: false }));
       }
     );
   };
@@ -213,6 +215,8 @@ export default function LibraryPage() {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           showError(`Failed to clear packs: ${errorMessage}`);
         }
+        // Close dialog after operation
+        setConfirmDialog(prev => ({ ...prev, open: false }));
       }
     );
   };
