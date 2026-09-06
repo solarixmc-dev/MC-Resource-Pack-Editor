@@ -28,7 +28,8 @@ export function ConfirmDialog({
   confirmText = "Confirm",
   cancelText = "Cancel",
 }: ConfirmDialogProps) {
-  const handleConfirm = () => {
+  const handleConfirm = (e: React.MouseEvent) => {
+    e.preventDefault();
     onConfirm();
     onOpenChange(false);
   };
