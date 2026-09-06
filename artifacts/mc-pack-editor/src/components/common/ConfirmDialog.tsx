@@ -28,9 +28,12 @@ export function ConfirmDialog({
   confirmText = "Confirm",
   cancelText = "Cancel",
 }: ConfirmDialogProps) {
-  const handleConfirm = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleConfirm = () => {
     onConfirm();
+    setTimeout(() => onOpenChange(false), 0);
+  };
+
+  const handleCancel = () => {
     onOpenChange(false);
   };
 
@@ -42,7 +45,7 @@ export function ConfirmDialog({
           <AlertDialogDescription className="text-gray-600 dark:text-dark-text-secondary">{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="text-gray-900 dark:text-dark-text">{cancelText}</AlertDialogCancel>
+          <AlertDialogCancel onClick={handleCancel} className="text-gray-900 dark:text-dark-text">{cancelText}</AlertDialogCancel>
           <AlertDialogAction onClick={handleConfirm}>{confirmText}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
