@@ -36,3 +36,39 @@ export function showWarning(message: string) {
     variant: "default",
   });
 }
+
+export function showConfirm(
+  title: string,
+  description: string,
+  onConfirm: () => void,
+  onCancel?: () => void
+): void {
+  // Create a custom confirmation toast with action buttons
+  const { dismiss } = toast({
+    title: title,
+    description: description,
+    variant: "confirm",
+    action: (
+      <div className="flex gap-2 mt-2">
+        <button
+          onClick={() => {
+            onConfirm();
+            dismiss();
+          }}
+          className="px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+        >
+          Confirm
+        </button>
+        <button
+          onClick={() => {
+            onCancel?.();
+            dismiss();
+          }}
+          className="px-3 py-1.5 text-sm font-medium bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    ),
+  });
+}

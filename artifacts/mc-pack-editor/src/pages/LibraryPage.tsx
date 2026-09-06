@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "wouter";
 import { SavedPack, getLocalPackLibrary } from "../lib/packLibrary";
 import { loadPackFromFile } from "../lib/zipUtils";
-import { showSuccess, showError } from "../lib/notifications";
-import { ConfirmDialog } from "../components/common/ConfirmDialog";
+import { showSuccess, showError, showConfirm } from "../lib/notifications";
 
 // Minecraft color code parser
 const parseMinecraftFormatting = (text: string, addOutline = false): React.ReactNode => {
@@ -96,19 +95,6 @@ export default function LibraryPage() {
   const [packs, setPacks] = useState<SavedPack[]>([]);
   const [loading, setLoading] = useState(false);
   const [storageUsage, setStorageUsage] = useState({ used: 0, total: 500 * 1024 * 1024, percentage: 0 });
-  
-  // Confirm dialog state
-  const [confirmDialog, setConfirmDialog] = useState<{
-    open: boolean;
-    title: string;
-    description: string;
-    onConfirm: () => void;
-  }>({ open: false, title: "", description: "", onConfirm: () => {} });
-
-  // Helper function to show confirm dialog
-  const showConfirm = useCallback((title: string, description: string, onConfirm: () => void) => {
-    setConfirmDialog({ open: true, title, description, onConfirm });
-  }, []);
 
   // Function to load packs (shared between useEffect and refresh button)
   const loadPacks = useCallback(async () => {
@@ -194,8 +180,6 @@ export default function LibraryPage() {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           showError(`Failed to delete pack: ${errorMessage}`);
         }
-        // Close dialog after operation
-        setConfirmDialog(prev => ({ ...prev, open: false }));
       }
     );
   };
@@ -215,8 +199,6 @@ export default function LibraryPage() {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           showError(`Failed to clear packs: ${errorMessage}`);
         }
-        // Close dialog after operation
-        setConfirmDialog(prev => ({ ...prev, open: false }));
       }
     );
   };
@@ -363,15 +345,6 @@ export default function LibraryPage() {
           )}
         </div>
       </div>
-
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        open={confirmDialog.open}
-        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
-        title={confirmDialog.title}
-        description={confirmDialog.description}
-        onConfirm={confirmDialog.onConfirm}
-      />
     </>
   );
 }

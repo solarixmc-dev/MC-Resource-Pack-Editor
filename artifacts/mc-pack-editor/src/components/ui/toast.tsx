@@ -30,6 +30,7 @@ const toastVariants = cva(
         default: "border bg-background text-foreground",
         destructive:
           "destructive group border-destructive bg-destructive text-destructive-foreground",
+        confirm: "border bg-white dark:bg-dark-secondary text-gray-900 dark:text-dark-text",
       },
     },
     defaultVariants: {
@@ -48,7 +49,11 @@ const Toast = React.forwardRef<
       ref={ref}
       className={cn(toastVariants({ variant }), className)}
       {...props}
-    />
+    >
+      {variant === "confirm" && (
+        <div className="absolute bottom-0 left-0 h-1 bg-green-500 animate-progress" />
+      )}
+    </ToastPrimitives.Root>
   )
 })
 Toast.displayName = ToastPrimitives.Root.displayName

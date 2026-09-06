@@ -404,6 +404,11 @@ html.dark.dark-checkerboard .checkered-light {
   }
 }
 
+/* Toast progress bar animation */
+.animate-progress {
+  animation: progress 3s linear forwards;
+}
+
 /* Hide scrollbars while allowing scrolling */
 ::-webkit-scrollbar {
   width: 8px;

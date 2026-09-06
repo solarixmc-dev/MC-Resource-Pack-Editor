@@ -13,7 +13,7 @@ import { getAtlasDefinition } from "./lib/atlasRegions";
 import { getLocalPackLibrary, EditorState } from "./lib/packLibrary";
 import { stripColorCodes } from "./lib/colorUtils";
 import { useTheme } from "./contexts/ThemeContext";
-import { showSuccess, showError, showInfo } from "./lib/notifications";
+import { showSuccess, showError, showInfo, showConfirm } from "./lib/notifications";
 
 // Components
 import PreviewModal from "./components/PreviewModal";
@@ -29,7 +29,7 @@ import { PackOrderPanel } from "./components/modals/PackOrderPanel";
 import { PackSettingsModal, DEFAULT_UPLOAD_DEFAULTS } from "./components/modals/PackSettingsModal";
 import { SettingsModal } from "./components/modals/SettingsModal";
 import { FileViewerModal } from "./components/modals/FileViewerModal";
-import { ConfirmDialog } from "./components/common/ConfirmDialog";
+
 
 function readUploadDefaults(): UploadDefaults {
   if (typeof window === "undefined") return { formatVersion: 1, ...DEFAULT_UPLOAD_DEFAULTS };
@@ -86,19 +86,6 @@ export default function EditorApp() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [copyFromTopPack, setCopyFromTopPack] = useState(uploadDefaults.copyFromTopPack);
-  
-  // Confirm dialog state
-  const [confirmDialog, setConfirmDialog] = useState<{
-    open: boolean;
-    title: string;
-    description: string;
-    onConfirm: () => void;
-  }>({ open: false, title: "", description: "", onConfirm: () => {} });
-
-  // Helper function to show confirm dialog
-  const showConfirm = useCallback((title: string, description: string, onConfirm: () => void) => {
-    setConfirmDialog({ open: true, title, description, onConfirm });
-  }, []);
 
   // Save editor state to IndexedDB whenever packs or metadata changes
   useEffect(() => {
@@ -441,12 +428,9 @@ export default function EditorApp() {
         });
         
         showSuccess("All packs cleared successfully");
-        
-        // Close dialog after clearing
-        setConfirmDialog(prev => ({ ...prev, open: false }));
       }
     );
-  }, [showConfirm, uploadDefaults]);
+  }, [uploadDefaults]);
 
   const handleViewFiles = useCallback((packId: string) => {
     const pack = packs.find(p => p.id === packId);
@@ -1322,15 +1306,6 @@ export default function EditorApp() {
           onCancel={() => setCropSource(null)}
         />
       )}
-
-      {/* ── Confirm Dialog ── */}
-      <ConfirmDialog
-        open={confirmDialog.open}
-        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
-        title={confirmDialog.title}
-        description={confirmDialog.description}
-        onConfirm={confirmDialog.onConfirm}
-      />
     </div>
   );
 }
