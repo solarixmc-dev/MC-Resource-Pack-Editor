@@ -28,11 +28,15 @@ export function ConfirmDialog({
   confirmText = "Confirm",
   cancelText = "Cancel",
 }: ConfirmDialogProps) {
-  const handleConfirm = () => {
+  const handleConfirm = (e: React.MouseEvent) => {
+    console.log('ConfirmDialog handleConfirm called');
+    e.preventDefault();
+    e.stopPropagation();
     onConfirm();
-    // Force close immediately after confirm
-    onOpenChange(false);
+    console.log('ConfirmDialog onConfirm executed');
   };
+
+  console.log('ConfirmDialog render, open:', open);
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -43,12 +47,7 @@ export function ConfirmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel className="text-gray-900 dark:text-dark-text">{cancelText}</AlertDialogCancel>
-          <button
-            onClick={handleConfirm}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-          >
-            {confirmText}
-          </button>
+          <AlertDialogAction onClick={handleConfirm}>{confirmText}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
