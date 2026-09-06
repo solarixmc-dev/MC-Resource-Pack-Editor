@@ -28,16 +28,21 @@ export function ConfirmDialog({
   confirmText = "Confirm",
   cancelText = "Cancel",
 }: ConfirmDialogProps) {
+  const handleConfirm = () => {
+    onConfirm();
+    onOpenChange(false);
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-white dark:bg-dark-secondary border-gray-200 dark:border-dark-border">
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogTitle className="text-gray-900 dark:text-dark-text">{title}</AlertDialogTitle>
+          <AlertDialogDescription className="text-gray-600 dark:text-dark-text-secondary">{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{cancelText}</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>{confirmText}</AlertDialogAction>
+          <AlertDialogCancel className="text-gray-900 dark:text-dark-text">{cancelText}</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirm}>{confirmText}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

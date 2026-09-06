@@ -366,10 +366,7 @@ export default function LibraryPage() {
         onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
         title={confirmDialog.title}
         description={confirmDialog.description}
-        onConfirm={() => {
-          confirmDialog.onConfirm();
-          setConfirmDialog(prev => ({ ...prev, open: false }));
-        }}
+        onConfirm={confirmDialog.onConfirm}
       />
     </>
   );
