@@ -44,6 +44,7 @@ export function showConfirm(
   onCancel?: () => void
 ): void {
   // Create a custom confirmation toast with action buttons
+  // The toast will auto-dismiss after 3 seconds with the progress bar animation
   const { dismiss } = toast({
     title: title,
     description: description,
