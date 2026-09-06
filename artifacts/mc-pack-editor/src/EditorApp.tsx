@@ -1332,6 +1332,6 @@ export default function EditorApp() {
           setConfirmDialog(prev => ({ ...prev, open: false }));
         }}
       />
-    </>
+    </div>
   );
 }
