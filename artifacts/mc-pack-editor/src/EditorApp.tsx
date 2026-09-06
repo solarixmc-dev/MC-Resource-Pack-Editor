@@ -97,7 +97,6 @@ export default function EditorApp() {
 
   // Helper function to show confirm dialog
   const showConfirm = useCallback((title: string, description: string, onConfirm: () => void) => {
-    console.log('showConfirm called with:', title);
     setConfirmDialog({ open: true, title, description, onConfirm });
   }, []);
 
@@ -417,12 +416,10 @@ export default function EditorApp() {
   }, []);
 
   const clearAllPacks = useCallback(() => {
-    console.log('clearAllPacks called');
     showConfirm(
       "Clear All Packs",
       "Are you sure you want to clear all packs and start a new project? This cannot be undone.",
       () => {
-        console.log('Clear packs callback executing');
         setPacks([]);
         setFolderSources({});
         setTextureOverrides({});
@@ -437,7 +434,6 @@ export default function EditorApp() {
         setJumpTarget(null);
         setLightbox(null);
         setEditingTexture(null);
-        setAnalysis(null);
         
         const library = getLocalPackLibrary();
         library.clearEditorState().catch(err => {
@@ -447,7 +443,6 @@ export default function EditorApp() {
         showSuccess("All packs cleared successfully");
         
         // Close dialog after clearing
-        console.log('Setting dialog to closed');
         setConfirmDialog(prev => ({ ...prev, open: false }));
       }
     );

@@ -29,14 +29,10 @@ export function ConfirmDialog({
   cancelText = "Cancel",
 }: ConfirmDialogProps) {
   const handleConfirm = (e: React.MouseEvent) => {
-    console.log('ConfirmDialog handleConfirm called');
     e.preventDefault();
     e.stopPropagation();
     onConfirm();
-    console.log('ConfirmDialog onConfirm executed');
   };
-
-  console.log('ConfirmDialog render, open:', open);
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
