@@ -27,7 +27,7 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "border bg-background text-foreground",
+        default: "border bg-white dark:bg-dark-secondary text-gray-900 dark:text-dark-text",
         destructive:
           "destructive group border-destructive bg-destructive text-destructive-foreground",
         confirm: "border bg-white dark:bg-dark-secondary text-gray-900 dark:text-dark-text",
@@ -49,6 +49,8 @@ const Toast = React.forwardRef<
       ref={ref}
       className={cn(toastVariants({ variant }), className)}
       {...props}
+      duration={3000}
+      swipeDirection="right"
     >
       <div className="absolute bottom-0 left-0 h-1 bg-green-500 animate-progress" />
     </ToastPrimitives.Root>

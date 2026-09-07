@@ -10,6 +10,7 @@ export function showSuccess(message: string) {
     title: "Success",
     description: message,
     variant: "default",
+    duration: 3000,
   });
 }
 
@@ -18,6 +19,7 @@ export function showError(message: string) {
     title: "Error",
     description: message,
     variant: "destructive",
+    duration: 3000,
   });
 }
 
@@ -26,6 +28,7 @@ export function showInfo(message: string) {
     title: "Info",
     description: message,
     variant: "default",
+    duration: 3000,
   });
 }
 
@@ -34,6 +37,7 @@ export function showWarning(message: string) {
     title: "Warning",
     description: message,
     variant: "default",
+    duration: 3000,
   });
 }
 
@@ -48,11 +52,14 @@ export function showConfirm(
   const { dismiss } = toast({
     title: title,
     description: description,
-    variant: "confirm",
+    variant: "default",
+    duration: 3000,
     action: (
       <div className="flex gap-2 mt-2">
         <button
-          onClick={() => {
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
             onConfirm();
             dismiss();
           }}
@@ -61,7 +68,9 @@ export function showConfirm(
           Confirm
         </button>
         <button
-          onClick={() => {
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
             onCancel?.();
             dismiss();
           }}
