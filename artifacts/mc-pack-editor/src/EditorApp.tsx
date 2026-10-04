@@ -324,6 +324,25 @@ export default function EditorApp() {
       setPackDescription(uploadDefaults.description);
       setPackIcon(uploadDefaults.icon);
     }
+
+    // Auto-remove sky textures from non-top packs to prevent magenta/black glitched sky
+    if (newPacks.length > 1) {
+      const newRemovedFiles: Record<string, boolean> = {};
+      
+      newPacks.slice(1).forEach((pack) => {
+        pack.files.forEach((_, path) => {
+          // Use the getTextureFolder function to properly identify sky textures
+          const folder = getTextureFolder(path);
+          if (folder === 'sky' || folder === 'skys') {
+            newRemovedFiles[path] = true;
+          }
+        });
+      });
+
+      if (Object.keys(newRemovedFiles).length > 0) {
+        setRemovedFiles(prev => ({ ...prev, ...newRemovedFiles }));
+      }
+    }
   }, [copyFromTopPack, uploadDefaults, setPackDetailsFromPack]);
 
   // Handle pack selection for details
