@@ -352,21 +352,29 @@ export default function EditorApp() {
   // Auto-remove sky textures from non-top packs when packs change
   useEffect(() => {
     if (packs.length > 1) {
-      const newRemovedFiles: Record<string, boolean> = {};
-      
-      packs.slice(1).forEach((pack) => {
-        pack.files.forEach((_, path) => {
-          // Use the getTextureFolder function to properly identify sky textures
+      setRemovedFiles(prev => {
+        const updated = { ...prev };
+        
+        // First, remove all sky textures from removedFiles to start fresh
+        Object.keys(updated).forEach(path => {
           const folder = getTextureFolder(path);
           if (folder === 'sky' || folder === 'skys') {
-            newRemovedFiles[path] = true;
+            delete updated[path];
           }
         });
+        
+        // Then, add back sky textures from non-top packs
+        packs.slice(1).forEach((pack) => {
+          pack.files.forEach((_, path) => {
+            const folder = getTextureFolder(path);
+            if (folder === 'sky' || folder === 'skys') {
+              updated[path] = true;
+            }
+          });
+        });
+        
+        return updated;
       });
-
-      if (Object.keys(newRemovedFiles).length > 0) {
-        setRemovedFiles(prev => ({ ...prev, ...newRemovedFiles }));
-      }
     }
   }, [packs]);
 
