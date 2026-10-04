@@ -355,7 +355,7 @@ export default function EditorApp() {
       setRemovedFiles(prev => {
         const updated = { ...prev };
         
-        // First, remove all sky textures from removedFiles to start fresh
+        // Clear all existing sky texture removals first
         Object.keys(updated).forEach(path => {
           const folder = getTextureFolder(path);
           if (folder === 'sky' || folder === 'skys') {
@@ -363,7 +363,7 @@ export default function EditorApp() {
           }
         });
         
-        // Then, add back sky textures from non-top packs
+        // Disable sky textures from all packs except the first one
         packs.slice(1).forEach((pack) => {
           pack.files.forEach((_, path) => {
             const folder = getTextureFolder(path);
