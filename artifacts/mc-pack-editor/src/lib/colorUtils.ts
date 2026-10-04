@@ -47,7 +47,7 @@ export function stripColorCodes(name: string): string {
 export function parseMcText(raw: string): McSegment[] {
   const segments: McSegment[] = [];
   let color: string | undefined;
-  let bold = false, italic = false, underline = false, strikethrough = false;
+  let bold = false, italic = false, underline = false, strikethrough = false, obfuscated = false;
 
   // Split on § codes; keep delimiters
   const parts = raw.split(/(§[0-9a-fklmnorA-FKLMNOR])/);
@@ -56,18 +56,18 @@ export function parseMcText(raw: string): McSegment[] {
       const ch = part[1].toLowerCase();
       if (MC_COLOR_MAP[ch]) {
         color = MC_COLOR_MAP[ch];
-        bold = italic = underline = strikethrough = false;
+        bold = italic = underline = strikethrough = obfuscated = false;
       } else if (ch === "l") { bold = true; }
       else if (ch === "o") { italic = true; }
       else if (ch === "n") { underline = true; }
       else if (ch === "m") { strikethrough = true; }
+      else if (ch === "k") { obfuscated = true; }
       else if (ch === "r") {
         color = undefined;
-        bold = italic = underline = strikethrough = false;
+        bold = italic = underline = strikethrough = obfuscated = false;
       }
-      // §k (obfuscated) intentionally ignored
     } else if (part) {
-      segments.push({ text: part, color, bold, italic, underlined: underline, strikethrough });
+      segments.push({ text: part, color, bold, italic, underlined: underline, strikethrough, obfuscated });
     }
   }
   return segments;

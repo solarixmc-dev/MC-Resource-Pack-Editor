@@ -73,22 +73,28 @@ export function TextureGrid({
       </div>
 
       <div className="grid gap-2 min-w-0" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
-        {filtered.map((path) => {
-          const parts = path.split("/");
+        {filtered.map((pathWithPackId) => {
+          // Parse the path which now includes pack ID: "path/to/texture.png::packId"
+          const [texturePath, packId] = pathWithPackId.split("::");
+          const parts = texturePath.split("/");
           const displayName = parts[parts.length - 1];
+          const specificPack = packs.find(p => p.id === packId);
+          
+          if (!specificPack) return null;
+          
           return (
             <TextureCard
-              key={path}
-              texturePath={path}
+              key={pathWithPackId}
+              texturePath={texturePath}
               displayName={displayName}
-              packs={packs}
+              packs={[specificPack]}
               folderSources={folderSources}
               textureOverrides={textureOverrides}
               folder={folder}
               onOverride={onOverride}
-              onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
-              onEditTexture={() => onEditTexture(path, displayName, folder)}
-              isRemoved={!!removedFiles[path]}
+              onOpenLightbox={() => onOpenLightbox(texturePath, displayName, folder)}
+              onEditTexture={() => onEditTexture(texturePath, displayName, folder)}
+              isRemoved={!!removedFiles[texturePath]}
               onToggleRemove={onToggleRemove}
               layoutMode={layoutMode}
               darkMode={darkMode}

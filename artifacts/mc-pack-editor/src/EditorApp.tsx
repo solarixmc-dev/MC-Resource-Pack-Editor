@@ -86,6 +86,7 @@ export default function EditorApp() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [copyFromTopPack, setCopyFromTopPack] = useState(uploadDefaults.copyFromTopPack);
+  const [selectedPackForDetails, setSelectedPackForDetails] = useState<string | null>(null);
 
   // Save editor state to IndexedDB whenever packs or metadata changes
   useEffect(() => {
@@ -272,6 +273,42 @@ export default function EditorApp() {
   const [cropSource, setCropSource] = useState<string | null>(null);
   const [fileViewerPack, setFileViewerPack] = useState<Pack | null>(null);
 
+  const setPackDetailsFromPack = useCallback((pack: Pack) => {
+    const iconBuffer = pack.files.get("pack.png");
+    if (iconBuffer) {
+      const iconUrl = arrayBufferToDataURL(iconBuffer, "pack.png");
+      setPackIcon(iconUrl);
+    } else {
+      setPackIcon(null);
+    }
+
+    const mcmetaBuffer = pack.files.get("pack.mcmeta");
+    if (mcmetaBuffer) {
+      try {
+        const decoder = new TextDecoder();
+        const mcmetaText = decoder.decode(mcmetaBuffer);
+        const mcmeta = JSON.parse(mcmetaText);
+        const packData = mcmeta.pack;
+        
+        if (packData?.description) {
+          let description = packData.description;
+          if (typeof description === "object") {
+            description = description.text || "";
+          }
+          setPackDescription(description.trim());
+        } else {
+          setPackDescription(uploadDefaults.description);
+        }
+      } catch {
+        setPackDescription(uploadDefaults.description);
+      }
+    } else {
+      setPackDescription(uploadDefaults.description);
+    }
+
+    setPackName(pack.name);
+  }, [uploadDefaults]);
+
   const handlePacksLoaded = useCallback((newPacks: Pack[]) => {
     setPacks((prev) => {
       const existing = new Set(prev.map((p) => p.name));
@@ -281,87 +318,36 @@ export default function EditorApp() {
 
     if (copyFromTopPack && newPacks.length > 0) {
       const topPack = newPacks[0];
-      
-      const iconBuffer = topPack.files.get("pack.png");
-      if (iconBuffer) {
-        const iconUrl = arrayBufferToDataURL(iconBuffer, "pack.png");
-        setPackIcon(iconUrl);
-      } else {
-        setPackIcon(null);
-      }
-
-      const mcmetaBuffer = topPack.files.get("pack.mcmeta");
-      if (mcmetaBuffer) {
-        try {
-          const decoder = new TextDecoder();
-          const mcmetaText = decoder.decode(mcmetaBuffer);
-          const mcmeta = JSON.parse(mcmetaText);
-          const packData = mcmeta.pack;
-          
-          if (packData?.description) {
-            let description = packData.description;
-            if (typeof description === "object") {
-              description = description.text || "";
-            }
-            setPackDescription(description.trim());
-          } else {
-            setPackDescription(uploadDefaults.description);
-          }
-        } catch {
-          setPackDescription(uploadDefaults.description);
-        }
-      } else {
-        setPackDescription(uploadDefaults.description);
-      }
-
-      setPackName(topPack.name);
+      setPackDetailsFromPack(topPack);
     } else {
       setPackName(uploadDefaults.name);
       setPackDescription(uploadDefaults.description);
       setPackIcon(uploadDefaults.icon);
     }
-  }, [copyFromTopPack, uploadDefaults]);
+  }, [copyFromTopPack, uploadDefaults, setPackDetailsFromPack]);
+
+  // Handle pack selection for details
+  useEffect(() => {
+    if (selectedPackForDetails) {
+      const selectedPack = packs.find(p => p.id === selectedPackForDetails);
+      if (selectedPack) {
+        setPackDetailsFromPack(selectedPack);
+      }
+    } else if (!copyFromTopPack) {
+      // Revert to defaults when selection is cleared and copyFromTopPack is off
+      setPackName(uploadDefaults.name);
+      setPackDescription(uploadDefaults.description);
+      setPackIcon(uploadDefaults.icon);
+    }
+  }, [selectedPackForDetails, packs, setPackDetailsFromPack, copyFromTopPack, uploadDefaults]);
 
   // Handle copy from top pack when the setting is toggled on
   useEffect(() => {
-    if (copyFromTopPack && packs.length > 0) {
+    if (copyFromTopPack && packs.length > 0 && !selectedPackForDetails) {
       const topPack = packs[0];
-      
-      const iconBuffer = topPack.files.get("pack.png");
-      if (iconBuffer) {
-        const iconUrl = arrayBufferToDataURL(iconBuffer, "pack.png");
-        setPackIcon(iconUrl);
-      } else {
-        setPackIcon(null);
-      }
-
-      const mcmetaBuffer = topPack.files.get("pack.mcmeta");
-      if (mcmetaBuffer) {
-        try {
-          const decoder = new TextDecoder();
-          const mcmetaText = decoder.decode(mcmetaBuffer);
-          const mcmeta = JSON.parse(mcmetaText);
-          const packData = mcmeta.pack;
-          
-          if (packData?.description) {
-            let description = packData.description;
-            if (typeof description === "object") {
-              description = description.text || "";
-            }
-            setPackDescription(description.trim());
-          } else {
-            setPackDescription(uploadDefaults.description);
-          }
-        } catch {
-          setPackDescription(uploadDefaults.description);
-        }
-      } else {
-        setPackDescription(uploadDefaults.description);
-      }
-
-      setPackName(topPack.name);
+      setPackDetailsFromPack(topPack);
     }
-  }, [copyFromTopPack, packs, uploadDefaults]);
+  }, [copyFromTopPack, packs, selectedPackForDetails, setPackDetailsFromPack]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -964,6 +950,9 @@ export default function EditorApp() {
                   onIconChange={(d) => { if (d === null) setPackIcon(null); else setCropSource(d); }}
                   darkMode={darkMode}
                   stripColorCodes={stripColorCodes}
+                  packs={packs}
+                  selectedPackId={selectedPackForDetails}
+                  onPackSelect={setSelectedPackForDetails}
                 />
               </div>
             </>

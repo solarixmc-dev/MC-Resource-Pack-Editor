@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MC_COLORS, MC_FORMATS } from "../../lib/colorUtils";
 import { McText } from "../common/McText";
+import { Pack } from "../../types";
 
 export const DEFAULT_UPLOAD_DEFAULTS = {
   name: "My Resource Pack",
@@ -18,6 +19,9 @@ export interface PackSettingsModalProps {
   onIconChange: (d: string | null) => void;
   darkMode: boolean;
   stripColorCodes?: (name: string) => string;
+  packs?: Pack[];
+  selectedPackId?: string | null;
+  onPackSelect?: (packId: string | null) => void;
 }
 
 export function PackSettingsModal({
@@ -29,6 +33,9 @@ export function PackSettingsModal({
   onIconChange,
   darkMode,
   stripColorCodes: _stripColorCodes,
+  packs = [],
+  selectedPackId,
+  onPackSelect,
 }: PackSettingsModalProps) {
   const iconRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -36,6 +43,7 @@ export function PackSettingsModal({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [activeField, setActiveField] = useState<"name" | "desc">("desc");
   const [colorCodesOpen, setColorCodesOpen] = useState(false);
+  const [packDropdownOpen, setPackDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (colorCodesOpen && dropdownRef.current) {
@@ -66,21 +74,74 @@ export function PackSettingsModal({
     });
   };
 
+  const handlePackSelect = (packId: string | null) => {
+    onPackSelect?.(packId);
+    setPackDropdownOpen(false);
+  };
+
   return (
-    <div className="flex items-start gap-3">
-      {/* Pack icon */}
-      <button
-        className={`w-12 h-12 rounded-lg border flex-shrink-0 overflow-hidden checkered transition-colors cursor-pointer mt-5 ${darkMode ? "border-dark-border hover:border-dark-text" : "border-slate-200 hover:border-black"}`}
-        onClick={() => iconRef.current?.click()}
-        title="Click to change pack icon"
-      >
-        {packIcon ? (
-          <img src={packIcon} alt="icon" className="w-full h-full object-cover texture-preview" />
-        ) : (
-          <svg className="w-5 h-5 text-slate-400 dark:text-dark-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" /></svg>
-        )}
-        <input ref={iconRef} type="file" accept="image/*" className="hidden" onChange={handleIcon} />
-      </button>
+    <div className="flex flex-col gap-3">
+      {/* Pack selection dropdown */}
+      {packs.length > 0 && onPackSelect && (
+        <div className="flex flex-col gap-1 relative">
+          <label className={`text-xs font-medium ${darkMode ? "text-dark-text-tertiary" : "text-slate-500"}`}>
+            Pack Details Source
+          </label>
+          <button
+            onClick={() => setPackDropdownOpen(!packDropdownOpen)}
+            className={`px-3 py-1.5 text-sm rounded-lg border flex items-center justify-between transition-colors ${darkMode ? "bg-dark-tertiary border-dark-border hover:border-dark-text text-dark-text-secondary" : "bg-white border-slate-200 hover:border-black text-slate-700"}`}
+          >
+            <span className="truncate">
+              {selectedPackId 
+                ? packs.find(p => p.id === selectedPackId)?.name || "Custom"
+                : "Custom (manually set)"
+              }
+            </span>
+            <span className="ml-2 text-xs">{packDropdownOpen ? "↑" : "↓"}</span>
+          </button>
+
+          {packDropdownOpen && (
+            <div className={`absolute top-full left-0 z-[100] w-full rounded-xl border shadow-2xl mt-1 max-h-60 overflow-y-auto ${darkMode ? "bg-dark-secondary border-dark-border" : "bg-white border-slate-200"}`}>
+              <button
+                onClick={() => handlePackSelect(null)}
+                className={`w-full px-3 py-2 text-left text-sm transition-colors ${!selectedPackId ? (darkMode ? "bg-dark-tertiary text-dark-text" : "bg-slate-100 text-black") : (darkMode ? "hover:bg-dark-tertiary text-dark-text-secondary" : "hover:bg-slate-100 text-slate-700")}`}
+              >
+                Custom (manually set)
+              </button>
+              {packs.map((pack) => (
+                <button
+                  key={pack.id}
+                  onClick={() => handlePackSelect(pack.id)}
+                  className={`w-full px-3 py-2 text-left text-sm transition-colors ${selectedPackId === pack.id ? (darkMode ? "bg-dark-tertiary text-dark-text" : "bg-slate-100 text-black") : (darkMode ? "hover:bg-dark-tertiary text-dark-text-secondary" : "hover:bg-slate-100 text-slate-700")}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full flex-shrink-0" 
+                      style={{ backgroundColor: pack.color }}
+                    />
+                    <span className="truncate">{pack.name}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-start gap-3">
+        {/* Pack icon */}
+        <button
+          className={`w-12 h-12 rounded-lg border flex-shrink-0 overflow-hidden checkered transition-colors cursor-pointer mt-5 ${darkMode ? "border-dark-border hover:border-dark-text" : "border-slate-200 hover:border-black"}`}
+          onClick={() => iconRef.current?.click()}
+          title="Click to change pack icon"
+        >
+          {packIcon ? (
+            <img src={packIcon} alt="icon" className="w-full h-full object-cover texture-preview" />
+          ) : (
+            <svg className="w-5 h-5 text-slate-400 dark:text-dark-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" /></svg>
+          )}
+          <input ref={iconRef} type="file" accept="image/*" className="hidden" onChange={handleIcon} />
+        </button>
 
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
         {/* Pack name */}
@@ -181,6 +242,7 @@ export function PackSettingsModal({
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

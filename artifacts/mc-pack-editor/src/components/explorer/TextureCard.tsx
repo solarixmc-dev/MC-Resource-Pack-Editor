@@ -57,6 +57,9 @@ export function TextureCard({
   const packsWithFile = packs.filter((p) => p.files.has(texturePath));
   if (!packsWithFile.length) return null;
 
+  // For single pack imported textures, always treat as auto selected
+  const isSinglePackTexture = packsWithFile.length === 1 && !packsWithFile[0].files.has("pack.mcmeta");
+
   const isImg = isImagePath(texturePath);
   const isAtlas = !!getAtlasDefinition(texturePath);
 
@@ -84,7 +87,7 @@ export function TextureCard({
                   boxShadow: `0 4px 12px ${pack.color}66`
                 } : {}}
                 onClick={() => {
-                  if (packsWithFile.length <= 1) return;
+                  if (packsWithFile.length <= 1 && !isSinglePackTexture) return;
                   if (overridePackId === pack.id) {
                     onOverride(texturePath, null);
                   } else {
