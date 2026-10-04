@@ -272,8 +272,7 @@ export function getAllTexturePathsInFolder(packs: Pack[], folder: string, showJs
         const isSounds = folder === "sounds" && /\.ogg$/i.test(path);
         const isLang = folder === "lang";
         if (!showJsonFiles && isJson && !isSounds && !isLang) return;
-        // Include path with pack ID to distinguish same paths from different packs
-        paths.add(`${path}::${pack.id}`);
+        paths.add(path);
       }
     });
   }

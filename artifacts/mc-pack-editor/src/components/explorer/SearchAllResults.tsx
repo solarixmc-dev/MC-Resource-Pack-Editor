@@ -44,8 +44,7 @@ export function SearchAllResults({
           // Skip JSON/text files unless showJsonFiles is true
           const isJson = /\.(json|mcmeta|txt|properties|yml|yaml|toml|cfg|conf|ini)$/i.test(p);
           if (!showJsonFiles && isJson) return;
-          // Include path with pack ID to distinguish same paths from different packs
-          set.add(`${p}::${pack.id}`);
+          set.add(p);
         }
       });
     }
@@ -71,29 +70,23 @@ export function SearchAllResults({
         {filtered.length} result{filtered.length !== 1 ? "s" : ""} across all folders
       </p>
       <div className="grid gap-2 min-w-0" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
-        {filtered.map((pathWithPackId) => {
-          // Parse the path which now includes pack ID: "path/to/texture.png::packId"
-          const [texturePath, packId] = pathWithPackId.split("::");
-          const parts = texturePath.split("/");
+        {filtered.map((path) => {
+          const parts = path.split("/");
           const displayName = parts[parts.length - 1];
-          const folder = getTextureFolder(texturePath);
-          const specificPack = packs.find(p => p.id === packId);
-          
-          if (!specificPack) return null;
-          
+          const folder = getTextureFolder(path);
           return (
-            <div key={pathWithPackId} className="flex flex-col gap-0.5">
+            <div key={path} className="flex flex-col gap-0.5">
               <TextureCard
-                texturePath={texturePath}
+                texturePath={path}
                 displayName={displayName}
-                packs={[specificPack]}
+                packs={packs}
                 folderSources={folderSources}
                 textureOverrides={textureOverrides}
                 folder={folder}
                 onOverride={onOverride}
-                onOpenLightbox={() => onOpenLightbox(texturePath, displayName, folder)}
-                onEditTexture={() => onEditTexture(texturePath, displayName, folder)}
-                isRemoved={!!removedFiles[texturePath]}
+                onOpenLightbox={() => onOpenLightbox(path, displayName, folder)}
+                onEditTexture={() => onEditTexture(path, displayName, folder)}
+                isRemoved={!!removedFiles[path]}
                 onToggleRemove={onToggleRemove}
                 layoutMode={layoutMode}
                 darkMode={darkMode}

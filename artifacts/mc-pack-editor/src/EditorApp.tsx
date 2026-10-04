@@ -579,8 +579,10 @@ export default function EditorApp() {
     
     const newPack: Pack = {
       id: `imported-${Date.now()}`,
-      name: file.name.replace('.png', ''),
+      name: `[Imported] ${file.name.replace('.png', '')}`,
       color: '#3b82f6',
+      description: 'Single texture import',
+      isImported: true,
       files: new Map([[
         `assets/minecraft/textures/${file.name}`,
         arrayBuffer

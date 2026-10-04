@@ -7,6 +7,7 @@ export interface Pack {
   color: string;
   description?: string;
   icon?: string | null;
+  isImported?: boolean;
 }
 
 export interface TextureEntry {
