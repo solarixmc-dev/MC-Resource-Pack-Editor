@@ -349,35 +349,6 @@ export default function EditorApp() {
     }
   }, [copyFromTopPack, packs, selectedPackForDetails, setPackDetailsFromPack]);
 
-  // Auto-remove sky textures from non-top packs when packs change
-  useEffect(() => {
-    if (packs.length > 1) {
-      setRemovedFiles(prev => {
-        const updated = { ...prev };
-        
-        // Clear all existing sky texture removals first
-        Object.keys(updated).forEach(path => {
-          const folder = getTextureFolder(path);
-          if (folder === 'sky' || folder === 'skys') {
-            delete updated[path];
-          }
-        });
-        
-        // Disable sky textures from all packs except the first one
-        packs.slice(1).forEach((pack) => {
-          pack.files.forEach((_, path) => {
-            const folder = getTextureFolder(path);
-            if (folder === 'sky' || folder === 'skys') {
-              updated[path] = true;
-            }
-          });
-        });
-        
-        return updated;
-      });
-    }
-  }, [packs]);
-
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
     document.documentElement.style.colorScheme = darkMode ? "dark" : "light";
